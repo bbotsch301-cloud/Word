@@ -84,3 +84,28 @@ export function lookupBlacksLaw(term: string): BlacksLawRow | undefined {
     return undefined;
   }
 }
+
+export function searchBlacksLaw(term: string, limit: number = 8): BlacksLawRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT * FROM blacks_law WHERE term LIKE ? AND term != ? ORDER BY LENGTH(term) ASC LIMIT ?"
+    ).all(`%${term.toLowerCase()}%`, term.toLowerCase(), limit) as BlacksLawRow[];
+  } catch {
+    return [];
+  }
+}
+
+export interface BouvierRow {
+  term: string;
+  definition: string;
+}
+
+export function lookupBouvier(term: string): BouvierRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM bouvier WHERE term = ?").get(term.toLowerCase()) as BouvierRow | undefined;
+  } catch {
+    return undefined;
+  }
+}

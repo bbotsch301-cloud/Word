@@ -91,7 +91,10 @@
       "Bash(wc -l /home/runner/workspace/app/word/[word]/WordDisplay.tsx)",
       "Bash(head -3 /home/runner/workspace/app/word/[word]/WordDisplay.tsx)",
       "Bash(lsof -ti:5000)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(sqlite3 /home/runner/workspace/data/lexica.db .schema)",
+      "Bash(sqlite3:*)",
+      "WebFetch(domain:thelawdictionary.org)"
     ]
   }
 }

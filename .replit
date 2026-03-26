@@ -41,5 +41,5 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "fuser -k 5000/tcp 2>/dev/null || true; rm -rf .next && npm run dev"
+args = "pkill -f 'next-server' 2>/dev/null; pkill -f 'next start' 2>/dev/null; fuser -k 5000/tcp 2>/dev/null; sleep 2; rm -rf .next && npm run dev"
 waitForPort = 5000

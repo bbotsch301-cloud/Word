@@ -9,10 +9,7 @@ const nextConfig = {
     '*.worf.replit.dev',
     '*.repl.co',
   ],
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false;
-    }
+  webpack: (config) => {
     return config;
   },
 };

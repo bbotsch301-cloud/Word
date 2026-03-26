@@ -19,6 +19,8 @@ function getSourceColor(source: string): string {
     vulgar_tongue: '#0891B2',
     bouvier: '#B45309',
   };
+  // Handle "Black's Law: ..." variant labels
+  if (source.startsWith('blacks_law') || source === 'blacks_law') return map.blacks_law;
   return map[source] || '#6B7280';
 }
 

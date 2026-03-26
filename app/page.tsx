@@ -17,7 +17,7 @@ const FEATURED_WORDS = [
 
 const STATS = [
   { value: "800K+", label: "Words" },
-  { value: "7", label: "Historical Dictionaries" },
+  { value: "8", label: "Dictionaries" },
   { value: "1811\u20132024", label: "Spanning Centuries" },
 ];
 
@@ -63,7 +63,7 @@ export default function Home() {
             </h1>
             <p className="font-serif text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
               Every word has a story. Trace definitions, etymologies, and meaning shifts
-              across seven centuries of English dictionaries.
+              across eight historical and modern dictionaries.
             </p>
           </motion.div>
 
@@ -223,6 +223,7 @@ export default function Home() {
               { name: "Webster\u2019s 1828", year: "1828", desc: "Noah Webster\u2019s American Dictionary" },
               { name: "Webster\u2019s 1913", year: "1913", desc: "The Unabridged International" },
               { name: "Black\u2019s Law", year: "1910", desc: "Legal terminology reference" },
+              { name: "Bouvier\u2019s Law", year: "1856", desc: "American legal dictionary" },
               { name: "Hobson-Jobson", year: "1886", desc: "Anglo-Indian words and phrases" },
               { name: "1811 Vulgar Tongue", year: "1811", desc: "Historical slang dictionary" },
             ].map((src) => (

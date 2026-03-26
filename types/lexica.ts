@@ -29,7 +29,7 @@ export interface WordFrequency {
 }
 
 export interface DefinitionSource {
-  source: "wiktionary" | "webster1828" | "webster1913" | "blacks_law" | "hobson_jobson" | "vulgar_tongue" | "bouvier";
+  source: "wiktionary" | "webster1828" | "webster1913" | "blacks_law" | "hobson_jobson" | "vulgar_tongue" | "bouvier" | string;
   label: string;
   year: number;
   definition: string;
