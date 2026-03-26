@@ -10,8 +10,8 @@ interface SearchFieldProps {
 }
 
 const sizeStyles: Record<string, string> = {
-  lg: 'h-12 text-base rounded-lg',
-  md: 'h-9 text-sm rounded-md',
+  lg: 'h-12 text-base rounded-xl',
+  md: 'h-9 text-sm rounded-lg',
 };
 
 export default function SearchField({
@@ -21,6 +21,7 @@ export default function SearchField({
   autoFocus = false,
 }: SearchFieldProps) {
   const [value, setValue] = useState('');
+  const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export default function SearchField({
   return (
     <form onSubmit={handleSubmit} className="relative w-full">
       <svg
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
         width="16"
         height="16"
         viewBox="0 0 16 16"
@@ -64,10 +65,17 @@ export default function SearchField({
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className={`w-full bg-surface border border-border pl-10 pr-4 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-muted transition-colors text-text-primary placeholder:text-text-muted ${sizeStyles[size]}`}
+        className={`w-full bg-surface border border-border pl-10 pr-10 focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] shadow-sm transition-all text-text-primary placeholder:text-text-muted ${sizeStyles[size]}`}
       />
+      {!focused && !value && (
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-text-muted bg-bg border border-border rounded px-1.5 py-0.5 pointer-events-none">
+          /
+        </span>
+      )}
     </form>
   );
 }

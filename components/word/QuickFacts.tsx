@@ -39,8 +39,8 @@ export default function QuickFacts({
     <div className="grid grid-cols-3 gap-3">
       {facts.map((fact) => (
         <Card key={fact.label}>
-          <div className="text-xs text-text-muted">{fact.label}</div>
-          <div className="text-sm font-medium text-text-primary mt-1">
+          <div className="text-[10px] text-text-muted uppercase tracking-wider font-mono">{fact.label}</div>
+          <div className="text-sm font-medium text-text-primary mt-1 font-mono">
             {fact.value}
           </div>
         </Card>

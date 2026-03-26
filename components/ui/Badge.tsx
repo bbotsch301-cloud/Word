@@ -29,10 +29,11 @@ export default function Badge({
     variant === 'colored' && color
       ? {
           color: color,
-          backgroundColor: color + '15',
+          backgroundColor: color + '20',
           borderWidth: '1px',
           borderStyle: 'solid',
           borderColor: color + '40',
+          boxShadow: `0 1px 3px ${color}15`,
         }
       : undefined;
 

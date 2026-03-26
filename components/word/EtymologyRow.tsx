@@ -22,41 +22,45 @@ interface EtymologyRowProps {
   isLast: boolean;
 }
 
-export default function EtymologyRow({ stratum, isLast }: EtymologyRowProps) {
+export default function EtymologyRow({ stratum }: EtymologyRowProps) {
   const showRelationship =
     stratum.relationship_type && stratum.relationship_type !== 'unknown';
 
   return (
-    <div
-      className={`flex items-start gap-3 py-3 ${
-        !isLast ? 'border-b border-border' : ''
-      }`}
-    >
-      <Badge
-        variant="colored"
-        color={getFamilyColor(stratum.language_family || 'Other')}
-      >
-        {stratum.language}
-      </Badge>
-
-      <div className="min-w-0 flex-1">
-        <div className="font-medium text-text-primary">{stratum.form}</div>
-        <div className="text-xs text-text-muted">
+    <div className="space-y-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge
+          variant="colored"
+          color={getFamilyColor(stratum.language_family || 'Other')}
+        >
+          {stratum.language}
+        </Badge>
+        <span className="font-mono text-xs text-text-muted">
           {stratum.era}
           {stratum.period ? ` \u00B7 ${stratum.period}` : ''}
-        </div>
+        </span>
         {showRelationship && (
-          <span className="text-xs text-text-muted">
-            {stratum.relationship_type}
+          <span className="text-[10px] text-text-muted italic">
+            ({stratum.relationship_type})
           </span>
         )}
       </div>
 
-      <div className="min-w-0 flex-shrink text-right">
-        <p className="text-sm text-text-secondary line-clamp-2">
+      <div className="font-serif font-medium text-lg text-text-primary">
+        {stratum.form}
+      </div>
+
+      {stratum.meaning && (
+        <p className="text-sm text-text-secondary leading-relaxed">
           {stratum.meaning}
         </p>
-      </div>
+      )}
+
+      {stratum.shift && (
+        <p className="text-xs text-accent-secondary italic">
+          {stratum.shift}
+        </p>
+      )}
     </div>
   );
 }

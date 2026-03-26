@@ -30,7 +30,7 @@ export default function DefinitionCard({ definition }: DefinitionCardProps) {
         >
           {definition.label}
         </Badge>
-        <span className="text-xs text-text-muted">{definition.year}</span>
+        <span className="text-xs text-text-muted font-mono">{definition.year}</span>
         {definition.pos && (
           <Badge variant="default">{definition.pos}</Badge>
         )}
@@ -41,7 +41,7 @@ export default function DefinitionCard({ definition }: DefinitionCardProps) {
       </p>
 
       {definition.etymology && (
-        <p className="text-xs text-text-muted italic mt-2">
+        <p className="text-xs text-text-muted italic mt-2 font-serif">
           {definition.etymology}
         </p>
       )}

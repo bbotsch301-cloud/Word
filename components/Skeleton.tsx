@@ -6,6 +6,8 @@ interface SkeletonProps {
 
 export default function Skeleton({ className = '' }: SkeletonProps) {
   return (
-    <div className={`animate-pulse bg-surface-hover rounded ${className}`} />
+    <div
+      className={`bg-gradient-to-r from-surface via-surface-hover to-surface bg-[length:200%_100%] animate-shimmer rounded-md ${className}`}
+    />
   );
 }

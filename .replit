@@ -37,5 +37,5 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "rm -rf .next && npm run build && npm run start"
+args = "fuser -k 5000/tcp 2>/dev/null || true; rm -rf .next && npm run build && npm run start"
 waitForPort = 5000
