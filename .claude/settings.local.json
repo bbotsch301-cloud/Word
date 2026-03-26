@@ -94,7 +94,9 @@
       "Bash(xargs kill:*)",
       "Bash(sqlite3 /home/runner/workspace/data/lexica.db .schema)",
       "Bash(sqlite3:*)",
-      "WebFetch(domain:thelawdictionary.org)"
+      "WebFetch(domain:thelawdictionary.org)",
+      "Bash(cp /tmp/strongs/hebrew/strongs-hebrew-dictionary.js /home/runner/workspace/data/raw/)",
+      "Bash(cp /tmp/strongs/greek/strongs-greek-dictionary.js /home/runner/workspace/data/raw/)"
     ]
   }
 }

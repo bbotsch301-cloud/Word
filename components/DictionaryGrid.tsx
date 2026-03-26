@@ -19,6 +19,7 @@ const SOURCE_COLORS: Record<string, string> = {
   hobson_jobson: '#7C3AED',
   vulgar_tongue: '#0891B2',
   bouvier: '#B45309',
+  strongs: '#4338CA',
 };
 
 const stagger = {

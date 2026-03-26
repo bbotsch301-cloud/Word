@@ -9,7 +9,12 @@ const nextConfig = {
     '*.worf.replit.dev',
     '*.repl.co',
   ],
-  webpack: (config) => {
+  webpack: (config, { dev }) => {
+    if (dev) {
+      // Use memory cache to avoid stale filesystem cache corruption
+      // when files change mid-session (e.g. from external edits).
+      config.cache = { type: 'memory' };
+    }
     return config;
   },
 };

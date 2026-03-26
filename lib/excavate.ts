@@ -1,5 +1,5 @@
 import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency } from "@/types/lexica";
-import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier } from "./database";
+import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
@@ -86,6 +86,26 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
       label: "Bouvier's Law (1856)",
       year: 1856,
       definition: bouvier.definition,
+    });
+  }
+
+  // Strong's Concordance (Hebrew + Greek biblical roots)
+  const strongsEntries = lookupStrongs(word);
+  for (const se of strongsEntries) {
+    const lang = se.language === "hebrew" ? "Hebrew" : "Greek";
+    const parts = [];
+    if (se.lemma) parts.push(se.lemma);
+    if (se.xlit) parts.push(`(${se.xlit})`);
+    if (se.pron) parts.push(`[${se.pron}]`);
+    parts.push("—");
+    if (se.strongs_def) parts.push(se.strongs_def.replace(/^\{/, "").replace(/\}$/, ""));
+    const def = parts.join(" ");
+
+    definitions.push({
+      source: "strongs",
+      label: `Strong's ${lang} (${se.id})`,
+      year: 1890,
+      definition: def,
     });
   }
 
