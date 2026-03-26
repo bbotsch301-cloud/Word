@@ -109,3 +109,29 @@ export function lookupBouvier(term: string): BouvierRow | undefined {
     return undefined;
   }
 }
+
+export interface StrongsRow {
+  id: string;
+  lemma: string;
+  xlit: string;
+  pron: string;
+  derivation: string;
+  strongs_def: string;
+  kjv_def: string;
+  language: string;
+}
+
+export function lookupStrongs(word: string, limit: number = 5): StrongsRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(`
+      SELECT s.* FROM strongs s
+      JOIN strongs_index si ON s.id = si.strongs_id
+      WHERE si.english_word = ?
+      ORDER BY s.language, s.id
+      LIMIT ?
+    `).all(word.toLowerCase(), limit) as StrongsRow[];
+  } catch {
+    return [];
+  }
+}

@@ -18,6 +18,7 @@ function getSourceColor(source: string): string {
     hobson_jobson: '#7C3AED',
     vulgar_tongue: '#0891B2',
     bouvier: '#B45309',
+    strongs: '#4338CA',
   };
   // Handle "Black's Law: ..." variant labels
   if (source.startsWith('blacks_law') || source === 'blacks_law') return map.blacks_law;

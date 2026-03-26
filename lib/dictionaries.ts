@@ -32,6 +32,7 @@ const DICT_CONFIG: Record<string, { table: string; wordCol: string; defCol: stri
   "hobson-jobson": { table: "hobson_jobson", wordCol: "word", defCol: "definition" },
   "vulgar-tongue": { table: "vulgar_tongue", wordCol: "word", defCol: "definition" },
   bouvier: { table: "bouvier", wordCol: "term", defCol: "definition" },
+  strongs: { table: "strongs", wordCol: "lemma", defCol: "strongs_def" },
 };
 
 export function getAllDictionaries(): DictionaryMeta[] {

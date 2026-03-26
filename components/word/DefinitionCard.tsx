@@ -13,6 +13,7 @@ function getSourceColor(source: string): string {
     hobson_jobson: '#7C3AED',
     vulgar_tongue: '#0891B2',
     bouvier: '#B45309',
+    strongs: '#4338CA',
   };
   return map[source] || '#6B7280';
 }
