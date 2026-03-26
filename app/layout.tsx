@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Header from "@/components/Header";
@@ -16,6 +16,13 @@ const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400"],
   display: "swap",
   variable: "--font-ibm-plex-mono",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-serif",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-bg text-text-primary min-h-screen">
         <ThemeProvider>
           <Header />

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import Badge from '@/components/ui/Badge';
 import { WordTaxonomy, ConstellationWord } from '@/types/lexica';
 
@@ -14,21 +15,41 @@ interface WordGroupProps {
   words: string[];
 }
 
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.03 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0 },
+};
+
 function WordGroup({ label, words }: WordGroupProps) {
   if (words.length === 0) return null;
 
   return (
     <div>
-      <div className="text-sm font-medium text-text-primary mb-2">{label}</div>
-      <div className="flex flex-wrap gap-2">
-        {words.map((word) => (
-          <Link key={word} href={`/word/${word}`}>
-            <Badge variant="accent" className="cursor-pointer">
-              {word}
-            </Badge>
-          </Link>
-        ))}
+      <div className="flex items-center gap-3 mb-2">
+        <div className="text-sm font-medium text-text-primary">{label}</div>
+        <div className="h-px flex-1 bg-border" />
       </div>
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+        className="flex flex-wrap gap-2"
+      >
+        {words.map((word) => (
+          <motion.div key={word} variants={fadeUp}>
+            <Link href={`/word/${word}`}>
+              <Badge variant="accent" className="cursor-pointer">
+                {word}
+              </Badge>
+            </Link>
+          </motion.div>
+        ))}
+      </motion.div>
     </div>
   );
 }
@@ -50,7 +71,7 @@ export default function RelatedTab({ taxonomy, constellation }: RelatedTabProps)
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {taxonomy && (
         <>
           <WordGroup label="Broader Terms" words={taxonomy.hypernyms} />
@@ -62,18 +83,28 @@ export default function RelatedTab({ taxonomy, constellation }: RelatedTabProps)
 
       {hasConstellation && (
         <div>
-          <div className="text-sm font-medium text-text-primary mb-2">
-            Associated Words
+          <div className="flex items-center gap-3 mb-2">
+            <div className="text-sm font-medium text-text-primary">
+              Associated Words
+            </div>
+            <div className="h-px flex-1 bg-border" />
           </div>
-          <div className="flex flex-wrap gap-2">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+            className="flex flex-wrap gap-2"
+          >
             {constellation.map((item) => (
-              <Link key={item.word} href={`/word/${item.word}`}>
-                <Badge variant="default" className="cursor-pointer">
-                  {item.word}
-                </Badge>
-              </Link>
+              <motion.div key={item.word} variants={fadeUp}>
+                <Link href={`/word/${item.word}`}>
+                  <Badge variant="default" className="cursor-pointer">
+                    {item.word}
+                  </Badge>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

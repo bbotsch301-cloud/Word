@@ -15,8 +15,8 @@ interface ButtonProps {
 }
 
 const variantStyles: Record<string, string> = {
-  primary: 'bg-accent text-white hover:bg-accent-hover',
-  secondary: 'border border-border text-text-secondary hover:border-border-hover hover:bg-surface',
+  primary: 'bg-gradient-to-r from-accent to-accent-hover text-white shadow-sm active:scale-[0.98]',
+  secondary: 'border border-border text-text-secondary hover:border-border-hover hover:bg-surface active:scale-[0.98]',
   ghost: 'text-text-muted hover:text-text-primary hover:bg-surface',
 };
 
@@ -35,7 +35,7 @@ export default function Button({
   className = '',
   type = 'button',
 }: ButtonProps) {
-  const base = 'rounded-md font-medium transition-colors inline-flex items-center justify-center';
+  const base = 'rounded-lg font-medium transition-all inline-flex items-center justify-center';
   const disabledStyle = disabled ? 'opacity-50 pointer-events-none' : '';
   const classes = `${base} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyle} ${className}`.trim();
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { LexicaResult } from "@/types/lexica";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Badge from "@/components/ui/Badge";
@@ -37,13 +38,18 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         { label: result.word },
       ]} />
 
-      <div className="mt-4">
-        <h1 className="text-4xl font-bold text-text-primary tracking-tight">
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="mt-4"
+      >
+        <h1 className="font-serif text-5xl font-bold text-text-primary tracking-tight">
           {result.word}
         </h1>
         <div className="flex items-center gap-3 mt-2 flex-wrap">
           {result.phonetic && (
-            <span className="font-mono text-sm text-text-muted">{result.phonetic}</span>
+            <span className="font-mono text-sm text-accent-secondary">{result.phonetic}</span>
           )}
           {result.definitions[0]?.pos && (
             <Badge variant="accent">{result.definitions[0].pos}</Badge>
@@ -57,20 +63,29 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         <p className="text-text-secondary mt-3 leading-relaxed">
           {result.modern_meaning}
         </p>
-      </div>
+      </motion.div>
 
       <div className="mt-6">
         <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <div className="mt-6 animate-fade-in">
-        {activeTab === "overview" && <OverviewTab result={result} />}
-        {activeTab === "etymology" && <EtymologyTab result={result} />}
-        {activeTab === "definitions" && <DefinitionsTab definitions={result.definitions} />}
-        {activeTab === "related" && (
-          <RelatedTab taxonomy={result.taxonomy} constellation={result.constellation} />
-        )}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="mt-6"
+        >
+          {activeTab === "overview" && <OverviewTab result={result} />}
+          {activeTab === "etymology" && <EtymologyTab result={result} />}
+          {activeTab === "definitions" && <DefinitionsTab definitions={result.definitions} />}
+          {activeTab === "related" && (
+            <RelatedTab taxonomy={result.taxonomy} constellation={result.constellation} />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 }
