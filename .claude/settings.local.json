@@ -87,7 +87,11 @@
       "WebFetch(domain:www.ling-phil.ox.ac.uk)",
       "Bash(wc -l /home/runner/workspace/components/*.tsx /home/runner/workspace/app/**/*.tsx /home/runner/workspace/app/**/**/*.tsx /home/runner/workspace/lib/*.ts /home/runner/workspace/types/*.ts)",
       "Bash(fuser -k 5000/tcp)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(wc -l /home/runner/workspace/app/word/[word]/WordDisplay.tsx)",
+      "Bash(head -3 /home/runner/workspace/app/word/[word]/WordDisplay.tsx)",
+      "Bash(lsof -ti:5000)",
+      "Bash(xargs kill:*)"
     ]
   }
 }
