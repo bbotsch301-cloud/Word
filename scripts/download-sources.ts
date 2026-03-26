@@ -29,6 +29,21 @@ const SOURCES: Source[] = [
     filename: "webster1828.db",
   },
   {
+    name: "Hobson-Jobson (Anglo-Indian Etymology)",
+    url: "https://www.gutenberg.org/files/58529/58529-0.txt",
+    filename: "hobson-jobson.txt",
+  },
+  {
+    name: "1811 Dictionary of the Vulgar Tongue",
+    url: "https://www.gutenberg.org/files/5402/5402-0.txt",
+    filename: "vulgar-tongue.txt",
+  },
+  {
+    name: "Word Frequency (wordfreq-en)",
+    url: "https://raw.githubusercontent.com/aparrish/wordfreq-en-25000/master/wordfreq_en.json",
+    filename: "wordfreq.json",
+  },
+  {
     name: "Black's Law Dictionary 2nd Ed (JSONL)",
     url: "https://gist.github.com/medelman17/55bf480caafbfcc6e9f9d22c273cf2c4/raw",
     filename: "blacks-law-2nd.jsonl",

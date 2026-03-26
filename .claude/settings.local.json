@@ -67,7 +67,24 @@
       "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(f{r[''''full_name'''']} | stars:{r[''''stargazers_count'''']} | {r[''''html_url'''']} | {r[''''description'''']}\\) for r in data.get\\(''''items'''',[]\\)]\")",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:sites.google.com)",
-      "WebFetch(domain:constitution.org)"
+      "WebFetch(domain:constitution.org)",
+      "WebFetch(domain:en.wikisource.org)",
+      "WebFetch(domain:etym.org)",
+      "WebFetch(domain:www1.icsi.berkeley.edu)",
+      "WebFetch(domain:en.wiktionary.org)",
+      "WebFetch(domain:freedict.org)",
+      "WebFetch(domain:www.geonames.org)",
+      "WebFetch(domain:www.nlm.nih.gov)",
+      "WebFetch(domain:storage.googleapis.com)",
+      "WebFetch(domain:lextool.byu.edu)",
+      "WebFetch(domain:www.crosswire.org)",
+      "WebFetch(domain:lsi.upc.edu)",
+      "WebFetch(domain:lepage.info)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:nlp.stanford.edu)",
+      "WebFetch(domain:clics.clld.org)",
+      "WebFetch(domain:dumps.wikimedia.org)",
+      "WebFetch(domain:www.ling-phil.ox.ac.uk)"
     ]
   }
 }

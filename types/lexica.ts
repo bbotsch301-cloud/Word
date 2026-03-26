@@ -22,8 +22,14 @@ export interface CulturalMoment {
   description: string;
 }
 
+export interface WordFrequency {
+  rank: number;
+  zipf: number;
+  label: string;
+}
+
 export interface DefinitionSource {
-  source: "wiktionary" | "webster1828" | "webster1913" | "blacks_law";
+  source: "wiktionary" | "webster1828" | "webster1913" | "blacks_law" | "hobson_jobson" | "vulgar_tongue" | "bouvier";
   label: string;
   year: number;
   definition: string;
@@ -50,4 +56,5 @@ export interface LexicaResult {
   definitions: DefinitionSource[];
   taxonomy?: WordTaxonomy;
   webster1828_etymology?: string;
+  frequency?: WordFrequency;
 }

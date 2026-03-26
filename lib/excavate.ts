@@ -1,8 +1,9 @@
-import type { LexicaResult, DefinitionSource, WordTaxonomy } from "@/types/lexica";
+import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency } from "@/types/lexica";
 import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
+import { getWordFrequency, lookupInDictionary } from "./dictionaries";
 
 function parseJsonArray(json: string): string[] {
   if (!json) return [];
@@ -63,6 +64,27 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
       label: "Black's Law Dictionary",
       year: 1910,
       definition: blacksDef,
+    });
+  }
+
+  // New dictionaries
+  const hobsonJobson = lookupInDictionary("hobson-jobson", word);
+  if (hobsonJobson) {
+    definitions.push({
+      source: "hobson_jobson",
+      label: "Hobson-Jobson",
+      year: 1886,
+      definition: hobsonJobson.definition,
+    });
+  }
+
+  const vulgarTongue = lookupInDictionary("vulgar-tongue", word);
+  if (vulgarTongue) {
+    definitions.push({
+      source: "vulgar_tongue",
+      label: "1811 Vulgar Tongue",
+      year: 1811,
+      definition: vulgarTongue.definition,
     });
   }
 
@@ -136,5 +158,6 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     definitions,
     taxonomy,
     webster1828_etymology: webster1828?.etymology || undefined,
+    frequency: getWordFrequency(word) || undefined,
   };
 }

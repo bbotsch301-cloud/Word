@@ -67,6 +67,16 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Reference Library link */}
+        <div className="mt-12">
+          <button
+            onClick={() => router.push("/dictionaries")}
+            className="font-mono text-[9px] uppercase tracking-[0.3em] text-parchment/40 hover:text-gold border border-parchment/10 hover:border-gold/25 px-5 py-2 transition-all"
+          >
+            Browse the Reference Library
+          </button>
+        </div>
+
         {/* Recent excavations */}
         {recentWords.length > 0 && (
           <div className="mt-14 w-full">
