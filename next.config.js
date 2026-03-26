@@ -9,6 +9,12 @@ const nextConfig = {
     '*.worf.replit.dev',
     '*.repl.co',
   ],
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false;
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;
