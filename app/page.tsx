@@ -2,17 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import SearchInput from "@/components/SearchInput";
+import SearchField from "@/components/ui/SearchField";
+import Badge from "@/components/ui/Badge";
 
 const EXAMPLE_WORDS = [
-  "salary",
-  "disaster",
-  "silly",
-  "awful",
-  "nice",
-  "muscle",
-  "paradise",
-  "tragedy",
+  "salary", "disaster", "silly", "awful", "nice", "muscle",
+  "paradise", "tragedy", "liberty", "mortgage", "bungalow",
 ];
 
 export default function Home() {
@@ -22,74 +17,52 @@ export default function Home() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("lexica-recent");
-      if (stored) {
-        setRecentWords(JSON.parse(stored));
-      }
-    } catch {
-      // ignore
-    }
+      if (stored) setRecentWords(JSON.parse(stored));
+    } catch {}
   }, []);
 
-  const navigateToWord = (word: string) => {
-    router.push(`/word/${encodeURIComponent(word.toLowerCase())}`);
+  const handleSearch = (value: string) => {
+    const word = value.trim().toLowerCase();
+    if (word) router.push(`/word/${encodeURIComponent(word)}`);
   };
 
   return (
-    <main className="home-glow min-h-screen flex flex-col items-center justify-center px-6 py-16">
+    <main className="min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-6 py-16">
       <div className="flex flex-col items-center w-full max-w-xl">
-        {/* Title */}
-        <h1
-          className="font-cormorant font-light tracking-archaeological text-parchment text-center mb-4"
-          style={{ fontSize: "clamp(5rem, 12vw, 10rem)" }}
-        >
+        <h1 className="text-4xl font-bold text-text-primary tracking-tight mb-2">
           LEXICA
         </h1>
-
-        {/* Tagline */}
-        <p className="font-cormorant italic text-gold/70 text-lg md:text-xl mb-16 text-center">
-          Excavate the buried history of words
+        <p className="text-text-muted text-center mb-8">
+          Search 800K+ words across 7 historical dictionaries
         </p>
 
-        {/* Search */}
-        <SearchInput autoFocus />
+        <div className="w-full max-w-md">
+          <SearchField size="lg" placeholder="Look up any word..." onSubmit={handleSearch} autoFocus />
+        </div>
 
-        {/* Example words */}
-        <div className="mt-10 flex flex-wrap justify-center gap-2">
+        <div className="mt-8 flex flex-wrap justify-center gap-2">
           {EXAMPLE_WORDS.map((word) => (
             <button
               key={word}
-              onClick={() => navigateToWord(word)}
-              className="font-crimson italic text-sm text-parchment-dim border border-parchment/10 px-3 py-1.5 hover:text-gold hover:border-gold/30 transition-all"
-              aria-label={`Excavate the word ${word}`}
+              onClick={() => handleSearch(word)}
+              className="text-sm text-text-muted hover:text-accent border border-border hover:border-accent-subtle rounded-full px-3 py-1 transition-colors"
             >
               {word}
             </button>
           ))}
         </div>
 
-        {/* Reference Library link */}
-        <div className="mt-12">
-          <button
-            onClick={() => router.push("/dictionaries")}
-            className="font-mono text-[9px] uppercase tracking-[0.3em] text-parchment/40 hover:text-gold border border-parchment/10 hover:border-gold/25 px-5 py-2 transition-all"
-          >
-            Browse the Reference Library
-          </button>
-        </div>
-
-        {/* Recent excavations */}
         {recentWords.length > 0 && (
-          <div className="mt-14 w-full">
-            <p className="font-mono text-[9px] uppercase tracking-label text-gold/50 mb-4 text-center">
-              Recent Digs
+          <div className="mt-10 w-full">
+            <p className="text-xs font-medium text-text-muted mb-3 text-center">
+              Recent
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               {recentWords.map((word) => (
                 <button
                   key={word}
-                  onClick={() => navigateToWord(word)}
-                  className="font-cormorant text-base text-parchment/60 border border-parchment/8 px-3 py-1 hover:text-gold hover:border-gold/25 transition-all"
-                  aria-label={`Re-excavate ${word}`}
+                  onClick={() => handleSearch(word)}
+                  className="text-sm text-text-secondary hover:text-accent transition-colors"
                 >
                   {word}
                 </button>
@@ -97,6 +70,10 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        <p className="mt-12 text-xs text-text-muted text-center">
+          Wiktionary &middot; Webster&apos;s 1828 &middot; Webster&apos;s 1913 &middot; Black&apos;s Law &middot; Hobson-Jobson &middot; 1811 Vulgar Tongue
+        </p>
       </div>
     </main>
   );

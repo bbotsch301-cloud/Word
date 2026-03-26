@@ -10,36 +10,26 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const word = decodeURIComponent(params.word);
   return {
-    title: `LEXICA — Excavating '${word}'`,
-    description: `Unearth the deep etymology, linguistic history, and truest meaning of "${word}".`,
-    openGraph: {
-      title: `LEXICA — Excavating '${word}'`,
-      description: `Unearth the deep etymology, linguistic history, and truest meaning of "${word}".`,
-    },
+    title: `${word} — LEXICA`,
+    description: `Definition, etymology, and history of "${word}" from 7 dictionaries.`,
   };
 }
 
 export default async function WordPage({ params }: PageProps) {
   const word = decodeURIComponent(params.word);
 
-  // Validate input server-side
   if (!word || word.length > 40 || !/^[a-zA-Z-]+$/.test(word)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <p className="font-mono text-[9px] uppercase tracking-label text-gold mb-6">
-          INVALID WORD
-        </p>
-        <h2 className="font-cormorant text-4xl font-light text-parchment mb-4">
-          &ldquo;{word}&rdquo;
-        </h2>
-        <p className="font-crimson text-parchment/60 text-center max-w-md mb-8">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center px-6">
+        <h2 className="text-2xl font-semibold text-text-primary mb-2">Invalid Word</h2>
+        <p className="text-text-muted text-center max-w-md mb-6">
           Words must contain only letters and hyphens, up to 40 characters.
         </p>
         <Link
           href="/"
-          className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold border border-gold/25 px-8 py-3 hover:bg-gold/10 transition-all"
+          className="text-sm font-medium text-accent hover:text-accent-hover transition-colors"
         >
-          Return to Surface
+          Go Home
         </Link>
       </div>
     );
@@ -50,19 +40,14 @@ export default async function WordPage({ params }: PageProps) {
     return <WordDisplay result={result} />;
   } catch {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <p className="font-mono text-[9px] uppercase tracking-label text-gold mb-6">
-          EXCAVATION FAILED
-        </p>
-        <h2 className="font-cormorant text-4xl font-light text-parchment mb-4">
-          {word}
-        </h2>
-        <p className="font-crimson text-parchment/60 text-center max-w-md mb-8">
-          Could not excavate this word. The dig site may be unstable.
+      <div className="min-h-[60vh] flex flex-col items-center justify-center px-6">
+        <h2 className="text-2xl font-semibold text-text-primary mb-2">Word Not Found</h2>
+        <p className="text-text-muted text-center max-w-md mb-6">
+          &ldquo;{word}&rdquo; was not found in any of our dictionaries.
         </p>
         <Link
           href="/"
-          className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold border border-gold/25 px-8 py-3 hover:bg-gold/10 transition-all"
+          className="text-sm font-medium text-accent hover:text-accent-hover transition-colors"
         >
           Try Another Word
         </Link>

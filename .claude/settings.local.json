@@ -84,7 +84,8 @@
       "WebFetch(domain:nlp.stanford.edu)",
       "WebFetch(domain:clics.clld.org)",
       "WebFetch(domain:dumps.wikimedia.org)",
-      "WebFetch(domain:www.ling-phil.ox.ac.uk)"
+      "WebFetch(domain:www.ling-phil.ox.ac.uk)",
+      "Bash(wc -l /home/runner/workspace/components/*.tsx /home/runner/workspace/app/**/*.tsx /home/runner/workspace/app/**/**/*.tsx /home/runner/workspace/lib/*.ts /home/runner/workspace/types/*.ts)"
     ]
   }
 }

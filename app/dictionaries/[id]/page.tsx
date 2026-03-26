@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getDictionary, browseDictionary } from "@/lib/dictionaries";
-import DictionaryBrowser from "@/components/DictionaryBrowser";
+import DictionaryTable from "@/components/DictionaryTable";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 interface PageProps {
   params: { id: string };
@@ -10,10 +11,9 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const dict = getDictionary(params.id);
-  const name = dict?.name || params.id;
   return {
-    title: `LEXICA — ${name}`,
-    description: dict?.description || `Browse the ${name} dictionary.`,
+    title: `${dict?.name || params.id} — LEXICA`,
+    description: dict?.description || `Browse the ${params.id} dictionary.`,
   };
 }
 
@@ -24,21 +24,11 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
 
   if (!dict) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6">
-        <p className="font-mono text-[9px] uppercase tracking-label text-gold mb-6">
-          ARCHIVE NOT FOUND
-        </p>
-        <h2 className="font-cormorant text-4xl font-light text-parchment mb-4">
-          {params.id}
-        </h2>
-        <p className="font-crimson text-parchment/60 text-center max-w-md mb-8">
-          This reference work is not in our archives.
-        </p>
-        <Link
-          href="/dictionaries"
-          className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold border border-gold/25 px-8 py-3 hover:bg-gold/10 transition-all"
-        >
-          Browse All Archives
+      <div className="min-h-[60vh] flex flex-col items-center justify-center px-6">
+        <h2 className="text-2xl font-semibold text-text-primary mb-2">Dictionary Not Found</h2>
+        <p className="text-text-muted mb-6">This reference work is not in our collection.</p>
+        <Link href="/dictionaries" className="text-sm font-medium text-accent hover:text-accent-hover">
+          Browse All Dictionaries
         </Link>
       </div>
     );
@@ -51,47 +41,40 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
     letter: searchParams.letter,
     query: searchParams.q,
   });
-
   const totalPages = Math.ceil(result.total / result.pageSize);
 
   return (
-    <main className="max-w-[780px] mx-auto px-6 md:px-10 py-16 pb-16">
-      {/* Header */}
-      <div className="mb-8">
-        <Link
-          href="/dictionaries"
-          className="font-mono text-[9px] uppercase tracking-[0.2em] text-parchment/40 hover:text-gold transition-colors mb-4 inline-block"
-        >
-          &larr; All Archives
-        </Link>
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="font-cormorant text-4xl font-light text-parchment">
-              {dict.name}
-            </h1>
-            <p className="font-mono text-[10px] text-parchment/40 mt-1">
-              {dict.year} &middot; {dict.entry_count.toLocaleString()} entries
-            </p>
-          </div>
+    <main className="max-w-4xl mx-auto px-6 py-6">
+      <Breadcrumb items={[
+        { label: "Home", href: "/" },
+        { label: "Dictionaries", href: "/dictionaries" },
+        { label: dict.name },
+      ]} />
+
+      <div className="mt-4 mb-6">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h1 className="text-3xl font-bold text-text-primary tracking-tight">{dict.name}</h1>
+          <span className="text-sm text-text-muted">{dict.year}</span>
+          <span className="text-xs font-medium text-text-muted bg-surface rounded-full px-2.5 py-0.5 border border-border">
+            {dict.entry_count.toLocaleString()} entries
+          </span>
         </div>
-        <p className="font-crimson text-sm text-parchment/60 leading-relaxed mt-3 max-w-lg">
-          {dict.description}
-        </p>
+        <p className="text-sm text-text-secondary mt-2 max-w-2xl">{dict.description}</p>
       </div>
 
       {/* Search */}
-      <form method="GET" className="mb-6">
+      <form method="GET" className="mb-4">
         <div className="flex gap-2">
           <input
             type="text"
             name="q"
             defaultValue={searchParams.q || ""}
             placeholder={`Search ${dict.name}...`}
-            className="flex-1 bg-transparent border-b border-gold/25 font-cormorant text-lg font-light tracking-subtle text-parchment placeholder:italic placeholder:text-gold/30 focus:outline-none focus:border-gold py-2 transition-all"
+            className="flex-1 h-9 px-3 text-sm bg-surface border border-border rounded-md focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent-muted transition-colors"
           />
           <button
             type="submit"
-            className="font-mono text-[9px] uppercase tracking-[0.3em] text-gold border border-gold/25 px-4 py-2 hover:bg-gold/10 transition-all"
+            className="h-9 px-4 text-sm font-medium bg-accent text-white rounded-md hover:bg-accent-hover transition-colors"
           >
             Search
           </button>
@@ -99,13 +82,13 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
       </form>
 
       {/* Alphabet filter */}
-      <div className="flex flex-wrap gap-1 mb-8">
+      <div className="flex flex-wrap gap-1 mb-4">
         <Link
           href={`/dictionaries/${params.id}`}
-          className={`font-mono text-[10px] px-2 py-1 transition-colors ${
+          className={`text-xs px-2 py-1 rounded transition-colors ${
             !searchParams.letter && !searchParams.q
-              ? "text-gold border border-gold/40 bg-gold/10"
-              : "text-parchment/40 hover:text-gold"
+              ? "bg-accent text-white"
+              : "text-text-muted hover:text-text-primary hover:bg-surface"
           }`}
         >
           All
@@ -114,10 +97,10 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
           <Link
             key={l}
             href={`/dictionaries/${params.id}?letter=${l}`}
-            className={`font-mono text-[10px] px-2 py-1 uppercase transition-colors ${
+            className={`text-xs px-2 py-1 rounded uppercase transition-colors ${
               searchParams.letter === l
-                ? "text-gold border border-gold/40 bg-gold/10"
-                : "text-parchment/40 hover:text-gold"
+                ? "bg-accent text-white"
+                : "text-text-muted hover:text-text-primary hover:bg-surface"
             }`}
           >
             {l}
@@ -126,19 +109,18 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
       </div>
 
       {/* Results info */}
-      <p className="font-mono text-[9px] text-parchment/40 mb-4">
+      <p className="text-xs text-text-muted mb-3">
         {result.total.toLocaleString()} entries
         {searchParams.q && ` matching "${searchParams.q}"`}
         {searchParams.letter && ` starting with "${searchParams.letter.toUpperCase()}"`}
         {totalPages > 1 && ` — Page ${page} of ${totalPages}`}
       </p>
 
-      {/* Entries */}
-      <DictionaryBrowser entries={result.entries} dictId={params.id} />
+      <DictionaryTable entries={result.entries} />
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8">
+        <div className="flex items-center justify-center gap-2 mt-6">
           {page > 1 && (
             <Link
               href={`/dictionaries/${params.id}?${new URLSearchParams({
@@ -146,12 +128,12 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
                 ...(searchParams.q ? { q: searchParams.q } : {}),
                 page: String(page - 1),
               })}`}
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/25 px-4 py-2 hover:bg-gold/10 transition-all"
+              className="h-8 px-3 text-xs font-medium border border-border rounded-md hover:bg-surface flex items-center transition-colors"
             >
-              &larr; Previous
+              Previous
             </Link>
           )}
-          <span className="font-mono text-[10px] text-parchment/40">
+          <span className="text-xs text-text-muted">
             {page} / {totalPages}
           </span>
           {page < totalPages && (
@@ -161,9 +143,9 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
                 ...(searchParams.q ? { q: searchParams.q } : {}),
                 page: String(page + 1),
               })}`}
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold border border-gold/25 px-4 py-2 hover:bg-gold/10 transition-all"
+              className="h-8 px-3 text-xs font-medium border border-border rounded-md hover:bg-surface flex items-center transition-colors"
             >
-              Next &rarr;
+              Next
             </Link>
           )}
         </div>
