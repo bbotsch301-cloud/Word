@@ -1,5 +1,5 @@
 import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency } from "@/types/lexica";
-import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw } from "./database";
+import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
@@ -64,6 +64,28 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
       label: "Black's Law Dictionary",
       year: 1910,
       definition: blacksDef,
+    });
+  }
+
+  // Related Black's Law entries (fuzzy match)
+  const relatedBlacks = searchBlacksLaw(word);
+  for (const rb of relatedBlacks) {
+    definitions.push({
+      source: "blacks_law",
+      label: `Black's Law: ${rb.term}`,
+      year: 1910,
+      definition: rb.definition,
+    });
+  }
+
+  // Bouvier's Law Dictionary
+  const bouvier = lookupBouvier(word);
+  if (bouvier) {
+    definitions.push({
+      source: "bouvier",
+      label: "Bouvier's Law (1856)",
+      year: 1856,
+      definition: bouvier.definition,
     });
   }
 
