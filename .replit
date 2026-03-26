@@ -1,5 +1,5 @@
 modules = ["nodejs-20", "web"]
-run = "npm run dev"
+run = "npm run build && npm run start"
 hidden = [".config", ".git", "node_modules", ".next"]
 
 [nix]
@@ -37,5 +37,5 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "rm -rf .next && npm run dev"
+args = "rm -rf .next && npm run build && npm run start"
 waitForPort = 5000
