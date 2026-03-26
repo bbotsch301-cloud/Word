@@ -39,6 +39,15 @@ const config: Config = {
           4: "#3a1a04",
           root: "#c8920a",
         },
+        family: {
+          germanic: "#7c9eb2",
+          romance: "#b87a4b",
+          hellenic: "#8b7bb8",
+          celtic: "#6b9b6b",
+          indoiranian: "#c4956a",
+          semitic: "#a67c52",
+          proto: "#c8920a",
+        },
       },
       letterSpacing: {
         archaeological: "0.2em",
@@ -54,9 +63,20 @@ const config: Config = {
             textShadow: "0 0 16px rgba(200,146,10,0.6), 0 0 40px rgba(200,146,10,0.25)",
           },
         },
+        "root-reveal": {
+          "0%": { transform: "scale(1)", boxShadow: "0 0 0 0 rgba(200,146,10,0)" },
+          "50%": { transform: "scale(1.01)", boxShadow: "0 0 40px 8px rgba(200,146,10,0.3)" },
+          "100%": { transform: "scale(1)", boxShadow: "0 0 20px 4px rgba(200,146,10,0.1)" },
+        },
+        "spine-draw": {
+          "0%": { strokeDashoffset: "1" },
+          "100%": { strokeDashoffset: "0" },
+        },
       },
       animation: {
         "root-pulse": "root-pulse 3.5s ease-in-out infinite",
+        "root-reveal": "root-reveal 1.2s ease-out forwards",
+        "spine-draw": "spine-draw 2s ease-out forwards",
       },
     },
   },
