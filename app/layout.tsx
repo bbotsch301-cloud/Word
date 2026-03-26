@@ -1,39 +1,31 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, IBM_Plex_Mono, Crimson_Pro } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import Header from "@/components/Header";
 
-const cormorant = Cormorant_Garamond({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
+  variable: "--font-inter",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400"],
+  display: "swap",
   variable: "--font-ibm-plex-mono",
-  display: "swap",
-});
-
-const crimsonPro = Crimson_Pro({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-crimson-pro",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "LEXICA — Excavate the buried history of words",
+  title: "LEXICA — Multi-Source English Dictionary",
   description:
-    "An AI-powered word etymology excavation experience. Enter any English word and unearth its deepest linguistic roots, cultural moments, and truest meaning.",
+    "Search 800K+ words across 7 historical dictionaries. Definitions, etymology, word frequency, and more.",
   openGraph: {
-    title: "LEXICA — Excavate the buried history of words",
+    title: "LEXICA — Multi-Source English Dictionary",
     description:
-      "An AI-powered word etymology excavation experience. Unearth the deepest linguistic roots of any English word.",
-    type: "website",
+      "Search 800K+ words across 7 historical dictionaries.",
   },
 };
 
@@ -43,11 +35,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      className={`${cormorant.variable} ${ibmPlexMono.variable} ${crimsonPro.variable}`}
-    >
-      <body className="antialiased bg-ink text-parchment min-h-screen">{children}</body>
+    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
+      <body className="antialiased bg-bg text-text-primary min-h-screen">
+        <ThemeProvider>
+          <Header />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
