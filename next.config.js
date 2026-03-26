@@ -4,6 +4,11 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['better-sqlite3'],
   },
+  allowedDevOrigins: [
+    '*.replit.dev',
+    '*.worf.replit.dev',
+    '*.repl.co',
+  ],
 };
 
 module.exports = nextConfig;
