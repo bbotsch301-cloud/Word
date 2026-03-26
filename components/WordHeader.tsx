@@ -8,9 +8,10 @@ interface WordHeaderProps {
   phonetic: string;
   modernMeaning: string;
   pos?: string;
+  frequency?: { rank: number; label: string };
 }
 
-export default function WordHeader({ word, phonetic, modernMeaning, pos }: WordHeaderProps) {
+export default function WordHeader({ word, phonetic, modernMeaning, pos, frequency }: WordHeaderProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -42,12 +43,19 @@ export default function WordHeader({ word, phonetic, modernMeaning, pos }: WordH
         {phonetic}
       </p>
 
-      {/* POS badge */}
-      {pos && (
-        <span className="inline-block font-mono text-[8px] uppercase tracking-[0.2em] border border-parchment/20 px-2 py-0.5 text-parchment/50 mb-3">
-          {pos}
-        </span>
-      )}
+      {/* Badges */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        {pos && (
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] border border-parchment/20 px-2 py-0.5 text-parchment/50">
+            {pos}
+          </span>
+        )}
+        {frequency && (
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] border border-gold/20 px-2 py-0.5 text-gold/50">
+            {frequency.label} &middot; #{frequency.rank.toLocaleString()}
+          </span>
+        )}
+      </div>
 
       {/* Modern meaning */}
       <p className="font-crimson italic text-gold/70 text-lg leading-relaxed mb-4">

@@ -5,16 +5,22 @@ import { processKaikki } from "./process-kaikki";
 import { processWebster } from "./process-webster";
 import { processWebster1828 } from "./process-webster1828";
 import { processBlacksLaw } from "./process-blacks-law";
+import { processHobsonJobson } from "./process-hobson-jobson";
+import { processVulgarTongue } from "./process-vulgar-tongue";
+import { processFrequency } from "./process-frequency";
 
 const DB_PATH = path.join(__dirname, "..", "data", "lexica.db");
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
 
+interface SourceConfig {
+  name: string;
+  file: string;
+  processor: (db: Database.Database, path: string) => Promise<void>;
+  required?: boolean;
+}
+
 async function main() {
   const kaikkiPath = path.join(RAW_DIR, "kaikki-english.jsonl");
-  const websterPath = path.join(RAW_DIR, "webster.json");
-  const webster1828Path = path.join(RAW_DIR, "webster1828.db");
-  const blacksLawPath = path.join(RAW_DIR, "blacks-law-2nd.jsonl");
-
   if (!existsSync(kaikkiPath)) {
     console.error("Missing kaikki-english.jsonl. Run npm run db:download first.");
     process.exit(1);
@@ -28,8 +34,6 @@ async function main() {
   }
 
   const db = new Database(DB_PATH);
-
-  // Enable WAL mode for faster writes
   db.pragma("journal_mode = WAL");
   db.pragma("synchronous = OFF");
 
@@ -60,58 +64,91 @@ async function main() {
 
   console.log("Database created. Processing sources...\n");
 
+  // Define all sources
+  const sources: SourceConfig[] = [
+    { name: "Kaikki.org Wiktextract", file: "kaikki-english.jsonl", processor: processKaikki, required: true },
+    { name: "Webster's 1913", file: "webster.json", processor: processWebster },
+    { name: "Webster's 1828", file: "webster1828.db", processor: processWebster1828 },
+    { name: "Black's Law Dictionary 2nd Ed", file: "blacks-law-2nd.jsonl", processor: processBlacksLaw },
+    { name: "Hobson-Jobson (Anglo-Indian)", file: "hobson-jobson.txt", processor: processHobsonJobson },
+    { name: "1811 Vulgar Tongue", file: "vulgar-tongue.txt", processor: processVulgarTongue },
+    { name: "Word Frequency", file: "wordfreq.json", processor: processFrequency },
+  ];
+
   // Process each source
-  console.log("=== Processing Kaikki.org Wiktextract ===");
-  await processKaikki(db, kaikkiPath);
-
-  if (existsSync(websterPath)) {
-    console.log("\n=== Processing Webster's 1913 Dictionary ===");
-    await processWebster(db, websterPath);
-  } else {
-    console.log("\n[skip] Webster's 1913 not found");
+  for (const source of sources) {
+    const filePath = path.join(RAW_DIR, source.file);
+    if (existsSync(filePath)) {
+      console.log(`=== Processing ${source.name} ===`);
+      await source.processor(db, filePath);
+      console.log();
+    } else if (source.required) {
+      console.error(`Missing required: ${source.file}`);
+      process.exit(1);
+    } else {
+      console.log(`[skip] ${source.name} not found`);
+    }
   }
 
-  if (existsSync(webster1828Path)) {
-    console.log("\n=== Processing Webster's 1828 Dictionary ===");
-    await processWebster1828(db, webster1828Path);
-  } else {
-    console.log("\n[skip] Webster's 1828 not found");
-  }
-
-  if (existsSync(blacksLawPath)) {
-    console.log("\n=== Processing Black's Law Dictionary 2nd Ed ===");
-    await processBlacksLaw(db, blacksLawPath);
-  } else {
-    console.log("\n[skip] Black's Law Dictionary not found");
-  }
-
-  // Create indexes after bulk inserts
-  console.log("\nCreating indexes...");
+  // Create dictionaries metadata table
   db.exec(`
-    CREATE INDEX idx_words_word ON words(word);
+    CREATE TABLE IF NOT EXISTS dictionaries (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      year INTEGER,
+      description TEXT,
+      entry_count INTEGER
+    );
+  `);
+
+  // Populate dictionary metadata
+  const dictMeta = [
+    { id: "wiktionary", name: "Wiktionary", year: 2024, desc: "Modern collaborative dictionary with etymology, pronunciation, and definitions for over 700,000 English words." },
+    { id: "webster1828", name: "Webster's 1828", year: 1828, desc: "Noah Webster's American Dictionary of the English Language — the foundational American dictionary with rich historical definitions." },
+    { id: "webster1913", name: "Webster's 1913", year: 1913, desc: "Webster's Revised Unabridged Dictionary — the expanded early 20th century edition." },
+    { id: "blacks-law", name: "Black's Law Dictionary", year: 1910, desc: "The most widely cited legal dictionary in American jurisprudence, 2nd Edition." },
+    { id: "hobson-jobson", name: "Hobson-Jobson", year: 1886, desc: "A glossary of colloquial Anglo-Indian words and phrases — the definitive reference for English words borrowed from Indian languages." },
+    { id: "vulgar-tongue", name: "1811 Vulgar Tongue", year: 1811, desc: "Francis Grose's dictionary of slang, cant, and vulgar language of the Georgian era." },
+  ];
+
+  const insertDict = db.prepare("INSERT OR REPLACE INTO dictionaries (id, name, year, description, entry_count) VALUES (?, ?, ?, ?, ?)");
+  const countQueries: Record<string, string> = {
+    wiktionary: "SELECT COUNT(DISTINCT word) as c FROM words",
+    webster1828: "SELECT COUNT(*) as c FROM webster1828",
+    webster1913: "SELECT COUNT(*) as c FROM webster",
+    "blacks-law": "SELECT COUNT(*) as c FROM blacks_law",
+    "hobson-jobson": "SELECT COUNT(*) as c FROM hobson_jobson",
+    "vulgar-tongue": "SELECT COUNT(*) as c FROM vulgar_tongue",
+  };
+
+  for (const meta of dictMeta) {
+    let count = 0;
+    try {
+      const row = db.prepare(countQueries[meta.id]).get() as { c: number };
+      count = row.c;
+    } catch { /* table may not exist */ }
+    insertDict.run(meta.id, meta.name, meta.year, meta.desc, count);
+  }
+
+  // Create indexes
+  console.log("Creating indexes...");
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_words_word ON words(word);
   `);
 
   // Show stats
-  const wordCount = db.prepare("SELECT COUNT(*) as c FROM words").get() as { c: number };
-  const websterCount = db.prepare("SELECT COUNT(*) as c FROM webster").get() as { c: number };
-
-  console.log(`\nDone!`);
-  console.log(`  Wiktionary words: ${wordCount.c.toLocaleString()}`);
-  console.log(`  Webster 1913 entries: ${websterCount.c.toLocaleString()}`);
-
-  // Check optional tables
-  try {
-    const w1828 = db.prepare("SELECT COUNT(*) as c FROM webster1828").get() as { c: number };
-    console.log(`  Webster 1828 entries: ${w1828.c.toLocaleString()}`);
-  } catch { /* table may not exist */ }
+  console.log("\nDone!");
+  const allDicts = db.prepare("SELECT id, name, entry_count FROM dictionaries ORDER BY year").all() as { id: string; name: string; entry_count: number }[];
+  for (const d of allDicts) {
+    console.log(`  ${d.name}: ${d.entry_count.toLocaleString()} entries`);
+  }
 
   try {
-    const blacks = db.prepare("SELECT COUNT(*) as c FROM blacks_law").get() as { c: number };
-    console.log(`  Black's Law entries: ${blacks.c.toLocaleString()}`);
-  } catch { /* table may not exist */ }
+    const freq = db.prepare("SELECT COUNT(*) as c FROM word_frequency").get() as { c: number };
+    console.log(`  Word Frequency: ${freq.c.toLocaleString()} entries`);
+  } catch { /* not available */ }
 
   console.log(`  Database: ${DB_PATH}`);
-
   db.close();
 }
 

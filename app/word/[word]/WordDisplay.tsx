@@ -34,7 +34,8 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           word={result.word}
           phonetic={result.phonetic}
           modernMeaning={result.modern_meaning}
-          pos={result.strata[0]?.language_family}
+          pos={result.definitions[0]?.pos}
+          frequency={result.frequency}
         />
 
         {/* Multi-Source Definitions */}

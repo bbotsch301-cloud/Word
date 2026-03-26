@@ -8,6 +8,9 @@ const SOURCE_BORDER_COLORS: Record<string, string> = {
   webster1828: "#b8885a",
   webster1913: "#7a4818",
   blacks_law: "#8b4040",
+  hobson_jobson: "#c4956a",
+  vulgar_tongue: "#6b9b6b",
+  bouvier: "#7c5a40",
 };
 
 const SOURCE_BG_CLASSES: Record<string, string> = {
@@ -15,6 +18,9 @@ const SOURCE_BG_CLASSES: Record<string, string> = {
   webster1828: "bg-gradient-to-b from-[#1a1408] to-transparent",
   webster1913: "bg-stratum-1/50",
   blacks_law: "bg-[#120808]/50",
+  hobson_jobson: "bg-[#14100a]/50",
+  vulgar_tongue: "bg-[#0a100a]/50",
+  bouvier: "bg-[#100c08]/50",
 };
 
 interface DefinitionTimelineProps {
