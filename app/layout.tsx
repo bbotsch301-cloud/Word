@@ -5,6 +5,9 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { WordListProvider } from "@/components/WordListProvider";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
+import { websiteJsonLd } from "@/lib/json-ld";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lexica.app";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,13 +31,29 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "LEXICA — Multi-Source English Dictionary",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "LEXICA — Multi-Source English Dictionary",
+    template: "%s — LEXICA",
+  },
   description:
-    "Search 800K+ words across 7 historical dictionaries. Definitions, etymology, word frequency, and more.",
+    "Search 800K+ words across 27+ historical and modern dictionaries. Definitions, etymology, pronunciation, word frequency, and more.",
   openGraph: {
+    type: "website",
+    siteName: "LEXICA",
     title: "LEXICA — Multi-Source English Dictionary",
-    description:
-      "Search 800K+ words across 7 historical dictionaries.",
+    description: "Search 800K+ words across 27+ historical and modern dictionaries.",
+    images: [{ url: "/opengraph.jpg", width: 1200, height: 630, alt: "LEXICA" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LEXICA — Multi-Source English Dictionary",
+    description: "Search 800K+ words across 27+ historical and modern dictionaries.",
+    images: ["/opengraph.jpg"],
+  },
+  manifest: "/site.webmanifest",
+  alternates: {
+    canonical: "/",
   },
 };
 
@@ -46,6 +65,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-bg text-text-primary min-h-screen">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+        />
         <ThemeProvider>
           <AuthProvider>
             <WordListProvider>

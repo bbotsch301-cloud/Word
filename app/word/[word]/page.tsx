@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { excavateWord } from "@/lib/excavate";
+import { definedTermJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import WordDisplay from "./WordDisplay";
 import Link from "next/link";
 
@@ -9,9 +10,37 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const word = decodeURIComponent(params.word);
+
+  let description = `Definition, etymology, and history of "${word}" across 27+ dictionaries.`;
+  try {
+    const result = await excavateWord(word.toLowerCase());
+    const firstDef = result?.definitions?.[0]?.definition;
+    if (firstDef) {
+      const clean = firstDef.replace(/\s+/g, " ").trim();
+      description = clean.length > 155
+        ? `${word}: ${clean.slice(0, 150)}...`
+        : `${word}: ${clean}`;
+    }
+  } catch {
+    // Use default description
+  }
+
   return {
-    title: `${word} — LEXICA`,
-    description: `Definition, etymology, and history of "${word}" from 7 dictionaries.`,
+    title: word,
+    description,
+    openGraph: {
+      title: `${word} — LEXICA`,
+      description,
+      type: "article",
+    },
+    twitter: {
+      card: "summary",
+      title: `${word} — LEXICA`,
+      description,
+    },
+    alternates: {
+      canonical: `/word/${encodeURIComponent(word)}`,
+    },
   };
 }
 
@@ -37,7 +66,26 @@ export default async function WordPage({ params }: PageProps) {
 
   try {
     const result = await excavateWord(word.toLowerCase());
-    return <WordDisplay result={result} />;
+
+    const jsonLd = definedTermJsonLd(result);
+    const breadcrumbs = breadcrumbJsonLd([
+      { name: "Home", href: "/" },
+      { name: word, href: `/word/${encodeURIComponent(word)}` },
+    ]);
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+        />
+        <WordDisplay result={result} />
+      </>
+    );
   } catch {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-6">

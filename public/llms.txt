@@ -1,0 +1,43 @@
+# LEXICA
+> A multi-source English dictionary with 800,000+ words from 27+ historical and modern sources.
+
+## What This Site Contains
+- Word definitions from 7+ dictionaries spanning centuries: Wiktionary (modern), Webster's 1828, Webster's 1913, Black's Law Dictionary, Bouvier's Law, GCIDE, Nuttall's, 1811 Vulgar Tongue, Hobson-Jobson, and more
+- Etymology chains tracing words through Latin, Greek, French, Old English, Arabic, Sanskrit, and dozens of other languages
+- IPA pronunciations from the CMU Pronouncing Dictionary (134K+ entries)
+- Word frequency data from Google Books corpus and SUBTLEX
+- First recorded usage dates for thousands of words
+- Thesaurus data from Moby Thesaurus, WordNet, and Roget's Thesaurus
+- CEFR difficulty levels (A1–C2) for language learners
+- Morphological analysis: prefixes, roots, and suffixes
+- Biblical reference data from Strong's Concordance, Easton's, Smith's, Hitchcock's, Nave's Topical Index, and BDB Hebrew Lexicon
+- Word Spells: phonetic homophones, anagrams, sound chains, etymology divergence timelines, and "lost distinctions" between merged words
+- Cognate data showing related words across Indo-European languages
+- N-gram historical usage trends by decade
+
+## Key URLs
+- /word/{word} — Full word entry with multi-source definitions, etymology strata, pronunciation, frequency, thesaurus, and more
+- /search — Advanced search with filters for origin language, century, part of speech, CEFR level, and wildcard patterns
+- /spells — Word Spells: discover homophones, anagrams, sound chains, and hidden etymological connections
+- /spells/{word} — Spell analysis for a specific word
+- /dictionaries — Browse individual dictionary sources
+- /dictionaries/{id} — Browse entries within a specific dictionary
+- /explore — Language exploration hub with timelines and family trees
+- /explore/timeline — Trace English vocabulary evolution by century
+- /explore/families — Explore how English borrows from Latin, Greek, French, Germanic, and other language families
+- /compare — Side-by-side word comparison tool
+
+## Content Structure
+Each word page (/word/{word}) contains:
+1. Multi-source definitions ordered chronologically (oldest to newest)
+2. Etymology strata: a layered timeline showing how the word evolved through languages
+3. IPA pronunciation with stress patterns
+4. Word frequency rank and Zipf score
+5. First recorded use date
+6. CEFR difficulty level
+7. Morphological breakdown (prefix + root + suffix)
+8. Thesaurus: synonyms, antonyms, hypernyms, hyponyms
+9. Related word constellation (semantic neighbors)
+10. Hidden connections: doublets, cognates, false friends
+11. Historical usage trends (n-gram chart)
+12. Cross-references to biblical, legal, and encyclopedic entries where applicable

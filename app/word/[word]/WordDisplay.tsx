@@ -223,7 +223,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         </div>
 
         <p className="text-lg text-text-secondary mt-4 leading-relaxed max-w-3xl">
-          {result.modern_meaning}
+          <dfn className="not-italic font-normal">{result.modern_meaning}</dfn>
         </p>
       </motion.section>
 
