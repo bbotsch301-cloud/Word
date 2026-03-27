@@ -98,7 +98,15 @@
       "Bash(cp /tmp/strongs/hebrew/strongs-hebrew-dictionary.js /home/runner/workspace/data/raw/)",
       "Bash(cp /tmp/strongs/greek/strongs-greek-dictionary.js /home/runner/workspace/data/raw/)",
       "Bash(wc:*)",
-      "Bash(pkill -f \"next start\")"
+      "Bash(pkill -f \"next start\")",
+      "Bash(pkill -f 'next start')",
+      "Bash(for word:*)",
+      "Bash(do echo:*)",
+      "Bash(grep -c \"bg:\" /home/runner/workspace/.next/static/css/*.css)",
+      "Bash(grep \"FDFBF7\\\\|--bg\\\\|--accent\" /home/runner/workspace/.next/static/css/*.css)",
+      "Bash(pkill -9 -f \"next\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(pkill -f 'next dev')"
     ]
   }
 }

@@ -17,7 +17,7 @@ const FEATURED_WORDS = [
 
 const STATS = [
   { value: "1M+", label: "Words" },
-  { value: "22", label: "Sources" },
+  { value: "15", label: "Sources" },
   { value: "1811\u20132024", label: "Spanning Centuries" },
 ];
 
@@ -63,7 +63,7 @@ export default function Home() {
             </h1>
             <p className="font-serif text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
               Every word has a story. Trace definitions, etymologies, and meaning shifts
-              across twenty-two historical, legal, biblical, and linguistic sources.
+              across fifteen historical, legal, biblical, and linguistic sources.
             </p>
           </motion.div>
 
@@ -123,7 +123,7 @@ export default function Home() {
                   ),
                 },
                 {
-                  title: "22 Sources",
+                  title: "15 Sources",
                   desc: "Compare definitions across centuries from dictionaries, thesauri, biblical concordances, and linguistic databases.",
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -235,7 +235,7 @@ export default function Home() {
               { name: "Strong\u2019s Concordance", year: "1890", desc: "Hebrew & Greek roots" },
               { name: "Easton\u2019s Bible Dict.", year: "1897", desc: "Biblical terms & places" },
               { name: "Hitchcock\u2019s Names", year: "1869", desc: "Bible name meanings" },
-              { name: "Nave\u2019s Topical Bible", year: "1896", desc: "5,000+ biblical topics" },
+              { name: "Nave\u2019s Topical Bible", year: "1896", desc: "7,000+ biblical topics" },
               // Historical
               { name: "Hobson-Jobson", year: "1886", desc: "Anglo-Indian words" },
               { name: "1811 Vulgar Tongue", year: "1811", desc: "Georgian era slang" },
