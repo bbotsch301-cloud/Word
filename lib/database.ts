@@ -365,3 +365,90 @@ export function lookupEtymologyLinks(word: string, limit: number = 10): Etymolog
     return [];
   }
 }
+
+// === Smith's Bible Dictionary ===
+export function lookupSmiths(word: string): { word: string; definition: string } | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM smiths WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === IPA Dict ===
+export function lookupIpaDict(word: string): string | undefined {
+  const db = getDatabase();
+  try {
+    const row = db.prepare("SELECT ipa FROM ipa_dict WHERE word = ?").get(word.toLowerCase()) as { ipa: string } | undefined;
+    return row?.ipa;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Oxford 5000 / CEFR ===
+export function lookupCefrLevel(word: string): string | undefined {
+  const db = getDatabase();
+  try {
+    // Try Oxford 5000 first (more curated), then CEFR dataset
+    const oxford = db.prepare("SELECT cefr_level FROM oxford_5000 WHERE word = ?").get(word.toLowerCase()) as { cefr_level: string } | undefined;
+    if (oxford?.cefr_level) return oxford.cefr_level;
+    const cefr = db.prepare("SELECT cefr_level FROM cefr_words WHERE word = ?").get(word.toLowerCase()) as { cefr_level: string } | undefined;
+    return cefr?.cefr_level || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === MorphoLex ===
+export interface MorphoLexRow {
+  word: string;
+  morphemes: string;
+  prefix: string;
+  root: string;
+  suffix: string;
+  morpheme_count: number;
+}
+
+export function lookupMorphology(word: string): MorphoLexRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM morpholex WHERE word = ?").get(word.toLowerCase()) as MorphoLexRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Google 10K Frequency ===
+export function lookupGoogleFrequency(word: string): number | undefined {
+  const db = getDatabase();
+  try {
+    const row = db.prepare("SELECT rank FROM google_frequency WHERE word = ?").get(word.toLowerCase()) as { rank: number } | undefined;
+    return row?.rank;
+  } catch {
+    return undefined;
+  }
+}
+
+// === BDB Hebrew ===
+export interface BDBRow {
+  strongs_id: string;
+  hebrew: string;
+  transliteration: string;
+  definition: string;
+  usage_notes: string;
+}
+
+export function lookupBDB(strongsIds: string[]): BDBRow[] {
+  if (strongsIds.length === 0) return [];
+  const db = getDatabase();
+  try {
+    const placeholders = strongsIds.map(() => "?").join(",");
+    return db.prepare(
+      `SELECT * FROM bdb_hebrew WHERE strongs_id IN (${placeholders})`
+    ).all(...strongsIds) as BDBRow[];
+  } catch {
+    return [];
+  }
+}

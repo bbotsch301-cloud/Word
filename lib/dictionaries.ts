@@ -41,6 +41,11 @@ const DICT_CONFIG: Record<string, { table: string; wordCol: string; defCol: stri
   hitchcocks: { table: "hitchcocks", wordCol: "name", defCol: "meaning" },
   naves: { table: "naves", wordCol: "topic", defCol: "subtopics" },
   gcide: { table: "gcide", wordCol: "word", defCol: "definition", posCol: "pos", etymCol: "etymology" },
+  smiths: { table: "smiths", wordCol: "word", defCol: "definition" },
+  scowl: { table: "scowl_words", wordCol: "word", defCol: "dialect" },
+  ipadict: { table: "ipa_dict", wordCol: "word", defCol: "ipa" },
+  oxford5000: { table: "oxford_5000", wordCol: "word", defCol: "cefr_level" },
+  morpholex: { table: "morpholex", wordCol: "word", defCol: "morphemes" },
 };
 
 export function getAllDictionaries(): DictionaryMeta[] {

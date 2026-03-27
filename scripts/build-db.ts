@@ -17,6 +17,16 @@ import { processHitchcocks } from "./process-hitchcocks";
 import { processNaves } from "./process-naves";
 import { processGcide } from "./process-gcide";
 import { processAWL } from "./process-awl";
+import { processBouvier } from "./process-bouvier";
+import { processStrongs } from "./process-strongs";
+import { processScowl } from "./process-scowl";
+import { processSmiths } from "./process-smiths";
+import { processBDB } from "./process-bdb";
+import { processIpaDict } from "./process-ipadict";
+import { processOxford5000 } from "./process-oxford5000";
+import { processCefr } from "./process-cefr";
+import { processMorphoLex } from "./process-morpholex";
+import { processGoogleFreq } from "./process-google-freq";
 
 const DB_PATH = path.join(__dirname, "..", "data", "lexica.db");
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
@@ -93,9 +103,22 @@ async function main() {
     { name: "Easton's Bible Dictionary", file: "bible-dict-index.json", processor: processEastons },
     { name: "Hitchcock's Bible Names", file: "hitchcocks-names.csv", processor: processHitchcocks },
     { name: "Nave's Topical Bible", file: "naves-topical.csv", processor: processNaves },
+    // Existing sources from prior setup
+    { name: "Bouvier's Law Dictionary", file: "bouvier_a.txt", processor: (db, p) => processBouvier(db, path.dirname(p)), isDir: false },
+    { name: "Strong's Concordance", file: "strongs-hebrew-dictionary.js", processor: (db, p) => processStrongs(db, path.dirname(p)), isDir: false },
+    // Phase 3b: More Biblical
+    { name: "Smith's Bible Dictionary", file: "bible-dict-index.json", processor: processSmiths },
+    { name: "Brown-Driver-Briggs Hebrew", file: "bdb-hebrew", processor: processBDB, isDir: true },
     // Phase 4: Enrichment
     { name: "GCIDE", file: "gcide-0.53", processor: processGcide, isDir: true },
     { name: "Academic Word List", file: "academic-word-list.json", processor: processAWL },
+    { name: "SCOWL Word Lists", file: "scowl-2020.12.07", processor: processScowl, isDir: true },
+    // Phase 5: New enrichment
+    { name: "IPA Dict", file: "ipa-dict-en.txt", processor: processIpaDict },
+    { name: "Oxford 5000", file: "oxford-5000.json", processor: processOxford5000 },
+    { name: "CEFR Word Levels", file: "cefr-words.csv", processor: processCefr },
+    { name: "MorphoLex", file: "morpholex-en.xlsx", processor: processMorphoLex },
+    { name: "Google 10K Frequency", file: "google-10000-english.txt", processor: processGoogleFreq },
   ];
 
   // Process each source
@@ -142,8 +165,17 @@ async function main() {
     { id: "eastons", name: "Easton's Bible Dictionary", year: 1897, desc: "Matthew George Easton's comprehensive dictionary of biblical terms, places, names, and topics." },
     { id: "hitchcocks", name: "Hitchcock's Bible Names", year: 1869, desc: "Roswell D. Hitchcock's dictionary of Bible names with their meanings and etymologies." },
     { id: "naves", name: "Nave's Topical Bible", year: 1896, desc: "Orville J. Nave's topical index and concordance of biblical topics with scripture references." },
+    // Existing
+    { id: "bouvier", name: "Bouvier's Law Dictionary", year: 1856, desc: "John Bouvier's comprehensive American legal dictionary — a foundational reference for early American law." },
+    { id: "strongs", name: "Strong's Concordance", year: 1890, desc: "James Strong's exhaustive concordance of the Bible with Hebrew and Greek lexicon entries." },
+    { id: "smiths", name: "Smith's Bible Dictionary", year: 1863, desc: "William Smith's comprehensive dictionary of the Bible covering antiquities, biography, geography, and natural history." },
+    { id: "bdb", name: "Brown-Driver-Briggs", year: 1906, desc: "The standard Hebrew and Aramaic lexicon of the Old Testament, cross-referenced with Strong's numbers." },
     // Phase 4: Enrichment
     { id: "gcide", name: "GCIDE", year: 2024, desc: "The GNU Collaborative International Dictionary of English — an expanded, community-maintained edition of Webster's 1913." },
+    { id: "scowl", name: "SCOWL Word Lists", year: 2020, desc: "Spell Checker Oriented Word Lists — comprehensive English word lists with dialect and frequency classification." },
+    { id: "ipadict", name: "IPA Dictionary", year: 2023, desc: "Open-source IPA pronunciation dictionary providing phonetic transcriptions for English words." },
+    { id: "oxford5000", name: "Oxford 5000", year: 2020, desc: "The 5,000 most important English words for learners, tagged with CEFR proficiency levels." },
+    { id: "morpholex", name: "MorphoLex", year: 2020, desc: "Morphological database decomposing 70,000 English words into their prefixes, roots, and suffixes." },
   ];
 
   const insertDict = db.prepare("INSERT OR REPLACE INTO dictionaries (id, name, year, description, entry_count) VALUES (?, ?, ?, ?, ?)");
@@ -162,6 +194,14 @@ async function main() {
     hitchcocks: "SELECT COUNT(*) as c FROM hitchcocks",
     naves: "SELECT COUNT(*) as c FROM naves",
     gcide: "SELECT COUNT(DISTINCT word) as c FROM gcide",
+    bouvier: "SELECT COUNT(*) as c FROM bouvier",
+    strongs: "SELECT COUNT(*) as c FROM strongs",
+    smiths: "SELECT COUNT(*) as c FROM smiths",
+    bdb: "SELECT COUNT(*) as c FROM bdb_hebrew",
+    scowl: "SELECT COUNT(*) as c FROM scowl_words",
+    ipadict: "SELECT COUNT(*) as c FROM ipa_dict",
+    oxford5000: "SELECT COUNT(*) as c FROM oxford_5000",
+    morpholex: "SELECT COUNT(*) as c FROM morpholex",
   };
 
   for (const meta of dictMeta) {

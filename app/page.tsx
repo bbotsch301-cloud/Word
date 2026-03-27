@@ -17,7 +17,7 @@ const FEATURED_WORDS = [
 
 const STATS = [
   { value: "1M+", label: "Words" },
-  { value: "15", label: "Sources" },
+  { value: "24", label: "Sources" },
   { value: "1811\u20132024", label: "Spanning Centuries" },
 ];
 
@@ -63,7 +63,7 @@ export default function Home() {
             </h1>
             <p className="font-serif text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
               Every word has a story. Trace definitions, etymologies, and meaning shifts
-              across fifteen historical, legal, biblical, and linguistic sources.
+              across twenty-four historical, legal, biblical, and linguistic sources.
             </p>
           </motion.div>
 
@@ -123,7 +123,7 @@ export default function Home() {
                   ),
                 },
                 {
-                  title: "15 Sources",
+                  title: "24 Sources",
                   desc: "Compare definitions across centuries from dictionaries, thesauri, biblical concordances, and linguistic databases.",
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -241,6 +241,15 @@ export default function Home() {
               { name: "1811 Vulgar Tongue", year: "1811", desc: "Georgian era slang" },
               // Linguistic
               { name: "CMU Pronouncing", year: "2015", desc: "134K word pronunciations" },
+              // New sources
+              { name: "Smith\u2019s Bible Dict.", year: "1863", desc: "Biblical encyclopedia" },
+              { name: "Bouvier\u2019s Law", year: "1856", desc: "American legal dictionary" },
+              { name: "Brown-Driver-Briggs", year: "1906", desc: "Hebrew-Aramaic lexicon" },
+              { name: "IPA Dictionary", year: "2023", desc: "Phonetic transcriptions" },
+              { name: "Oxford 5000", year: "2020", desc: "CEFR-tagged vocabulary" },
+              { name: "MorphoLex", year: "2020", desc: "Word structure analysis" },
+              { name: "SCOWL", year: "2020", desc: "Dialect word lists" },
+              { name: "Google 10K", year: "2012", desc: "Corpus frequency data" },
             ].map((src) => (
               <Link
                 key={src.name}

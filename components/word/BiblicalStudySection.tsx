@@ -24,6 +24,21 @@ export default function BiblicalStudySection({ data }: { data: BiblicalStudyData
         </div>
       )}
 
+      {/* Smith's Bible Dictionary */}
+      {data.smiths && (
+        <div className="bg-surface border border-border rounded-lg p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Badge variant="accent">Smith&apos;s</Badge>
+            <span className="text-[10px] text-text-muted font-mono">1863</span>
+          </div>
+          <p className="text-sm text-text-secondary leading-relaxed">
+            {data.smiths.definition.length > 500
+              ? data.smiths.definition.slice(0, 500) + "..."
+              : data.smiths.definition}
+          </p>
+        </div>
+      )}
+
       {/* Hitchcock's Bible Names */}
       {data.hitchcocks && (
         <div className="bg-surface border border-border rounded-lg p-5">

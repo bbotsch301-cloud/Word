@@ -1,8 +1,9 @@
-import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink } from "@/types/lexica";
+import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink, MorphologyData } from "@/types/lexica";
 import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs,
   lookupMobyThesaurus, lookupWordNet, getWordNetSynonyms, getWordNetRelations, lookupRogets,
-  lookupPronunciation, lookupEastons, lookupHitchcocks, lookupNaves, lookupGcide,
-  lookupScowl, lookupAcademicWord, lookupEtymologyLinks } from "./database";
+  lookupPronunciation, lookupEastons, lookupSmiths, lookupHitchcocks, lookupNaves, lookupGcide,
+  lookupScowl, lookupAcademicWord, lookupEtymologyLinks,
+  lookupIpaDict, lookupCefrLevel, lookupMorphology, lookupGoogleFrequency, lookupBDB } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
@@ -220,9 +221,11 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   // === Phase 2: Pronunciation ===
   let pronunciation: PronunciationData | undefined;
   const cmuEntries = lookupPronunciation(word);
-  if (ipa || cmuEntries.length > 0) {
+  const ipaDictEntry = lookupIpaDict(word);
+  const bestIpa = ipa || ipaDictEntry || "";
+  if (bestIpa || cmuEntries.length > 0) {
     pronunciation = {
-      ipa,
+      ipa: bestIpa,
       arpabet: cmuEntries.length > 0 ? cmuEntries.map(c => c.phonemes) : undefined,
     };
   }
@@ -230,12 +233,14 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   // === Phase 3: Biblical ===
   let biblical: BiblicalStudyData | undefined;
   const eastons = lookupEastons(word);
+  const smiths = lookupSmiths(word);
   const hitchcocks = lookupHitchcocks(word);
   const navesEntries = lookupNaves(word);
 
-  if (eastons || hitchcocks || navesEntries.length > 0) {
+  if (eastons || smiths || hitchcocks || navesEntries.length > 0) {
     biblical = {};
     if (eastons) biblical.eastons = { definition: eastons.definition };
+    if (smiths) biblical.smiths = { definition: smiths.definition };
     if (hitchcocks) biblical.hitchcocks = { meaning: hitchcocks.meaning };
     if (navesEntries.length > 0) {
       biblical.naves = navesEntries.map(n => ({
@@ -246,14 +251,12 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     }
   }
 
-  // Also add Easton's to definitions if available
+  // Also add biblical dicts to definitions
   if (eastons) {
-    definitions.push({
-      source: "eastons",
-      label: "Easton's Bible Dict.",
-      year: 1897,
-      definition: eastons.definition,
-    });
+    definitions.push({ source: "eastons", label: "Easton's Bible Dict.", year: 1897, definition: eastons.definition });
+  }
+  if (smiths) {
+    definitions.push({ source: "smiths", label: "Smith's Bible Dict.", year: 1863, definition: smiths.definition });
   }
 
   // === Phase 4: Enrichment ===
@@ -284,9 +287,19 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     ? etymLinks.map(l => ({ parentWord: l.parent_word, parentLang: l.parent_lang, relationType: l.relation_type }))
     : undefined;
 
+  // === Phase 5: New enrichment ===
+  const cefrLevel = lookupCefrLevel(word) || undefined;
+
+  const morphoRow = lookupMorphology(word);
+  const morphology: MorphologyData | undefined = morphoRow && morphoRow.morphemes
+    ? { morphemes: morphoRow.morphemes, prefix: morphoRow.prefix, root: morphoRow.root, suffix: morphoRow.suffix, morphemeCount: morphoRow.morpheme_count }
+    : undefined;
+
+  const googleRank = lookupGoogleFrequency(word) || undefined;
+
   return {
     word,
-    phonetic: ipa,
+    phonetic: bestIpa || ipa,
     modern_meaning: definition,
     strata: strata.length > 0 ? strata : [{
       era: "Modern English",
@@ -309,7 +322,10 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     webster1828_etymology: webster1828?.etymology || undefined,
     frequency: getWordFrequency(word) || undefined,
     isAcademic,
+    cefrLevel,
+    morphology,
     dialect,
     etymologyLinks,
+    googleRank,
   };
 }
