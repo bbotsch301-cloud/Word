@@ -84,7 +84,7 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full h-11 px-4 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
+              className="w-full h-11 px-4 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
               placeholder="you@example.com"
             />
           </div>
@@ -97,7 +97,7 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full h-11 px-4 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
+              className="w-full h-11 px-4 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
               placeholder="At least 8 characters"
             />
           </div>

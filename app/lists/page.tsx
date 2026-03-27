@@ -79,7 +79,10 @@ export default function ListsPage() {
           </h2>
 
           {bookmarks.length === 0 ? (
-            <div className="bg-surface border border-border rounded-xl p-8 text-center">
+            <div className="bg-surface border border-border rounded-xl p-10 text-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-text-muted/40 mb-3">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
               <p className="text-text-muted mb-2">No bookmarked words yet.</p>
               <p className="text-sm text-text-muted">
                 Click the bookmark icon on any word page to save it here.
@@ -128,7 +131,7 @@ export default function ListsPage() {
               onChange={(e) => setNewListName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
               placeholder="New list name..."
-              className="flex-1 bg-surface border border-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/60 transition-colors"
+              className="flex-1 bg-surface border border-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
             />
             <button
               onClick={handleCreateList}
@@ -140,7 +143,10 @@ export default function ListsPage() {
           </div>
 
           {lists.length === 0 ? (
-            <div className="bg-surface border border-border rounded-xl p-8 text-center">
+            <div className="bg-surface border border-border rounded-xl p-10 text-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-text-muted/40 mb-3">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
               <p className="text-text-muted mb-2">No custom lists yet.</p>
               <p className="text-sm text-text-muted">Create one above, then add words from any word page using the list menu.</p>
             </div>

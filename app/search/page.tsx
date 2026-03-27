@@ -91,7 +91,7 @@ export default function SearchPage() {
               value={pattern}
               onChange={e => setPattern(e.target.value)}
               placeholder="e.g. *ology, un*able, ?at"
-              className="w-full h-10 px-3 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
+              className="w-full h-10 px-3 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
             />
           </div>
 
@@ -165,7 +165,7 @@ export default function SearchPage() {
             <button
               type="submit"
               disabled={loading}
-              className="h-10 px-6 rounded-lg bg-gradient-to-r from-accent to-accent-hover text-white font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-50"
+              className="h-10 px-6 rounded-lg bg-gradient-to-r from-accent to-accent-hover text-white font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Searching..." : "Search"}
             </button>
@@ -198,7 +198,10 @@ export default function SearchPage() {
         )}
 
         {!loading && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
-          <div className="bg-surface border border-border rounded-xl p-8 text-center">
+          <div className="bg-surface border border-border rounded-xl p-10 text-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-text-muted/40 mb-3">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
             <p className="text-text-muted mb-2">No results found.</p>
             <p className="text-sm text-text-muted">
               Try a different pattern. Use <code className="font-mono bg-bg px-1 rounded">*</code> for any characters

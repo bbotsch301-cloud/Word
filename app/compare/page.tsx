@@ -68,13 +68,13 @@ function CompareColumn({ result }: { result: LexicaResult }) {
           <h3 className="text-xs uppercase tracking-wider text-text-muted mb-1">Word Structure</h3>
           <div className="flex gap-1 text-sm">
             {result.morphology.prefix && (
-              <span className="bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded text-xs">{result.morphology.prefix}</span>
+              <span className="bg-accent-secondary/10 text-accent-secondary px-2 py-0.5 rounded text-xs">{result.morphology.prefix}</span>
             )}
             {result.morphology.root && (
               <span className="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">{result.morphology.root}</span>
             )}
             {result.morphology.suffix && (
-              <span className="bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded text-xs">{result.morphology.suffix}</span>
+              <span className="bg-accent/15 text-accent px-2 py-0.5 rounded text-xs">{result.morphology.suffix}</span>
             )}
           </div>
         </div>

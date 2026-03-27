@@ -49,7 +49,7 @@ export default function CollapsibleSection({
       </button>
 
       {!isOpen && preview && (
-        <p className="text-sm text-text-muted mt-1 truncate">{preview}</p>
+        <p className="text-sm text-text-muted mt-1 line-clamp-2">{preview}</p>
       )}
 
       <AnimatePresence initial={false}>

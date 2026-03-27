@@ -161,7 +161,7 @@ export default function Header() {
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+            className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface active:scale-95 transition-all"
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
           >
@@ -204,7 +204,7 @@ export default function Header() {
       )}
 
       {/* Gradient bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
     </header>
   );
 }
