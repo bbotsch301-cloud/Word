@@ -112,6 +112,50 @@ const SOURCES: Source[] = [
     filename: "academic-word-list.json",
     optional: true,
   },
+  // Phase 5: SCOWL
+  {
+    name: "SCOWL Word Lists",
+    url: "https://downloads.sourceforge.net/project/wordlist/SCOWL/2020.12.07/scowl-2020.12.07.tar.gz",
+    filename: "scowl-2020.12.07.tar.gz",
+    extract: "tar.gz",
+    extractDir: "scowl-2020.12.07",
+    optional: true,
+  },
+  // Phase 5: IPA Dict
+  {
+    name: "IPA Dictionary (English)",
+    url: "https://raw.githubusercontent.com/open-dict-data/ipa-dict/master/data/en_US.txt",
+    filename: "ipa-dict-en.txt",
+    optional: true,
+  },
+  // Phase 5: Oxford 5000
+  {
+    name: "Oxford 5000 Word List",
+    url: "https://raw.githubusercontent.com/tyypgzl/Oxford-5000-words/main/full-word.json",
+    filename: "oxford-5000.json",
+    optional: true,
+  },
+  // Phase 5: CEFR
+  {
+    name: "CEFR Word Levels Dataset",
+    url: "https://raw.githubusercontent.com/Maximax67/Words-CEFR-Dataset/main/csv/words.csv",
+    filename: "cefr-words.csv",
+    optional: true,
+  },
+  // Phase 5: MorphoLex (Excel file)
+  {
+    name: "MorphoLex English",
+    url: "https://raw.githubusercontent.com/hugomailhot/MorphoLex-en/master/MorphoLEX_en.xlsx",
+    filename: "morpholex-en.xlsx",
+    optional: true,
+  },
+  // Phase 5: Google 10K
+  {
+    name: "Google 10,000 Common Words",
+    url: "https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english.txt",
+    filename: "google-10000-english.txt",
+    optional: true,
+  },
 ];
 
 function download(url: string, dest: string): Promise<void> {

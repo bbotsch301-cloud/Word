@@ -75,8 +75,18 @@ export interface PronunciationData {
 // Biblical study types
 export interface BiblicalStudyData {
   eastons?: { definition: string };
+  smiths?: { definition: string };
   hitchcocks?: { meaning: string };
   naves?: { topic: string; subtopics: string[]; references: string[] }[];
+}
+
+// Morphology types
+export interface MorphologyData {
+  morphemes: string;
+  prefix: string;
+  root: string;
+  suffix: string;
+  morphemeCount: number;
 }
 
 // Etymology link types
@@ -103,6 +113,9 @@ export interface LexicaResult {
   webster1828_etymology?: string;
   frequency?: WordFrequency;
   isAcademic?: { sublist: number };
+  cefrLevel?: string;
+  morphology?: MorphologyData;
   dialect?: string[];
   etymologyLinks?: EtymologyLink[];
+  googleRank?: number;
 }

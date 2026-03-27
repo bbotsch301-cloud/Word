@@ -13,6 +13,7 @@ import DefinitionTimeline from "@/components/word/DefinitionTimeline";
 import DefinitionCard from "@/components/word/DefinitionCard";
 import ThesaurusSection from "@/components/word/ThesaurusSection";
 import BiblicalStudySection from "@/components/word/BiblicalStudySection";
+import MorphologySection from "@/components/word/MorphologySection";
 import Link from "next/link";
 
 const fadeUp = {
@@ -64,7 +65,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
     result.thesaurus.rogetCategories.length > 0
   );
   const hasBiblical = result.biblical && (
-    result.biblical.eastons || result.biblical.hitchcocks || result.biblical.naves
+    result.biblical.eastons || result.biblical.smiths || result.biblical.hitchcocks || result.biblical.naves
   );
 
   // Build available sections for nav
@@ -74,6 +75,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural" });
   if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828" });
   if (sortedDefs.length > 0) sections.push({ id: "definitions", label: "Definitions", shortLabel: "Defs" });
+  if (result.morphology) sections.push({ id: "morphology", label: "Word Structure", shortLabel: "Morph." });
   if (hasThesaurus) sections.push({ id: "thesaurus", label: "Thesaurus", shortLabel: "Thes." });
   if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible" });
   if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related" });
@@ -133,6 +135,9 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             <Badge variant="muted">
               {result.frequency.label} &middot; #{result.frequency.rank.toLocaleString()}
             </Badge>
+          )}
+          {result.cefrLevel && (
+            <Badge variant="accent">CEFR {result.cefrLevel}</Badge>
           )}
           {result.isAcademic && (
             <Badge variant="accent">Academic (List {result.isAcademic.sublist})</Badge>
@@ -247,6 +252,17 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </CollapsibleSection>
         )}
 
+        {/* Word Structure / Morphology */}
+        {result.morphology && (
+          <CollapsibleSection
+            id="morphology"
+            title="Word Structure"
+            preview={`${result.morphology.morphemeCount} morphemes: ${result.morphology.morphemes}`}
+          >
+            <MorphologySection data={result.morphology} />
+          </CollapsibleSection>
+        )}
+
         {/* Definitions Across Time */}
         {sortedDefs.length > 0 && (
           <CollapsibleSection
@@ -279,6 +295,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             title="Biblical Study"
             preview={[
               result.biblical.eastons ? "Easton's" : "",
+              result.biblical.smiths ? "Smith's" : "",
               result.biblical.hitchcocks ? "Hitchcock's" : "",
               result.biblical.naves?.length ? "Nave's" : "",
             ].filter(Boolean).join(" · ")}

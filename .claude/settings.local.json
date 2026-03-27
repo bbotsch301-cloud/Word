@@ -106,7 +106,11 @@
       "Bash(grep \"FDFBF7\\\\|--bg\\\\|--accent\" /home/runner/workspace/.next/static/css/*.css)",
       "Bash(pkill -9 -f \"next\")",
       "Bash(pkill -f \"next dev\")",
-      "Bash(pkill -f 'next dev')"
+      "Bash(pkill -f 'next dev')",
+      "Bash(pkill -f next)",
+      "Bash(rm -rf /home/runner/workspace/.next)",
+      "Bash(npm ls:*)",
+      "Bash(do curl:*)"
     ]
   }
 }
