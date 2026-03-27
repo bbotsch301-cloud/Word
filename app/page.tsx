@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import SearchField from "@/components/ui/SearchField";
+import { useWordLists } from "@/components/WordListProvider";
 
 const FEATURED_WORDS = [
   { word: "salary", hook: "From Latin sal \u2014 Roman soldiers were paid in salt" },
@@ -33,6 +34,8 @@ const stagger = {
 
 export default function Home() {
   const [recentWords, setRecentWords] = useState<string[]>([]);
+  const [wordOfTheDay, setWordOfTheDay] = useState<{ word: string; definition: string } | null>(null);
+  const { bookmarks } = useWordLists();
   const router = useRouter();
 
   useEffect(() => {
@@ -40,6 +43,12 @@ export default function Home() {
       const stored = localStorage.getItem("lexica-recent");
       if (stored) setRecentWords(JSON.parse(stored));
     } catch {}
+
+    // Fetch word of the day
+    fetch("/api/word-of-the-day")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setWordOfTheDay(data); })
+      .catch(() => {});
   }, []);
 
   const handleSearch = (value: string) => {
@@ -155,6 +164,66 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* ============ WORD OF THE DAY ============ */}
+      {wordOfTheDay && (
+        <section className="border-t border-border bg-gradient-to-r from-accent/5 via-transparent to-accent/5">
+          <div className="max-w-4xl mx-auto px-6 py-10">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
+              <span className="text-xs uppercase tracking-widest text-accent font-mono mb-2 block">Word of the Day</span>
+              <button
+                onClick={() => handleSearch(wordOfTheDay.word)}
+                className="group"
+              >
+                <h2 className="font-serif text-4xl font-bold text-text-primary group-hover:text-accent transition-colors mb-2">
+                  {wordOfTheDay.word}
+                </h2>
+              </button>
+              <p className="text-text-muted max-w-lg mx-auto text-sm leading-relaxed">
+                {wordOfTheDay.definition.length > 150
+                  ? wordOfTheDay.definition.slice(0, 150) + "..."
+                  : wordOfTheDay.definition}
+              </p>
+              <button
+                onClick={() => handleSearch(wordOfTheDay.word)}
+                className="mt-4 text-sm text-accent hover:text-accent-secondary transition-colors font-medium"
+              >
+                Explore this word &rarr;
+              </button>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ============ BOOKMARKS ============ */}
+      {bookmarks.length > 0 && (
+        <section className="border-t border-border">
+          <div className="max-w-4xl mx-auto px-6 py-10 text-center">
+            <h3 className="font-serif text-lg font-semibold text-text-primary mb-4">Your Bookmarks</h3>
+            <div className="flex flex-wrap justify-center gap-2 mb-3">
+              {bookmarks.slice(0, 12).map((word) => (
+                <button
+                  key={word}
+                  onClick={() => handleSearch(word)}
+                  className="text-sm font-serif text-text-secondary hover:text-accent bg-surface border border-border hover:border-accent/40 rounded-full px-4 py-1.5 transition-all"
+                >
+                  {word}
+                </button>
+              ))}
+            </div>
+            {bookmarks.length > 12 && (
+              <Link href="/lists" className="text-xs text-accent hover:text-accent-secondary transition-colors">
+                View all {bookmarks.length} bookmarks &rarr;
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ============ DISCOVER ============ */}
       <section className="border-t border-border bg-surface/50">

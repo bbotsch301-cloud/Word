@@ -27,6 +27,9 @@ import { processOxford5000 } from "./process-oxford5000";
 import { processCefr } from "./process-cefr";
 import { processMorphoLex } from "./process-morpholex";
 import { processGoogleFreq } from "./process-google-freq";
+import { processNgrams } from "./process-ngrams";
+import { processCognates } from "./process-cognates";
+import { processEtymologyDb } from "./process-etymology-db";
 
 const DB_PATH = path.join(__dirname, "..", "data", "lexica.db");
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
@@ -119,6 +122,15 @@ async function main() {
     { name: "CEFR Word Levels", file: "cefr-words.csv", processor: processCefr },
     { name: "MorphoLex", file: "morpholex-en.xlsx", processor: processMorphoLex },
     { name: "Google 10K Frequency", file: "google-10000-english.txt", processor: processGoogleFreq },
+    // Phase 6: Ngrams (process all available letter files)
+    ...("abcdefghijklmnopqrstuvwxyz".split("").map(letter => ({
+      name: `Google Books Ngram (${letter})`,
+      file: `googlebooks-eng-all-1gram-20120701-${letter}`,
+      processor: processNgrams,
+    }))),
+    // Phase 6: Etymology DB + Cognates
+    { name: "Etymology Database", file: "etymology-db.csv", processor: processEtymologyDb },
+    { name: "Cognates (from Etymology DB)", file: "etymology-db.csv", processor: processCognates },
   ];
 
   // Process each source

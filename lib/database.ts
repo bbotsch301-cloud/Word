@@ -571,3 +571,72 @@ export function lookupBDB(strongsIds: string[]): BDBRow[] {
     return [];
   }
 }
+
+// === Ngram History ===
+export interface NgramRow {
+  word: string;
+  decade: number;
+  frequency: number;
+}
+
+export function lookupNgramHistory(word: string): NgramRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT word, decade, frequency FROM ngram_history WHERE word = ? ORDER BY decade"
+    ).all(word.toLowerCase()) as NgramRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === Cognates ===
+export interface CognateRow {
+  english_word: string;
+  cognate_word: string;
+  cognate_lang: string;
+  cognate_lang_name: string;
+  shared_ancestor: string;
+  ancestor_lang: string;
+}
+
+export function lookupCognates(word: string, limit: number = 30): CognateRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT * FROM cognates WHERE english_word = ? LIMIT ?"
+    ).all(word.toLowerCase(), limit) as CognateRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === Word of the Day ===
+export function getWordOfTheDay(): { word: string; definition: string } | undefined {
+  const db = getDatabase();
+  try {
+    // Deterministic daily selection: hash the date string to pick from rich words
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    let hash = 0;
+    for (let i = 0; i < today.length; i++) {
+      hash = ((hash << 5) - hash + today.charCodeAt(i)) | 0;
+    }
+    hash = Math.abs(hash);
+
+    // Count rich words (have etymology and definition)
+    const countRow = db.prepare(
+      "SELECT COUNT(*) as c FROM words WHERE etymology_text IS NOT NULL AND etymology_text != '' AND definition IS NOT NULL AND definition != '' AND length(definition) > 20"
+    ).get() as { c: number };
+
+    if (countRow.c === 0) return undefined;
+
+    const offset = hash % countRow.c;
+    const row = db.prepare(
+      "SELECT DISTINCT word, definition FROM words WHERE etymology_text IS NOT NULL AND etymology_text != '' AND definition IS NOT NULL AND definition != '' AND length(definition) > 20 LIMIT 1 OFFSET ?"
+    ).get(offset) as { word: string; definition: string } | undefined;
+
+    return row;
+  } catch {
+    return undefined;
+  }
+}

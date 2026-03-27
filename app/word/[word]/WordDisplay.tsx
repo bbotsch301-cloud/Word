@@ -19,6 +19,9 @@ import ConstellationGraph from "@/components/word/ConstellationGraph";
 import EtymologyRiver from "@/components/word/EtymologyRiver";
 import MeaningTimeline from "@/components/word/MeaningTimeline";
 import ConceptGalaxy from "@/components/word/ConceptGalaxy";
+import { NgramChart } from "@/components/word/NgramChart";
+import { CognatesSection } from "@/components/word/CognatesSection";
+import { useWordLists } from "@/components/WordListProvider";
 import Link from "next/link";
 
 const fadeUp = {
@@ -42,6 +45,8 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>("");
   const [etymView, setEtymView] = useState<"chain" | "river">("chain");
+  const { isBookmarked, toggleBookmark } = useWordLists();
+  const bookmarked = isBookmarked(result.word);
 
   useEffect(() => {
     try {
@@ -88,6 +93,8 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible" });
   if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related" });
   if (result.constellation.length >= 4) sections.push({ id: "constellation-graph", label: "Word Constellation", shortLabel: "Map" });
+  if (result.ngramHistory && result.ngramHistory.length >= 2) sections.push({ id: "usage-over-time", label: "Usage Over Time", shortLabel: "Usage" });
+  if (result.cognates && result.cognates.cognates.length > 0) sections.push({ id: "cognates", label: "Cognates", shortLabel: "Cognates" });
 
   // Intersection observer for sticky nav
   useEffect(() => {
@@ -124,9 +131,35 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="font-serif text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
-          {result.word}
-        </h1>
+        <div className="flex items-start gap-4">
+          <h1 className="font-serif text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
+            {result.word}
+          </h1>
+          <div className="flex gap-2 mt-2 shrink-0">
+            <button
+              onClick={() => toggleBookmark(result.word)}
+              className={`p-2 rounded-lg border transition-all ${
+                bookmarked
+                  ? "bg-accent/10 border-accent/40 text-accent"
+                  : "border-border text-text-muted hover:border-accent/40 hover:text-accent"
+              }`}
+              title={bookmarked ? "Remove bookmark" : "Bookmark this word"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
+            <Link
+              href={`/compare?words=${encodeURIComponent(result.word)}`}
+              className="p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
+              title="Compare with another word"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </Link>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3 mt-3 flex-wrap">
           {result.phonetic && (
@@ -405,6 +438,28 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               taxonomy={result.taxonomy}
               connections={result.hiddenConnections?.connections}
             />
+          </CollapsibleSection>
+        )}
+
+        {/* Usage Over Time (Ngrams) */}
+        {result.ngramHistory && result.ngramHistory.length >= 2 && (
+          <CollapsibleSection
+            id="usage-over-time"
+            title="Usage Over Time"
+            preview={`Historical usage from ${result.ngramHistory[0].decade}s to ${result.ngramHistory[result.ngramHistory.length - 1].decade}s`}
+          >
+            <NgramChart data={result.ngramHistory} word={result.word} />
+          </CollapsibleSection>
+        )}
+
+        {/* Cognates Across Languages */}
+        {result.cognates && result.cognates.cognates.length > 0 && (
+          <CollapsibleSection
+            id="cognates"
+            title="Cognates Across Languages"
+            preview={`${result.cognates.cognates.length} related words in other languages`}
+          >
+            <CognatesSection data={result.cognates} word={result.word} />
           </CollapsibleSection>
         )}
       </div>

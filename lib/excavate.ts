@@ -1,9 +1,10 @@
-import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink, MorphologyData } from "@/types/lexica";
+import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink, MorphologyData, NgramDataPoint, CognateData } from "@/types/lexica";
 import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs,
   lookupMobyThesaurus, lookupWordNet, getWordNetSynonyms, getWordNetRelations, lookupRogets,
   lookupPronunciation, lookupEastons, lookupSmiths, lookupHitchcocks, lookupNaves, lookupGcide,
   lookupScowl, lookupAcademicWord, lookupEtymologyLinks,
-  lookupIpaDict, lookupCefrLevel, lookupMorphology, lookupGoogleFrequency, lookupBDB } from "./database";
+  lookupIpaDict, lookupCefrLevel, lookupMorphology, lookupGoogleFrequency, lookupBDB,
+  lookupNgramHistory, lookupCognates } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildHiddenConnections } from "./build-connections";
@@ -298,7 +299,26 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   const googleRank = lookupGoogleFrequency(word) || undefined;
 
-  // === Phase 6: Hidden Connections ===
+  // === Phase 6: Ngrams & Cognates ===
+  const ngramRows = lookupNgramHistory(word);
+  const ngramHistory: NgramDataPoint[] | undefined = ngramRows.length > 0
+    ? ngramRows.map(r => ({ decade: r.decade, frequency: r.frequency }))
+    : undefined;
+
+  const cognateRows = lookupCognates(word);
+  const cognates: CognateData | undefined = cognateRows.length > 0
+    ? {
+        cognates: cognateRows.map(r => ({
+          word: r.cognate_word,
+          language: r.cognate_lang,
+          languageName: r.cognate_lang_name,
+          sharedAncestor: r.shared_ancestor,
+          ancestorLang: r.ancestor_lang,
+        })),
+      }
+    : undefined;
+
+  // === Phase 7: Hidden Connections ===
   const hiddenConnections = buildHiddenConnections(
     word, etymologyTemplates, etymologyText,
     morphology, strata, definitions, strongsEntries,
@@ -338,5 +358,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     etymologyLinks,
     googleRank,
     hiddenConnections,
+    ngramHistory,
+    cognates,
   };
 }

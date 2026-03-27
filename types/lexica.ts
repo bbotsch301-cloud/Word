@@ -153,6 +153,25 @@ export interface HiddenConnectionsData {
   wordEquation?: string;
 }
 
+// Ngram historical usage types
+export interface NgramDataPoint {
+  decade: number;
+  frequency: number;
+}
+
+// Cognate types
+export interface Cognate {
+  word: string;
+  language: string;
+  languageName: string;
+  sharedAncestor: string;
+  ancestorLang: string;
+}
+
+export interface CognateData {
+  cognates: Cognate[];
+}
+
 export interface LexicaResult {
   word: string;
   phonetic: string;
@@ -176,4 +195,6 @@ export interface LexicaResult {
   etymologyLinks?: EtymologyLink[];
   googleRank?: number;
   hiddenConnections?: HiddenConnectionsData;
+  ngramHistory?: NgramDataPoint[];
+  cognates?: CognateData;
 }

@@ -17,6 +17,18 @@ export default function Header() {
           >
             Dictionaries
           </Link>
+          <Link
+            href="/compare"
+            className="text-sm text-text-muted hover:text-text-primary transition-colors"
+          >
+            Compare
+          </Link>
+          <Link
+            href="/lists"
+            className="text-sm text-text-muted hover:text-text-primary transition-colors"
+          >
+            My Words
+          </Link>
           <ThemeToggle />
         </div>
       </div>
