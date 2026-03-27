@@ -3,6 +3,7 @@ import { Inter, IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { WordListProvider } from "@/components/WordListProvider";
+import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
 
 const inter = Inter({
@@ -46,10 +47,12 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="antialiased bg-bg text-text-primary min-h-screen">
         <ThemeProvider>
-          <WordListProvider>
-            <Header />
-            {children}
-          </WordListProvider>
+          <AuthProvider>
+            <WordListProvider>
+              <Header />
+              {children}
+            </WordListProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

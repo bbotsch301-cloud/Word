@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useWordLists } from "@/components/WordListProvider";
 
 export default function ListsPage() {
-  const { bookmarks, lists, toggleBookmark, createList, deleteList, removeFromList } = useWordLists();
+  const {
+    bookmarks, lists, toggleBookmark, createList, deleteList, removeFromList,
+    isLoggedIn, hasPendingMigration, migrateLocalData,
+  } = useWordLists();
   const [newListName, setNewListName] = useState("");
-  const router = useRouter();
+  const [migrating, setMigrating] = useState(false);
 
   const handleCreateList = () => {
     const name = newListName.trim();
@@ -18,11 +20,54 @@ export default function ListsPage() {
     setNewListName("");
   };
 
+  const handleMigrate = async () => {
+    setMigrating(true);
+    await migrateLocalData();
+    setMigrating(false);
+  };
+
   return (
     <main className="min-h-screen">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">My Words</h1>
-        <p className="text-text-muted mb-10">Your bookmarked words and custom lists, saved locally in your browser.</p>
+        <p className="text-text-muted mb-10">
+          {isLoggedIn
+            ? "Your bookmarked words and custom lists, synced to your account."
+            : "Your bookmarked words and custom lists, saved locally in your browser."}
+        </p>
+
+        {/* Sign-in banner for anonymous users */}
+        {!isLoggedIn && (
+          <div className="bg-accent/5 border border-accent/20 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Save across devices</p>
+              <p className="text-xs text-text-muted mt-0.5">Sign in to sync your words and lists everywhere.</p>
+            </div>
+            <Link
+              href="/login"
+              className="shrink-0 bg-accent text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent/90 transition-colors"
+            >
+              Sign in
+            </Link>
+          </div>
+        )}
+
+        {/* Migration banner */}
+        {isLoggedIn && hasPendingMigration && (
+          <div className="bg-accent/5 border border-accent/20 rounded-xl p-5 mb-8 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-text-primary">Import local data</p>
+              <p className="text-xs text-text-muted mt-0.5">You have bookmarks and lists saved in this browser. Import them to your account?</p>
+            </div>
+            <button
+              onClick={handleMigrate}
+              disabled={migrating}
+              className="shrink-0 bg-accent text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            >
+              {migrating ? "Importing..." : "Import"}
+            </button>
+          </div>
+        )}
 
         {/* Bookmarks */}
         <section className="mb-12">

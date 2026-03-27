@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
@@ -12,6 +13,75 @@ const NAV_LINKS = [
   { href: '/dictionaries', label: 'Dictionaries' },
   { href: '/lists', label: 'My Words' },
 ];
+
+function UserMenu() {
+  const { data: session, status } = useSession();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  if (status === 'loading') {
+    return <div className="w-8 h-8 rounded-full bg-surface animate-pulse" />;
+  }
+
+  if (!session?.user) {
+    return (
+      <Link
+        href="/login"
+        className="text-sm text-text-muted hover:text-text-primary transition-colors"
+      >
+        Sign in
+      </Link>
+    );
+  }
+
+  const initial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase();
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-8 h-8 rounded-full bg-accent/20 text-accent font-medium text-sm flex items-center justify-center hover:bg-accent/30 transition-colors"
+        aria-label="User menu"
+      >
+        {initial}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg py-2 z-50">
+          <div className="px-4 py-2 border-b border-border">
+            {session.user.name && (
+              <p className="text-sm font-medium text-text-primary truncate">{session.user.name}</p>
+            )}
+            <p className="text-xs text-text-muted truncate">{session.user.email}</p>
+          </div>
+          <Link
+            href="/lists"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors"
+          >
+            My Words
+          </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-red-500 hover:bg-bg transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Header() {
   const pathname = usePathname();
@@ -48,10 +118,12 @@ export default function Header() {
             );
           })}
           <ThemeToggle />
+          <UserMenu />
         </div>
 
         {/* Mobile hamburger */}
         <div className="flex items-center gap-2 md:hidden">
+          <UserMenu />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}

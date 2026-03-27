@@ -7,3 +7,6 @@ next-env.d.ts
 .DS_Store
 data/raw/
 data/lexica.db
+data/user.db
+data/user.db-wal
+data/user.db-shm
