@@ -312,7 +312,6 @@ export default function Home() {
               { name: "CMU Pronouncing", year: "2015", desc: "134K word pronunciations" },
               // New sources
               { name: "Smith\u2019s Bible Dict.", year: "1863", desc: "Biblical encyclopedia" },
-              { name: "Bouvier\u2019s Law", year: "1856", desc: "American legal dictionary" },
               { name: "Brown-Driver-Briggs", year: "1906", desc: "Hebrew-Aramaic lexicon" },
               { name: "IPA Dictionary", year: "2023", desc: "Phonetic transcriptions" },
               { name: "Oxford 5000", year: "2020", desc: "CEFR-tagged vocabulary" },

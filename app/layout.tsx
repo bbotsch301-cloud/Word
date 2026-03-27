@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { WordListProvider } from "@/components/WordListProvider";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { websiteJsonLd } from "@/lib/json-ld";
 import { SITE_URL } from "@/lib/config";
 
@@ -78,6 +79,7 @@ export default function RootLayout({
               <div id="main-content">
                 {children}
               </div>
+              <Footer />
             </WordListProvider>
           </AuthProvider>
         </ThemeProvider>
