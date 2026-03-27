@@ -52,6 +52,7 @@ export default function SearchPage() {
     if (!pattern && !originLang && !century && !pos && !cefrLevel) return;
 
     setLoading(true);
+    if (p === 1) window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       const res = await fetch(`/api/search?${params}`);
       const data = await res.json();

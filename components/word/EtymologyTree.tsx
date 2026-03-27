@@ -23,10 +23,13 @@ export function EtymologyTree({ word }: { word: string }) {
   const [data, setData] = useState<TreeData | null>(null);
 
   useEffect(() => {
-    fetch(`/api/search?action=tree&word=${encodeURIComponent(word)}`)
+    const controller = new AbortController();
+    setData(null);
+    fetch(`/api/search?action=tree&word=${encodeURIComponent(word)}`, { signal: controller.signal })
       .then(r => r.json())
       .then(d => { if (d && d.root) setData(d); })
-      .catch(() => {});
+      .catch(e => { if (e.name !== 'AbortError') setData(null); });
+    return () => controller.abort();
   }, [word]);
 
   if (!data) return null;

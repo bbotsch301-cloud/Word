@@ -126,7 +126,7 @@ export function OriginMap({ strata }: { strata: Stratum[] }) {
                 strokeDasharray="4 3"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 0.6 }}
-                transition={{ duration: 0.8, delay: i * 0.4 }}
+                transition={{ duration: 0.5, delay: i * 0.2 }}
               />
             );
           })}
@@ -137,7 +137,7 @@ export function OriginMap({ strata }: { strata: Stratum[] }) {
               key={`point-${i}`}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: i * 0.4, type: "spring", stiffness: 200 }}
+              transition={{ delay: i * 0.2, type: "spring", stiffness: 200 }}
             >
               <circle cx={p.x} cy={p.y} r={i === points.length - 1 ? 5 : 4}
                 fill={i === points.length - 1 ? "var(--accent)" : "var(--bg)"}

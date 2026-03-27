@@ -26,8 +26,8 @@ export async function processBritannica(db: Database.Database, filePath: string)
 
   // Britannica 11th follows a similar ALL-CAPS headword pattern
   // Entries can be very long — we'll truncate to first ~500 chars
-  const headwordPattern = /^([A-Z][A-Z\s''\-().]+),\s*(.*)/;
-  const headwordOnlyPattern = /^([A-Z][A-Z\s''\-().]{2,})$/;
+  const headwordPattern = /^([A-Z][A-Z\s''\-().]*),\s*(.*)/;
+  const headwordOnlyPattern = /^([A-Z][A-Z\s''\-().]+)$/;
   const MAX_DEF_LENGTH = 500;
 
   for await (const line of rl) {

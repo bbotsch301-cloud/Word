@@ -26,14 +26,16 @@ const FAMILY_COLORS: Record<string, string> = {
 
 export function LanguageComposition() {
   const [data, setData] = useState<LangData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/search?action=families")
-      .then(r => r.json())
-      .then(setData)
-      .catch(() => {});
+      .then(r => { if (!r.ok) throw new Error("API error"); return r.json(); })
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
   }, []);
 
+  if (loading) return <div className="h-48 bg-surface border border-border rounded-xl animate-pulse" />;
   if (data.length === 0) return null;
 
   // Aggregate by family

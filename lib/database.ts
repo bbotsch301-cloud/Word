@@ -644,7 +644,7 @@ export function lookupBritannica(word: string): { word: string; definition: stri
 // === First Use Dates ===
 export interface FirstUseRow {
   word: string;
-  year: number;
+  year: number | null;
   century: string;
   source: string;
 }

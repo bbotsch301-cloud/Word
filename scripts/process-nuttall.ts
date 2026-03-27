@@ -27,8 +27,8 @@ export async function processNuttall(db: Database.Database, filePath: string): P
   // Nuttall format: ALL-CAPS headword, followed by comma and definition on same line or next lines
   // Double blank lines between entries
   // Example: "AALBORG (19), a trading town on the Liimfiord..."
-  const headwordPattern = /^([A-Z][A-Z\s''\-().]+),\s*(.*)/;
-  const headwordOnlyPattern = /^([A-Z][A-Z\s''\-().]{2,})$/;
+  const headwordPattern = /^([A-Z][A-Z\s''\-().]*),\s*(.*)/;
+  const headwordOnlyPattern = /^([A-Z][A-Z\s''\-().]+)$/;
 
   for await (const line of rl) {
     // Skip Gutenberg header

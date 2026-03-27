@@ -12,7 +12,7 @@ function stripHtml(html: string): string {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#\d+;/g, "")
+    .replace(/&#(\d+);/g, (_m, code) => String.fromCharCode(parseInt(code)))
     .replace(/\s+/g, " ")
     .trim();
 }

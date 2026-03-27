@@ -137,6 +137,7 @@ async function main() {
     { name: "Cognates (from Etymology DB)", file: "etymology-db.csv", processor: processCognates },
     // Phase 7: Encyclopedias
     { name: "Nuttall Encyclopaedia", file: "nuttall.txt", processor: processNuttall },
+    { name: "Britannica 11th Ed.", file: "britannica.txt", processor: processBritannica },
     { name: "Catholic Encyclopedia", file: "cathen-master", processor: processCatholicEncyclopedia, isDir: true },
     // Phase 7: First Use Dates (extracted from existing words table — uses dummy file path)
     { name: "First Use Dates", file: "kaikki-english.jsonl", processor: processFirstUse },

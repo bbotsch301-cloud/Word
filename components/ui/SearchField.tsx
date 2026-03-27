@@ -28,6 +28,7 @@ export default function SearchField({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,20 +58,24 @@ export default function SearchField({
 
   const fetchSuggestions = useCallback((query: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
     if (query.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
     }
     debounceRef.current = setTimeout(async () => {
+      abortRef.current = new AbortController();
       try {
-        const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`, {
+          signal: abortRef.current.signal,
+        });
         const data = await res.json();
         setSuggestions(data);
         setShowSuggestions(data.length > 0);
         setSelectedIndex(-1);
-      } catch {
-        setSuggestions([]);
+      } catch (e) {
+        if (e instanceof Error && e.name !== 'AbortError') setSuggestions([]);
       }
     }, 300);
   }, []);
@@ -96,6 +101,9 @@ export default function SearchField({
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex(prev => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      selectSuggestion(suggestions[selectedIndex]);
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
     }

@@ -11,7 +11,6 @@ import { buildConstellation } from "./build-constellation";
 import { buildHiddenConnections } from "./build-connections";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
 import { getWordFrequency, lookupInDictionary } from "./dictionaries";
-import { arpabetToReadable } from "./pronunciation";
 
 function parseJsonArray(json: string): string[] {
   if (!json) return [];
@@ -336,7 +335,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   // === First Use Dates ===
   const firstUseRow = lookupFirstUse(word);
   const firstUse: FirstUseData | undefined = firstUseRow
-    ? { year: firstUseRow.year, century: firstUseRow.century, source: firstUseRow.source }
+    ? { year: firstUseRow.year ?? undefined, century: firstUseRow.century, source: firstUseRow.source }
     : undefined;
 
   // === Phase 8: Hidden Connections ===
