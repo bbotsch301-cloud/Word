@@ -144,6 +144,22 @@ export default function ExplorePage() {
               </p>
             </Card>
           </Link>
+
+          <Link href="/spells">
+            <Card hover className="h-full">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
+                </div>
+                <h3 className="font-serif text-lg font-semibold text-text-primary">Word Spells</h3>
+              </div>
+              <p className="text-sm text-text-muted">
+                Discover homophones, anagrams, and sound chains — hidden magic encoded in English words.
+              </p>
+            </Card>
+          </Link>
         </section>
       </motion.div>
     </main>

@@ -7,6 +7,7 @@ import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { href: '/explore', label: 'Explore' },
+  { href: '/spells', label: 'Spells' },
   { href: '/search', label: 'Search' },
   { href: '/dictionaries', label: 'Dictionaries' },
   { href: '/lists', label: 'My Words' },

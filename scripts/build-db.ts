@@ -248,6 +248,10 @@ async function main() {
     CREATE INDEX IF NOT EXISTS idx_words_word ON words(word);
   `);
 
+  // Build spell indexes (phoneme keys + sorted letters)
+  console.log("Building spell indexes...");
+  buildSpellIndexes(db);
+
   // Show stats
   console.log("\nDone!");
   const allDicts = db.prepare("SELECT id, name, entry_count FROM dictionaries ORDER BY year").all() as { id: string; name: string; entry_count: number }[];
@@ -262,6 +266,49 @@ async function main() {
 
   console.log(`  Database: ${DB_PATH}`);
   db.close();
+}
+
+function buildSpellIndexes(db: Database.Database) {
+  // 1. Phoneme Key — strip stress digits from CMU phonemes for homophone matching
+  try {
+    db.exec(`ALTER TABLE cmu_pronunciation ADD COLUMN phoneme_key TEXT`);
+  } catch {
+    // Column may already exist
+  }
+
+  const cmuRows = db.prepare("SELECT rowid, phonemes FROM cmu_pronunciation").all() as { rowid: number; phonemes: string }[];
+  const updateCmu = db.prepare("UPDATE cmu_pronunciation SET phoneme_key = ? WHERE rowid = ?");
+  const cmuTx = db.transaction(() => {
+    for (const row of cmuRows) {
+      const key = row.phonemes.replace(/[012]/g, "").trim().replace(/\s+/g, " ");
+      updateCmu.run(key, row.rowid);
+    }
+  });
+  cmuTx();
+  db.exec("CREATE INDEX IF NOT EXISTS idx_cmu_phoneme_key ON cmu_pronunciation(phoneme_key)");
+  console.log(`  Phoneme keys: ${cmuRows.length.toLocaleString()} entries indexed`);
+
+  // 2. Sorted Letters — for anagram detection
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS word_letters (
+      word TEXT PRIMARY KEY,
+      sorted_letters TEXT NOT NULL,
+      letter_count INTEGER NOT NULL
+    );
+  `);
+
+  const wordRows = db.prepare("SELECT DISTINCT word FROM words WHERE length(word) >= 3 AND word NOT LIKE '%-%' AND word NOT LIKE '% %'").all() as { word: string }[];
+  const insertLetters = db.prepare("INSERT OR IGNORE INTO word_letters (word, sorted_letters, letter_count) VALUES (?, ?, ?)");
+  const lettersTx = db.transaction(() => {
+    for (const row of wordRows) {
+      const w = row.word.toLowerCase();
+      const sorted = w.split("").sort().join("");
+      insertLetters.run(w, sorted, w.length);
+    }
+  });
+  lettersTx();
+  db.exec("CREATE INDEX IF NOT EXISTS idx_sorted_letters ON word_letters(sorted_letters)");
+  console.log(`  Sorted letters: ${wordRows.length.toLocaleString()} words indexed`);
 }
 
 main().catch((err) => {

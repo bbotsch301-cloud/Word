@@ -658,6 +658,107 @@ export function lookupFirstUse(word: string): FirstUseRow | undefined {
   }
 }
 
+// === Spell Indexes (Phoneme Key + Sorted Letters) ===
+export function lookupPhonemeKey(word: string): string | undefined {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT phoneme_key FROM cmu_pronunciation WHERE word = ? AND variant = 0"
+    ).get(word.toLowerCase()) as { phoneme_key: string } | undefined;
+    return row?.phoneme_key;
+  } catch {
+    return undefined;
+  }
+}
+
+export function findWordsByPhonemeKey(key: string, excludeWord?: string): string[] {
+  const db = getDatabase();
+  try {
+    const rows = db.prepare(
+      "SELECT DISTINCT word FROM cmu_pronunciation WHERE phoneme_key = ? ORDER BY word"
+    ).all(key) as { word: string }[];
+    const words = rows.map(r => r.word);
+    return excludeWord ? words.filter(w => w !== excludeWord.toLowerCase()) : words;
+  } catch {
+    return [];
+  }
+}
+
+export function findAnagrams(word: string): string[] {
+  const db = getDatabase();
+  try {
+    const w = word.toLowerCase();
+    const sorted = w.split("").sort().join("");
+    const rows = db.prepare(
+      "SELECT word FROM word_letters WHERE sorted_letters = ? AND word != ?"
+    ).all(sorted, w) as { word: string }[];
+    return rows.map(r => r.word);
+  } catch {
+    return [];
+  }
+}
+
+export function getWordShortDef(word: string): string {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT definition FROM words WHERE word = ? AND definition IS NOT NULL LIMIT 1"
+    ).get(word.toLowerCase()) as { definition: string } | undefined;
+    if (!row) return "";
+    // Return first sentence/line, truncated
+    const first = row.definition.split(/[.;\n]/)[0].trim();
+    return first.length > 120 ? first.slice(0, 117) + "..." : first;
+  } catch {
+    return "";
+  }
+}
+
+export function getWordEtymologyBrief(word: string): { text: string; lang: string } {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT etymology_text FROM words WHERE word = ? AND etymology_text IS NOT NULL AND etymology_text != '' LIMIT 1"
+    ).get(word.toLowerCase()) as { etymology_text: string } | undefined;
+    if (!row) return { text: "", lang: "" };
+
+    // Extract origin language from etymology links
+    const link = db.prepare(
+      "SELECT parent_lang FROM etymology_links WHERE word = ? LIMIT 1"
+    ).get(word.toLowerCase()) as { parent_lang: string } | undefined;
+
+    const text = row.etymology_text.length > 150
+      ? row.etymology_text.slice(0, 147) + "..."
+      : row.etymology_text;
+    return { text, lang: link?.parent_lang || "" };
+  } catch {
+    return { text: "", lang: "" };
+  }
+}
+
+export function getWordPos(word: string): string {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT pos FROM words WHERE word = ? AND pos IS NOT NULL LIMIT 1"
+    ).get(word.toLowerCase()) as { pos: string } | undefined;
+    return row?.pos || "";
+  } catch {
+    return "";
+  }
+}
+
+export function getWordFrequencyRank(word: string): number | undefined {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT rank FROM word_frequency WHERE word = ?"
+    ).get(word.toLowerCase()) as { rank: number } | undefined;
+    return row?.rank;
+  } catch {
+    return undefined;
+  }
+}
+
 // === Word of the Day ===
 export function getWordOfTheDay(): { word: string; definition: string } | undefined {
   const db = getDatabase();
