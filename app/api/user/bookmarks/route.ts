@@ -12,8 +12,13 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const bookmarks = getUserBookmarks(session.user.id);
-  return NextResponse.json({ bookmarks });
+  try {
+    const bookmarks = getUserBookmarks(session.user.id);
+    return NextResponse.json({ bookmarks });
+  } catch (err) {
+    console.error("Failed to fetch bookmarks:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -25,8 +30,13 @@ export async function POST(req: NextRequest) {
   if (!word || typeof word !== "string") {
     return NextResponse.json({ error: "Word is required" }, { status: 400 });
   }
-  addBookmark(session.user.id, word);
-  return NextResponse.json({ ok: true });
+  try {
+    addBookmark(session.user.id, word);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to add bookmark:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest) {
@@ -34,10 +44,15 @@ export async function DELETE(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { word } = await req.json();
-  if (!word || typeof word !== "string") {
+  const word = req.nextUrl.searchParams.get("word");
+  if (!word) {
     return NextResponse.json({ error: "Word is required" }, { status: 400 });
   }
-  removeBookmark(session.user.id, word);
-  return NextResponse.json({ ok: true });
+  try {
+    removeBookmark(session.user.id, word);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to remove bookmark:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -14,11 +14,18 @@ const NAV_LINKS = [
   { href: '/lists', label: 'My Words' },
 ];
 
-function UserMenu() {
+function UserMenu({ onToggle }: { onToggle?: () => void }) {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
+  const close = useCallback(() => {
+    setOpen(false);
+    buttonRef.current?.focus();
+  }, []);
+
+  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -28,6 +35,17 @@ function UserMenu() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && open) {
+        close();
+      }
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [open, close]);
 
   if (status === 'loading') {
     return <div className="w-8 h-8 rounded-full bg-surface animate-pulse" />;
@@ -46,18 +64,26 @@ function UserMenu() {
 
   const initial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase();
 
+  const handleToggle = () => {
+    setOpen(!open);
+    onToggle?.();
+  };
+
   return (
     <div ref={menuRef} className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className="w-8 h-8 rounded-full bg-accent/20 text-accent font-medium text-sm flex items-center justify-center hover:bg-accent/30 transition-colors"
         aria-label="User menu"
+        aria-expanded={open}
+        aria-haspopup="menu"
       >
         {initial}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg py-2 z-50">
+        <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg py-2 z-50">
           <div className="px-4 py-2 border-b border-border">
             {session.user.name && (
               <p className="text-sm font-medium text-text-primary truncate">{session.user.name}</p>
@@ -66,12 +92,14 @@ function UserMenu() {
           </div>
           <Link
             href="/lists"
+            role="menuitem"
             onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors"
           >
             My Words
           </Link>
           <button
+            role="menuitem"
             onClick={() => signOut({ callbackUrl: '/' })}
             className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-red-500 hover:bg-bg transition-colors"
           >
@@ -91,6 +119,11 @@ export default function Header() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Close mobile menu when user menu opens (prevents overlap)
+  const handleUserMenuToggle = useCallback(() => {
+    setMobileOpen(false);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm">
@@ -123,12 +156,13 @@ export default function Header() {
 
         {/* Mobile hamburger */}
         <div className="flex items-center gap-2 md:hidden">
-          <UserMenu />
+          <UserMenu onToggle={handleUserMenuToggle} />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -60,8 +60,12 @@ export default function RegisterPage() {
         router.push("/lists");
         router.refresh();
       }
-    } catch {
-      setError("Registration failed. Please try again.");
+    } catch (err) {
+      if (err instanceof TypeError) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError("Registration failed. Please try again.");
+      }
       setLoading(false);
     }
   };

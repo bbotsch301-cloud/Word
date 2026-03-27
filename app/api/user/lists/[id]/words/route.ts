@@ -26,8 +26,13 @@ export async function POST(
   if (!word || typeof word !== "string") {
     return NextResponse.json({ error: "Word is required" }, { status: 400 });
   }
-  addWordToList(params.id, word);
-  return NextResponse.json({ ok: true });
+  try {
+    addWordToList(params.id, word);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to add word to list:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function DELETE(
@@ -41,10 +46,15 @@ export async function DELETE(
   if (!verifyListOwnership(params.id, session.user.id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  const { word } = await req.json();
-  if (!word || typeof word !== "string") {
+  const word = req.nextUrl.searchParams.get("word");
+  if (!word) {
     return NextResponse.json({ error: "Word is required" }, { status: 400 });
   }
-  removeWordFromList(params.id, word);
-  return NextResponse.json({ ok: true });
+  try {
+    removeWordFromList(params.id, word);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to remove word from list:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

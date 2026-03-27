@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 
 interface WordList {
@@ -24,6 +24,7 @@ interface WordListContextValue {
   addToList: (listId: string, word: string) => void;
   removeFromList: (listId: string, word: string) => void;
   isLoggedIn: boolean;
+  isReady: boolean;
   hasPendingMigration: boolean;
   migrateLocalData: () => Promise<void>;
 }
@@ -68,15 +69,32 @@ export function WordListProvider({ children }: { children: ReactNode }) {
   const isLoading = status === "loading";
 
   const [data, setData] = useState<WordListData>(defaultData);
-  const [initialized, setInitialized] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const [hasPendingMigration, setHasPendingMigration] = useState(false);
+
+  // Track temp ID → real ID mappings and queued operations
+  const tempIdMap = useRef<Map<string, string>>(new Map());
+  const pendingOps = useRef<Array<{ tempId: string; op: (realId: string) => void }>>([]);
+
+  // Resolve a list ID: if it's a temp ID that's been swapped, return the real one
+  const resolveListId = useCallback((listId: string): string => {
+    return tempIdMap.current.get(listId) || listId;
+  }, []);
+
+  // Flush queued operations after a temp ID is resolved
+  const flushPendingOps = useCallback((tempId: string, realId: string) => {
+    const toFlush = pendingOps.current.filter(op => op.tempId === tempId);
+    pendingOps.current = pendingOps.current.filter(op => op.tempId !== tempId);
+    for (const item of toFlush) {
+      item.op(realId);
+    }
+  }, []);
 
   // Load data based on auth state
   useEffect(() => {
     if (isLoading) return;
 
     if (isLoggedIn) {
-      // Fetch from API
       Promise.all([
         fetch("/api/user/bookmarks").then(r => r.json()),
         fetch("/api/user/lists").then(r => r.json()),
@@ -89,137 +107,215 @@ export function WordListProvider({ children }: { children: ReactNode }) {
             words: l.words || [],
           })),
         });
-        setInitialized(true);
-        // Check if there's local data to migrate
+        setIsReady(true);
         setHasPendingMigration(hasLocalData());
-      }).catch(() => {
+      }).catch((err) => {
+        console.error("Failed to load user data:", err);
         setData(defaultData);
-        setInitialized(true);
+        setIsReady(true);
       });
     } else {
-      // Anonymous: use localStorage
       setData(loadLocalData());
-      setInitialized(true);
+      setIsReady(true);
       setHasPendingMigration(false);
     }
   }, [isLoggedIn, isLoading]);
-
-  // localStorage persistence for anonymous users
-  const persistLocal = useCallback((updated: WordListData) => {
-    setData(updated);
-    saveLocalData(updated);
-  }, []);
-
-  // API-backed mutations for logged-in users
-  const persistApi = useCallback((updated: WordListData) => {
-    setData(updated);
-  }, []);
 
   const isBookmarked = useCallback((word: string) => {
     return data.bookmarks.includes(word.toLowerCase());
   }, [data.bookmarks]);
 
   const toggleBookmark = useCallback((word: string) => {
+    if (!isReady) return;
     const w = word.toLowerCase();
     const removing = data.bookmarks.includes(w);
     const bookmarks = removing
       ? data.bookmarks.filter(b => b !== w)
       : [...data.bookmarks, w];
+    const prevData = data;
 
     if (isLoggedIn) {
-      persistApi({ ...data, bookmarks });
-      if (removing) {
-        fetch("/api/user/bookmarks", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ word: w }),
-        });
-      } else {
-        fetch("/api/user/bookmarks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ word: w }),
-        });
-      }
+      setData(prev => ({ ...prev, bookmarks }));
+      const fetchOp = removing
+        ? fetch(`/api/user/bookmarks?word=${encodeURIComponent(w)}`, { method: "DELETE" })
+        : fetch("/api/user/bookmarks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ word: w }),
+          });
+      fetchOp.then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      }).catch((err) => {
+        console.error("Bookmark sync failed, reverting:", err);
+        setData(prevData);
+      });
     } else {
-      persistLocal({ ...data, bookmarks });
+      const updated = { ...data, bookmarks };
+      setData(updated);
+      saveLocalData(updated);
     }
-  }, [data, isLoggedIn, persistApi, persistLocal]);
+  }, [data, isLoggedIn, isReady]);
 
   const createList = useCallback((name: string): string => {
+    if (!isReady) return "";
     const tempId = `list-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const newList: WordList = { id: tempId, name, words: [] };
 
     if (isLoggedIn) {
-      const newList: WordList = { id: tempId, name, words: [] };
-      persistApi({ ...data, lists: [...data.lists, newList] });
-      // Create on server, then update ID
+      setData(prev => ({ ...prev, lists: [...prev.lists, newList] }));
       fetch("/api/user/lists", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
-      }).then(r => r.json()).then(res => {
+      }).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }).then(res => {
         if (res.id) {
+          tempIdMap.current.set(tempId, res.id);
           setData(prev => ({
             ...prev,
             lists: prev.lists.map(l => l.id === tempId ? { ...l, id: res.id } : l),
           }));
+          flushPendingOps(tempId, res.id);
         }
+      }).catch((err) => {
+        console.error("Create list failed, reverting:", err);
+        setData(prev => ({ ...prev, lists: prev.lists.filter(l => l.id !== tempId) }));
       });
     } else {
-      const newList: WordList = { id: tempId, name, words: [] };
-      persistLocal({ ...data, lists: [...data.lists, newList] });
+      const updated = { ...data, lists: [...data.lists, newList] };
+      setData(updated);
+      saveLocalData(updated);
     }
     return tempId;
-  }, [data, isLoggedIn, persistApi, persistLocal]);
+  }, [data, isLoggedIn, isReady, flushPendingOps]);
 
   const deleteList = useCallback((listId: string) => {
+    if (!isReady) return;
+    const realId = resolveListId(listId);
+    const prevLists = data.lists;
+
     if (isLoggedIn) {
-      persistApi({ ...data, lists: data.lists.filter(l => l.id !== listId) });
-      fetch(`/api/user/lists/${listId}`, { method: "DELETE" });
+      setData(prev => ({ ...prev, lists: prev.lists.filter(l => l.id !== realId) }));
+      fetch(`/api/user/lists/${realId}`, { method: "DELETE" }).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      }).catch((err) => {
+        console.error("Delete list failed, reverting:", err);
+        setData(prev => ({ ...prev, lists: prevLists }));
+      });
     } else {
-      persistLocal({ ...data, lists: data.lists.filter(l => l.id !== listId) });
+      const updated = { ...data, lists: data.lists.filter(l => l.id !== listId) };
+      setData(updated);
+      saveLocalData(updated);
     }
-  }, [data, isLoggedIn, persistApi, persistLocal]);
+  }, [data, isLoggedIn, isReady, resolveListId]);
 
   const addToList = useCallback((listId: string, word: string) => {
+    if (!isReady) return;
     const w = word.toLowerCase();
-    const lists = data.lists.map(l =>
-      l.id === listId && !l.words.includes(w)
-        ? { ...l, words: [...l.words, w] }
-        : l
-    );
+    const realId = resolveListId(listId);
+    const isTempId = listId.startsWith("list-") && !tempIdMap.current.has(listId) && realId === listId && isLoggedIn;
+
+    // Update local state immediately
+    setData(prev => ({
+      ...prev,
+      lists: prev.lists.map(l =>
+        (l.id === listId || l.id === realId) && !l.words.includes(w)
+          ? { ...l, words: [...l.words, w] }
+          : l
+      ),
+    }));
 
     if (isLoggedIn) {
-      persistApi({ ...data, lists });
-      fetch(`/api/user/lists/${listId}/words`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: w }),
-      });
+      // If it's a temp ID that hasn't been resolved yet, queue the API call
+      if (isTempId) {
+        pendingOps.current.push({
+          tempId: listId,
+          op: (resolvedId: string) => {
+            fetch(`/api/user/lists/${resolvedId}/words`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ word: w }),
+            }).catch(err => console.error("Queued addToList failed:", err));
+          },
+        });
+      } else {
+        fetch(`/api/user/lists/${realId}/words`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ word: w }),
+        }).then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        }).catch((err) => {
+          console.error("Add to list failed, reverting:", err);
+          setData(prev => ({
+            ...prev,
+            lists: prev.lists.map(l =>
+              l.id === realId ? { ...l, words: l.words.filter(ww => ww !== w) } : l
+            ),
+          }));
+        });
+      }
     } else {
-      persistLocal({ ...data, lists });
+      saveLocalData({
+        ...data,
+        lists: data.lists.map(l =>
+          l.id === listId && !l.words.includes(w) ? { ...l, words: [...l.words, w] } : l
+        ),
+      });
     }
-  }, [data, isLoggedIn, persistApi, persistLocal]);
+  }, [data, isLoggedIn, isReady, resolveListId]);
 
   const removeFromList = useCallback((listId: string, word: string) => {
+    if (!isReady) return;
     const w = word.toLowerCase();
-    const lists = data.lists.map(l =>
-      l.id === listId
-        ? { ...l, words: l.words.filter(ww => ww !== w) }
-        : l
-    );
+    const realId = resolveListId(listId);
+    const isTempId = listId.startsWith("list-") && !tempIdMap.current.has(listId) && realId === listId && isLoggedIn;
+
+    setData(prev => ({
+      ...prev,
+      lists: prev.lists.map(l =>
+        (l.id === listId || l.id === realId)
+          ? { ...l, words: l.words.filter(ww => ww !== w) }
+          : l
+      ),
+    }));
 
     if (isLoggedIn) {
-      persistApi({ ...data, lists });
-      fetch(`/api/user/lists/${listId}/words`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: w }),
-      });
+      if (isTempId) {
+        pendingOps.current.push({
+          tempId: listId,
+          op: (resolvedId: string) => {
+            fetch(`/api/user/lists/${resolvedId}/words?word=${encodeURIComponent(w)}`, {
+              method: "DELETE",
+            }).catch(err => console.error("Queued removeFromList failed:", err));
+          },
+        });
+      } else {
+        fetch(`/api/user/lists/${realId}/words?word=${encodeURIComponent(w)}`, {
+          method: "DELETE",
+        }).then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        }).catch((err) => {
+          console.error("Remove from list failed, reverting:", err);
+          setData(prev => ({
+            ...prev,
+            lists: prev.lists.map(l =>
+              l.id === realId ? { ...l, words: [...l.words, w] } : l
+            ),
+          }));
+        });
+      }
     } else {
-      persistLocal({ ...data, lists });
+      saveLocalData({
+        ...data,
+        lists: data.lists.map(l =>
+          l.id === listId ? { ...l, words: l.words.filter(ww => ww !== w) } : l
+        ),
+      });
     }
-  }, [data, isLoggedIn, persistApi, persistLocal]);
+  }, [data, isLoggedIn, isReady, resolveListId]);
 
   const migrateLocal = useCallback(async () => {
     if (!isLoggedIn) return;
@@ -227,7 +323,7 @@ export function WordListProvider({ children }: { children: ReactNode }) {
     if (localData.bookmarks.length === 0 && localData.lists.length === 0) return;
 
     try {
-      await fetch("/api/user/migrate", {
+      const migrateRes = await fetch("/api/user/migrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -236,15 +332,14 @@ export function WordListProvider({ children }: { children: ReactNode }) {
         }),
       });
 
-      // Clear localStorage after successful migration
-      localStorage.removeItem(STORAGE_KEY);
-      setHasPendingMigration(false);
+      if (!migrateRes.ok) throw new Error(`Migration HTTP ${migrateRes.status}`);
 
-      // Refresh data from server
+      // Refresh data from server BEFORE clearing localStorage
       const [bookmarkRes, listRes] = await Promise.all([
         fetch("/api/user/bookmarks").then(r => r.json()),
         fetch("/api/user/lists").then(r => r.json()),
       ]);
+
       setData({
         bookmarks: bookmarkRes.bookmarks || [],
         lists: (listRes.lists || []).map((l: { id: string; name: string; words: string[] }) => ({
@@ -253,6 +348,10 @@ export function WordListProvider({ children }: { children: ReactNode }) {
           words: l.words || [],
         })),
       });
+
+      // Only clear localStorage AFTER data is confirmed refreshed
+      localStorage.removeItem(STORAGE_KEY);
+      setHasPendingMigration(false);
     } catch (err) {
       console.error("Migration failed:", err);
     }
@@ -269,6 +368,7 @@ export function WordListProvider({ children }: { children: ReactNode }) {
       addToList,
       removeFromList,
       isLoggedIn,
+      isReady,
       hasPendingMigration,
       migrateLocalData: migrateLocal,
     }}>

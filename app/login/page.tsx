@@ -6,10 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+function getSafeCallbackUrl(raw: string | null): string {
+  if (!raw) return "/lists";
+  // Only allow relative paths — block absolute URLs and protocol-relative URLs
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return "/lists";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/lists";
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
   const errorParam = searchParams.get("error");
 
   const [email, setEmail] = useState("");
@@ -22,18 +29,23 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setError("Invalid email or password");
+      if (result?.error) {
+        setError("Invalid email or password");
+        setLoading(false);
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch {
+      setError("Network error. Please try again.");
       setLoading(false);
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
     }
   };
 

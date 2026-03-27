@@ -15,6 +15,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
   }
 
-  migrateLocalData(session.user.id, { bookmarks, lists });
-  return NextResponse.json({ ok: true });
+  try {
+    migrateLocalData(session.user.id, { bookmarks, lists });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to migrate data:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

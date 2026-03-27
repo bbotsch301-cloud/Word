@@ -12,8 +12,13 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const lists = getUserLists(session.user.id);
-  return NextResponse.json({ lists });
+  try {
+    const lists = getUserLists(session.user.id);
+    return NextResponse.json({ lists });
+  } catch (err) {
+    console.error("Failed to fetch lists:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -25,6 +30,11 @@ export async function POST(req: NextRequest) {
   if (!name || typeof name !== "string") {
     return NextResponse.json({ error: "List name is required" }, { status: 400 });
   }
-  const id = createUserList(session.user.id, name.trim());
-  return NextResponse.json({ id });
+  try {
+    const id = createUserList(session.user.id, name.trim());
+    return NextResponse.json({ id });
+  } catch (err) {
+    console.error("Failed to create list:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

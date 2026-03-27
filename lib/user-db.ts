@@ -23,7 +23,8 @@ function initSchema(db: Database.Database) {
       email TEXT UNIQUE NOT NULL,
       name TEXT,
       password_hash TEXT,
-      created_at INTEGER DEFAULT (unixepoch())
+      created_at INTEGER DEFAULT (unixepoch()),
+      migrated_at INTEGER
     );
 
     CREATE TABLE IF NOT EXISTS oauth_accounts (
@@ -196,11 +197,21 @@ export function removeWordFromList(listId: string, word: string): void {
 
 // === Migration ===
 
+export function hasAlreadyMigrated(userId: string): boolean {
+  const db = getUserDatabase();
+  const row = db.prepare("SELECT migrated_at FROM users WHERE id = ?").get(userId) as { migrated_at: number | null } | undefined;
+  return !!row?.migrated_at;
+}
+
 export function migrateLocalData(
   userId: string,
   data: { bookmarks: string[]; lists: { name: string; words: string[] }[] }
 ): void {
   const db = getUserDatabase();
+
+  // Idempotency: skip if already migrated
+  if (hasAlreadyMigrated(userId)) return;
+
   const tx = db.transaction(() => {
     // Import bookmarks
     for (const word of data.bookmarks) {
@@ -213,6 +224,8 @@ export function migrateLocalData(
         addWordToList(listId, word);
       }
     }
+    // Mark as migrated
+    db.prepare("UPDATE users SET migrated_at = unixepoch() WHERE id = ?").run(userId);
   });
   tx();
 }

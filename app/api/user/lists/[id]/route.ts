@@ -11,6 +11,11 @@ export async function DELETE(
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  deleteUserList(session.user.id, params.id);
-  return NextResponse.json({ ok: true });
+  try {
+    deleteUserList(session.user.id, params.id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Failed to delete list:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
