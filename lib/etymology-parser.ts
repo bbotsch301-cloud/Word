@@ -72,10 +72,10 @@ export function buildRevelationText(
 ): string {
   if (rootForm && rootLang) {
     const meaningPart = rootMeaning ? `, meaning "${rootMeaning}"` : "";
-    return `The word "${word}" traces back to ${rootLang} "${rootForm}"${meaningPart}. ${extractFirstSentence(etymText)}`;
+    return `According to its etymology, "${word}" traces back to ${rootLang} "${rootForm}"${meaningPart}. ${extractFirstSentence(etymText)}`;
   }
   // Fallback to first sentence of etymology text
-  return extractFirstSentence(etymText) || `The origins of "${word}" are documented in historical linguistic records.`;
+  return extractFirstSentence(etymText) || `The documented origins of "${word}" are found in historical linguistic records.`;
 }
 
 // Extract a cultural moment from etymology text

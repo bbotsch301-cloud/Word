@@ -74,7 +74,7 @@ export async function processFirstUse(db: Database.Database, _filePath: string):
       if (match) {
         const { year, century } = extractor(match);
         if (year && year >= 500 && year <= 2025) {
-          batch.push([row.word, year, century, "etymology"]);
+          batch.push([row.word, year, century, "Wiktionary etymology"]);
           if (batch.length >= 5000) {
             insertMany(batch);
             count += batch.length;

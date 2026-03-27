@@ -165,13 +165,16 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   const culturalMoment = extractCulturalMoment(etymologyText, word);
 
-  // Build truest_meaning (etymology narrative)
+  // Build truest_meaning (etymology narrative) with source tracking
   let truestMeaning = etymologyText;
+  let truestMeaningSource = "Wiktionary";
   if (!truestMeaning && webster1828Def) {
-    truestMeaning = `Webster's 1828: ${webster1828Def}`;
+    truestMeaning = webster1828Def;
+    truestMeaningSource = "Webster's 1828";
   }
   if (!truestMeaning) {
     truestMeaning = definition || `The word "${word}" is part of the English lexicon.`;
+    truestMeaningSource = "General";
   }
 
   // Build taxonomy from new Kaikki fields
@@ -361,6 +364,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
       language_family: "Germanic",
     }],
     truest_meaning: truestMeaning,
+    truest_meaning_source: truestMeaningSource,
     root_revelation: rootRevelation,
     cultural_moment: culturalMoment,
     constellation,

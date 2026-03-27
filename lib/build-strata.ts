@@ -62,6 +62,17 @@ export function buildStrata(
   return strata;
 }
 
+function isProtoLanguage(langCode: string): boolean {
+  return langCode.endsWith("-pro") || langCode.startsWith("proto") || langCode.includes("-proto");
+}
+
+function ensureReconstructedMarker(form: string, langCode: string): string {
+  if (isProtoLanguage(langCode) && !form.startsWith("*")) {
+    return "*" + form;
+  }
+  return form;
+}
+
 function mapRelationshipType(templateName: string): RelationshipType {
   if (/^inh/.test(templateName)) return "inherited";
   if (/^bor/.test(templateName)) return "borrowed";
@@ -93,11 +104,12 @@ function extractStrataFromTemplates(etymologyTemplatesJson: string): Stratum[] {
 
     if (isEtymTemplate && args) {
       const sourceLang = args["2"] || "";
-      const form = args["3"] || args["2"] || "";
+      const rawForm = args["3"] || args["2"] || "";
       const meaning = args["t"] || args["gloss"] || args["5"] || args["4"] || "";
 
-      if (sourceLang && form && form !== "-") {
+      if (sourceLang && rawForm && rawForm !== "-") {
         const meta = getLanguageMeta(sourceLang);
+        const form = ensureReconstructedMarker(rawForm, sourceLang);
         const meaningText = meaning
           ? `Meaning "${meaning}" in ${meta.name}.`
           : expansion
@@ -119,9 +131,10 @@ function extractStrataFromTemplates(etymologyTemplatesJson: string): Stratum[] {
 
     if (name === "root" && args) {
       const rootLang = args["2"] || "";
-      const rootForm = args["3"] || "";
-      if (rootLang && rootForm) {
+      const rawRootForm = args["3"] || "";
+      if (rootLang && rawRootForm) {
         const meta = getLanguageMeta(rootLang);
+        const rootForm = ensureReconstructedMarker(rawRootForm, rootLang);
         strata.push({
           era: meta.era,
           period: meta.period,

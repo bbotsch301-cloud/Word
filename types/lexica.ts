@@ -185,6 +185,7 @@ export interface LexicaResult {
   modern_meaning: string;
   strata: Stratum[];
   truest_meaning: string;
+  truest_meaning_source: string;
   root_revelation: string;
   cultural_moment: CulturalMoment;
   constellation: ConstellationWord[];

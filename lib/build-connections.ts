@@ -204,10 +204,10 @@ function buildMeaningShift(
 
   return {
     type: "meaning_shift",
-    headline: `Meaning transformed since ${period || "ancient times"}`,
+    headline: `Meaning appears to have shifted since ${period || "ancient times"}`,
     description: etymShift
-      ? `"${word}" originally meant "${etymShift}" — a far cry from its modern usage.`
-      : `The meaning of "${word}" has shifted significantly over the centuries.`,
+      ? `"${word}" may have originally meant "${etymShift}" — compare historical and modern definitions below.`
+      : `The meaning of "${word}" appears to have shifted over the centuries — compare historical and modern definitions below.`,
     surpriseScore: overlapRatio < 0.2 ? 0.85 : 0.6,
     evidence: {
       oldMeaning: oldMeaning.slice(0, 200),

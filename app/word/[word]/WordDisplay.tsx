@@ -153,7 +153,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   // Origins group
   if (result.truest_meaning) sections.push({ id: "story", label: "The Story", shortLabel: "Story", group: "origins" });
   if (result.strata.length > 0) sections.push({ id: "etymology", label: "Etymology Chain", shortLabel: "Etymology", group: "origins" });
-  if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural", group: "origins" });
+  if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Historical Note", shortLabel: "History", group: "origins" });
   if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828", group: "origins" });
   if (result.morphology) sections.push({ id: "morphology", label: "Word Structure", shortLabel: "Morph.", group: "origins" });
   // Meaning group
@@ -432,10 +432,14 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               <p className="font-serif text-base text-text-primary leading-relaxed">
                 {result.truest_meaning}
               </p>
+              <p className="text-xs text-text-muted mt-3">
+                Source: {result.truest_meaning_source || "Wiktionary"}
+              </p>
             </div>
             {result.root_revelation && (
               <p className="text-sm text-text-muted mt-4 leading-relaxed italic">
                 {result.root_revelation}
+                <span className="not-italic text-xs ml-1">(derived from available sources)</span>
               </p>
             )}
           </CollapsibleSection>
@@ -482,11 +486,11 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </SectionErrorBoundary>
         )}
 
-        {/* Cultural Context */}
+        {/* Historical Note */}
         {result.cultural_moment?.description?.trim() && (
           <CollapsibleSection
             id="cultural"
-            title="Cultural Context"
+            title="Historical Note"
             preview={`${result.cultural_moment.period} \u2014 ${result.cultural_moment.description.slice(0, 60)}...`}
           >
             <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex items-start gap-3">
@@ -495,6 +499,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 {result.cultural_moment.description}
               </p>
             </div>
+            <p className="text-xs text-text-muted mt-2">Extracted from etymology sources</p>
           </CollapsibleSection>
         )}
 
@@ -506,6 +511,9 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             preview={result.webster1828_etymology.slice(0, 80) + "..."}
           >
             <div className="bg-surface border border-border rounded-xl p-5 shadow-sm">
+              <p className="text-xs text-text-muted mb-3">
+                Noah Webster&apos;s original 1828 etymology — reflects early 19th century linguistic understanding
+              </p>
               <p className="font-mono text-sm text-text-secondary leading-relaxed">
                 {result.webster1828_etymology}
               </p>
@@ -534,6 +542,9 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             title="Hidden Connections"
             preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
           >
+            <p className="text-xs text-text-muted mb-4">
+              Patterns discovered algorithmically from etymological data — not all connections are scholarly consensus.
+            </p>
             <HiddenConnectionsSection data={result.hiddenConnections} word={result.word} />
             <div className="mt-4 pt-3 border-t border-border">
               <Link
