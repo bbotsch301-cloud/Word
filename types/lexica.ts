@@ -44,6 +44,48 @@ export interface WordTaxonomy {
   coordinate_terms: string[];
 }
 
+// Thesaurus types
+export interface WordNetSense {
+  pos: string;
+  definition: string;
+  examples: string[];
+  synonyms: string[];
+  hypernyms: string[];
+  hyponyms: string[];
+}
+
+export interface RogetCategory {
+  number: number;
+  name: string;
+  relatedWords: string[];
+}
+
+export interface ThesaurusData {
+  synonyms: string[];
+  wordnetSenses: WordNetSense[];
+  rogetCategories: RogetCategory[];
+}
+
+// Pronunciation types
+export interface PronunciationData {
+  ipa: string;
+  arpabet?: string[];
+}
+
+// Biblical study types
+export interface BiblicalStudyData {
+  eastons?: { definition: string };
+  hitchcocks?: { meaning: string };
+  naves?: { topic: string; subtopics: string[]; references: string[] }[];
+}
+
+// Etymology link types
+export interface EtymologyLink {
+  parentWord: string;
+  parentLang: string;
+  relationType: string;
+}
+
 export interface LexicaResult {
   word: string;
   phonetic: string;
@@ -55,6 +97,12 @@ export interface LexicaResult {
   constellation: ConstellationWord[];
   definitions: DefinitionSource[];
   taxonomy?: WordTaxonomy;
+  thesaurus?: ThesaurusData;
+  biblical?: BiblicalStudyData;
+  pronunciation?: PronunciationData;
   webster1828_etymology?: string;
   frequency?: WordFrequency;
+  isAcademic?: { sublist: number };
+  dialect?: string[];
+  etymologyLinks?: EtymologyLink[];
 }

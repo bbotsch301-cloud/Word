@@ -3,6 +3,7 @@ import { mkdir } from "fs/promises";
 import https from "https";
 import http from "http";
 import path from "path";
+import { execSync } from "child_process";
 
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
 
@@ -10,6 +11,9 @@ interface Source {
   name: string;
   url: string;
   filename: string;
+  extract?: "tar.gz" | "gz" | "git";
+  extractDir?: string;
+  optional?: boolean;
 }
 
 const SOURCES: Source[] = [
@@ -47,6 +51,66 @@ const SOURCES: Source[] = [
     name: "Black's Law Dictionary 2nd Ed (JSONL)",
     url: "https://gist.github.com/medelman17/55bf480caafbfcc6e9f9d22c273cf2c4/raw",
     filename: "blacks-law-2nd.jsonl",
+  },
+  // Phase 1: Thesaurus sources
+  {
+    name: "Moby Thesaurus (Grady Ward)",
+    url: "https://www.gutenberg.org/files/3202/files/mthesaur.txt",
+    filename: "moby-thesaurus.txt",
+  },
+  {
+    name: "WordNet 3.1 Database Files",
+    url: "https://wordnetcode.princeton.edu/wn3.1.dict.tar.gz",
+    filename: "wn3.1.dict.tar.gz",
+    extract: "tar.gz",
+    extractDir: "dict",
+    optional: true,
+  },
+  {
+    name: "Roget's Thesaurus (1911 via Gutenberg)",
+    url: "https://www.gutenberg.org/files/22/22-0.txt",
+    filename: "rogets-thesaurus.txt",
+  },
+  // Phase 2: Pronunciation
+  {
+    name: "CMU Pronouncing Dictionary",
+    url: "https://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b",
+    filename: "cmudict.txt",
+    optional: true,
+  },
+  // Phase 3: Biblical
+  {
+    name: "Bible Dictionary Dataset (Easton's + Smith's)",
+    url: "https://raw.githubusercontent.com/neuu-org/bible-dictionary-dataset/main/data/01_parsed/_index.json",
+    filename: "bible-dict-index.json",
+    optional: true,
+  },
+  {
+    name: "Hitchcock's Bible Names (CSV)",
+    url: "https://raw.githubusercontent.com/BradyStephenson/bible-data/main/HitchcocksBibleNamesDictionary.csv",
+    filename: "hitchcocks-names.csv",
+    optional: true,
+  },
+  {
+    name: "Nave's Topical Bible (CSV)",
+    url: "https://raw.githubusercontent.com/BradyStephenson/bible-data/main/NavesTopicalDictionary.csv",
+    filename: "naves-topical.csv",
+    optional: true,
+  },
+  // Phase 4: Enrichment
+  {
+    name: "GCIDE (GNU Collaborative International Dictionary)",
+    url: "https://mirror.csclub.uwaterloo.ca/gnu/gcide/gcide-0.53.tar.gz",
+    filename: "gcide-0.53.tar.gz",
+    extract: "tar.gz",
+    extractDir: "gcide-0.53",
+    optional: true,
+  },
+  {
+    name: "Academic Word List",
+    url: "https://raw.githubusercontent.com/lpmi-13/machine_readable_wordlists/master/Academic/AWL/AWL.json",
+    filename: "academic-word-list.json",
+    optional: true,
   },
 ];
 
@@ -160,14 +224,50 @@ async function main() {
 
   for (const source of SOURCES) {
     const dest = path.join(RAW_DIR, source.filename);
-    if (existsSync(dest)) {
+
+    // For extractable sources, check if the extracted directory exists
+    if (source.extract === "tar.gz" && source.extractDir) {
+      const extractedPath = path.join(RAW_DIR, source.extractDir);
+      if (existsSync(extractedPath)) {
+        console.log(`[skip] ${source.name} already extracted`);
+        continue;
+      }
+    } else if (source.extract === "gz") {
+      const extractedPath = dest.replace(/\.gz$/, "");
+      if (existsSync(extractedPath)) {
+        console.log(`[skip] ${source.name} already extracted`);
+        continue;
+      }
+    } else if (existsSync(dest)) {
       console.log(`[skip] ${source.name} already downloaded`);
       continue;
     }
+
     console.log(`[download] ${source.name}...`);
     console.log(`  URL: ${source.url}`);
-    await download(source.url, dest);
-    console.log(`  -> ${dest}`);
+    try {
+      await download(source.url, dest);
+      console.log(`  -> ${dest}`);
+
+      // Post-download extraction
+      if (source.extract === "tar.gz") {
+        console.log(`  Extracting tar.gz...`);
+        execSync(`cd "${RAW_DIR}" && tar xzf "${source.filename}"`, { stdio: "inherit" });
+        console.log(`  Extracted to ${source.extractDir || source.filename.replace(".tar.gz", "")}`);
+      } else if (source.extract === "gz") {
+        console.log(`  Decompressing .gz...`);
+        execSync(`cd "${RAW_DIR}" && gunzip -k "${source.filename}"`, { stdio: "inherit" });
+        console.log(`  Decompressed`);
+      }
+    } catch (err) {
+      if (source.optional) {
+        console.log(`  [warn] Failed to download ${source.name}: ${err instanceof Error ? err.message : err}`);
+        // Clean up partial file
+        try { const { unlinkSync } = await import("fs"); unlinkSync(dest); } catch {}
+        continue;
+      }
+      throw err;
+    }
   }
 
   console.log("\nAll sources downloaded.");

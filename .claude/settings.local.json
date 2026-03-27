@@ -96,7 +96,9 @@
       "Bash(sqlite3:*)",
       "WebFetch(domain:thelawdictionary.org)",
       "Bash(cp /tmp/strongs/hebrew/strongs-hebrew-dictionary.js /home/runner/workspace/data/raw/)",
-      "Bash(cp /tmp/strongs/greek/strongs-greek-dictionary.js /home/runner/workspace/data/raw/)"
+      "Bash(cp /tmp/strongs/greek/strongs-greek-dictionary.js /home/runner/workspace/data/raw/)",
+      "Bash(wc:*)",
+      "Bash(pkill -f \"next start\")"
     ]
   }
 }

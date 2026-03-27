@@ -11,6 +11,8 @@ import FrequencyGauge from "@/components/word/FrequencyGauge";
 import EtymologyChain from "@/components/word/EtymologyChain";
 import DefinitionTimeline from "@/components/word/DefinitionTimeline";
 import DefinitionCard from "@/components/word/DefinitionCard";
+import ThesaurusSection from "@/components/word/ThesaurusSection";
+import BiblicalStudySection from "@/components/word/BiblicalStudySection";
 import Link from "next/link";
 
 const fadeUp = {
@@ -56,6 +58,14 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
     result.taxonomy.antonyms.length > 0 ||
     result.taxonomy.coordinate_terms.length > 0
   );
+  const hasThesaurus = result.thesaurus && (
+    result.thesaurus.synonyms.length > 0 ||
+    result.thesaurus.wordnetSenses.length > 0 ||
+    result.thesaurus.rogetCategories.length > 0
+  );
+  const hasBiblical = result.biblical && (
+    result.biblical.eastons || result.biblical.hitchcocks || result.biblical.naves
+  );
 
   // Build available sections for nav
   const sections: SectionDef[] = [];
@@ -64,6 +74,8 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural" });
   if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828" });
   if (sortedDefs.length > 0) sections.push({ id: "definitions", label: "Definitions", shortLabel: "Defs" });
+  if (hasThesaurus) sections.push({ id: "thesaurus", label: "Thesaurus", shortLabel: "Thes." });
+  if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible" });
   if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related" });
 
   // Intersection observer for sticky nav
@@ -109,6 +121,11 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           {result.phonetic && (
             <span className="font-mono text-base text-accent-secondary">{result.phonetic}</span>
           )}
+          {result.pronunciation?.arpabet && result.pronunciation.arpabet[0] && (
+            <span className="font-mono text-xs text-text-muted" title="ARPAbet pronunciation">
+              [{result.pronunciation.arpabet[0]}]
+            </span>
+          )}
           {result.definitions[0]?.pos && (
             <Badge variant="accent">{result.definitions[0].pos}</Badge>
           )}
@@ -116,6 +133,12 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             <Badge variant="muted">
               {result.frequency.label} &middot; #{result.frequency.rank.toLocaleString()}
             </Badge>
+          )}
+          {result.isAcademic && (
+            <Badge variant="accent">Academic (List {result.isAcademic.sublist})</Badge>
+          )}
+          {result.dialect && result.dialect[0] && result.dialect[0] !== "english" && (
+            <Badge variant="muted">{result.dialect[0]}</Badge>
           )}
         </div>
 
@@ -235,6 +258,32 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               Click a year on the timeline to read that definition.
             </p>
             <DefinitionTimeline definitions={result.definitions} />
+          </CollapsibleSection>
+        )}
+
+        {/* Thesaurus */}
+        {hasThesaurus && result.thesaurus && (
+          <CollapsibleSection
+            id="thesaurus"
+            title="Thesaurus"
+            preview={`${result.thesaurus.synonyms.length} synonyms · ${result.thesaurus.wordnetSenses.length} senses · ${result.thesaurus.rogetCategories.length} concept groups`}
+          >
+            <ThesaurusSection data={result.thesaurus} />
+          </CollapsibleSection>
+        )}
+
+        {/* Biblical Study */}
+        {hasBiblical && result.biblical && (
+          <CollapsibleSection
+            id="biblical"
+            title="Biblical Study"
+            preview={[
+              result.biblical.eastons ? "Easton's" : "",
+              result.biblical.hitchcocks ? "Hitchcock's" : "",
+              result.biblical.naves?.length ? "Nave's" : "",
+            ].filter(Boolean).join(" · ")}
+          >
+            <BiblicalStudySection data={result.biblical} />
           </CollapsibleSection>
         )}
 

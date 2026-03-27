@@ -1,9 +1,13 @@
-import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency } from "@/types/lexica";
-import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs } from "./database";
+import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink } from "@/types/lexica";
+import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs,
+  lookupMobyThesaurus, lookupWordNet, getWordNetSynonyms, getWordNetRelations, lookupRogets,
+  lookupPronunciation, lookupEastons, lookupHitchcocks, lookupNaves, lookupGcide,
+  lookupScowl, lookupAcademicWord, lookupEtymologyLinks } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
 import { getWordFrequency, lookupInDictionary } from "./dictionaries";
+import { arpabetToReadable } from "./pronunciation";
 
 function parseJsonArray(json: string): string[] {
   if (!json) return [];
@@ -180,6 +184,106 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     }
   }
 
+  // === Phase 1: Thesaurus ===
+  let thesaurus: ThesaurusData | undefined;
+  const moby = lookupMobyThesaurus(word);
+  const wordnetSynsets = lookupWordNet(word);
+  const rogetEntries = lookupRogets(word);
+
+  if (moby || wordnetSynsets.length > 0 || rogetEntries.length > 0) {
+    const synonyms = moby ? moby.synonyms.split(",").map(s => s.trim()).filter(Boolean).slice(0, 50) : [];
+
+    const wordnetSenses: WordNetSense[] = wordnetSynsets.map(ws => {
+      const examples = (() => { try { return JSON.parse(ws.examples) as string[]; } catch { return []; } })();
+      const synWords = getWordNetSynonyms(ws.synset_id).filter(w => w !== word);
+      const hypernyms = getWordNetRelations(ws.synset_id, "hypernym", 3).map(h => h.definition);
+      const hyponyms = getWordNetRelations(ws.synset_id, "hyponym", 3).map(h => h.definition);
+      return {
+        pos: ws.pos,
+        definition: ws.definition,
+        examples,
+        synonyms: synWords.slice(0, 8),
+        hypernyms,
+        hyponyms,
+      };
+    });
+
+    const rogetCategories: RogetCategory[] = rogetEntries.map(r => ({
+      number: r.category_num,
+      name: r.category_name,
+      relatedWords: r.words.split(/[,;]/).map(w => w.trim()).filter(w => w && w.length < 30).slice(0, 15),
+    }));
+
+    thesaurus = { synonyms, wordnetSenses, rogetCategories };
+  }
+
+  // === Phase 2: Pronunciation ===
+  let pronunciation: PronunciationData | undefined;
+  const cmuEntries = lookupPronunciation(word);
+  if (ipa || cmuEntries.length > 0) {
+    pronunciation = {
+      ipa,
+      arpabet: cmuEntries.length > 0 ? cmuEntries.map(c => c.phonemes) : undefined,
+    };
+  }
+
+  // === Phase 3: Biblical ===
+  let biblical: BiblicalStudyData | undefined;
+  const eastons = lookupEastons(word);
+  const hitchcocks = lookupHitchcocks(word);
+  const navesEntries = lookupNaves(word);
+
+  if (eastons || hitchcocks || navesEntries.length > 0) {
+    biblical = {};
+    if (eastons) biblical.eastons = { definition: eastons.definition };
+    if (hitchcocks) biblical.hitchcocks = { meaning: hitchcocks.meaning };
+    if (navesEntries.length > 0) {
+      biblical.naves = navesEntries.map(n => ({
+        topic: n.topic,
+        subtopics: (() => { try { return JSON.parse(n.subtopics) as string[]; } catch { return []; } })(),
+        references: (() => { try { return JSON.parse(n.refs) as string[]; } catch { return []; } })(),
+      }));
+    }
+  }
+
+  // Also add Easton's to definitions if available
+  if (eastons) {
+    definitions.push({
+      source: "eastons",
+      label: "Easton's Bible Dict.",
+      year: 1897,
+      definition: eastons.definition,
+    });
+  }
+
+  // === Phase 4: Enrichment ===
+  // GCIDE
+  const gcide = lookupGcide(word);
+  if (gcide) {
+    definitions.push({
+      source: "gcide",
+      label: "GCIDE",
+      year: 2024,
+      definition: gcide.definition,
+      pos: gcide.pos || undefined,
+      etymology: gcide.etymology || undefined,
+    });
+  }
+
+  // SCOWL dialect info
+  const scowl = lookupScowl(word);
+  const dialect = scowl ? [scowl.dialect] : undefined;
+
+  // Academic Word List
+  const awl = lookupAcademicWord(word);
+  const isAcademic = awl ? { sublist: awl.sublist } : undefined;
+
+  // Etymology-DB links
+  const etymLinks = lookupEtymologyLinks(word);
+  const etymologyLinks: EtymologyLink[] | undefined = etymLinks.length > 0
+    ? etymLinks.map(l => ({ parentWord: l.parent_word, parentLang: l.parent_lang, relationType: l.relation_type }))
+    : undefined;
+
   return {
     word,
     phonetic: ipa,
@@ -199,7 +303,13 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     constellation,
     definitions,
     taxonomy,
+    thesaurus,
+    biblical,
+    pronunciation,
     webster1828_etymology: webster1828?.etymology || undefined,
     frequency: getWordFrequency(word) || undefined,
+    isAcademic,
+    dialect,
+    etymologyLinks,
   };
 }

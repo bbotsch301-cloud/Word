@@ -135,3 +135,233 @@ export function lookupStrongs(word: string, limit: number = 5): StrongsRow[] {
     return [];
   }
 }
+
+// === Moby Thesaurus ===
+export interface MobyRow {
+  word: string;
+  synonyms: string;
+}
+
+export function lookupMobyThesaurus(word: string): MobyRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM moby_thesaurus WHERE word = ?").get(word.toLowerCase()) as MobyRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === WordNet ===
+export interface WordNetSynsetRow {
+  synset_id: string;
+  pos: string;
+  definition: string;
+  examples: string;
+}
+
+export interface WordNetRelationRow {
+  source_synset: string;
+  target_synset: string;
+  relation_type: string;
+}
+
+export function lookupWordNet(word: string, limit: number = 10): WordNetSynsetRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(`
+      SELECT ws.* FROM wordnet_synsets ws
+      JOIN wordnet_lemmas wl ON ws.synset_id = wl.synset_id
+      WHERE wl.word = ?
+      LIMIT ?
+    `).all(word.toLowerCase(), limit) as WordNetSynsetRow[];
+  } catch {
+    return [];
+  }
+}
+
+export function getWordNetSynonyms(synsetId: string): string[] {
+  const db = getDatabase();
+  try {
+    const rows = db.prepare(
+      "SELECT word FROM wordnet_lemmas WHERE synset_id = ? LIMIT 20"
+    ).all(synsetId) as { word: string }[];
+    return rows.map(r => r.word);
+  } catch {
+    return [];
+  }
+}
+
+export function getWordNetRelations(synsetId: string, relationType: string, limit: number = 5): WordNetSynsetRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(`
+      SELECT ws.* FROM wordnet_synsets ws
+      JOIN wordnet_relations wr ON ws.synset_id = wr.target_synset
+      WHERE wr.source_synset = ? AND wr.relation_type = ?
+      LIMIT ?
+    `).all(synsetId, relationType, limit) as WordNetSynsetRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === Roget's Thesaurus ===
+export interface RogetRow {
+  category_num: number;
+  category_name: string;
+  section: string;
+  words: string;
+}
+
+export function lookupRogets(word: string, limit: number = 5): RogetRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(`
+      SELECT r.* FROM rogets r
+      JOIN rogets_index ri ON r.category_num = ri.category_num
+      WHERE ri.word = ?
+      LIMIT ?
+    `).all(word.toLowerCase(), limit) as RogetRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === CMU Pronouncing Dictionary ===
+export interface CmuRow {
+  word: string;
+  variant: number;
+  phonemes: string;
+}
+
+export function lookupPronunciation(word: string): CmuRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT * FROM cmu_pronunciation WHERE word = ? ORDER BY variant"
+    ).all(word.toLowerCase()) as CmuRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === Easton's Bible Dictionary ===
+export interface EastonsRow {
+  word: string;
+  definition: string;
+}
+
+export function lookupEastons(word: string): EastonsRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM eastons WHERE word = ?").get(word.toLowerCase()) as EastonsRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Hitchcock's Bible Names ===
+export interface HitchcocksRow {
+  name: string;
+  meaning: string;
+}
+
+export function lookupHitchcocks(word: string): HitchcocksRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM hitchcocks WHERE name = ?").get(word.toLowerCase()) as HitchcocksRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Nave's Topical Bible ===
+export interface NavesRow {
+  topic: string;
+  subtopics: string;
+  refs: string;
+}
+
+export function lookupNaves(word: string, limit: number = 5): NavesRow[] {
+  const db = getDatabase();
+  try {
+    // Try exact match first, then prefix match
+    const exact = db.prepare("SELECT * FROM naves WHERE topic = ?").all(word.toLowerCase()) as NavesRow[];
+    if (exact.length > 0) return exact.slice(0, limit);
+    return db.prepare("SELECT * FROM naves WHERE topic LIKE ? LIMIT ?").all(`${word.toLowerCase()}%`, limit) as NavesRow[];
+  } catch {
+    return [];
+  }
+}
+
+// === GCIDE ===
+export interface GcideRow {
+  word: string;
+  pos: string | null;
+  definition: string;
+  etymology: string | null;
+}
+
+export function lookupGcide(word: string): GcideRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT * FROM gcide WHERE word = ? ORDER BY LENGTH(definition) DESC LIMIT 1"
+    ).get(word.toLowerCase()) as GcideRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === SCOWL ===
+export interface ScowlRow {
+  word: string;
+  size_category: number;
+  dialect: string;
+  word_class: string;
+}
+
+export function lookupScowl(word: string): ScowlRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM scowl_words WHERE word = ?").get(word.toLowerCase()) as ScowlRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Academic Word List ===
+export interface AcademicWordRow {
+  word: string;
+  sublist: number;
+  family_head: string;
+}
+
+export function lookupAcademicWord(word: string): AcademicWordRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM academic_words WHERE word = ?").get(word.toLowerCase()) as AcademicWordRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Etymology-DB ===
+export interface EtymologyLinkRow {
+  word: string;
+  word_lang: string;
+  parent_word: string;
+  parent_lang: string;
+  relation_type: string;
+}
+
+export function lookupEtymologyLinks(word: string, limit: number = 10): EtymologyLinkRow[] {
+  const db = getDatabase();
+  try {
+    return db.prepare(
+      "SELECT * FROM etymology_links WHERE word = ? LIMIT ?"
+    ).all(word.toLowerCase(), limit) as EtymologyLinkRow[];
+  } catch {
+    return [];
+  }
+}

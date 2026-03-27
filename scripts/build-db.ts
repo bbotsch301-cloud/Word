@@ -8,6 +8,15 @@ import { processBlacksLaw } from "./process-blacks-law";
 import { processHobsonJobson } from "./process-hobson-jobson";
 import { processVulgarTongue } from "./process-vulgar-tongue";
 import { processFrequency } from "./process-frequency";
+import { processMoby } from "./process-moby";
+import { processWordNet } from "./process-wordnet";
+import { processRogets } from "./process-rogets";
+import { processCmuDict } from "./process-cmudict";
+import { processEastons } from "./process-eastons";
+import { processHitchcocks } from "./process-hitchcocks";
+import { processNaves } from "./process-naves";
+import { processGcide } from "./process-gcide";
+import { processAWL } from "./process-awl";
 
 const DB_PATH = path.join(__dirname, "..", "data", "lexica.db");
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
@@ -17,6 +26,7 @@ interface SourceConfig {
   file: string;
   processor: (db: Database.Database, path: string) => Promise<void>;
   required?: boolean;
+  isDir?: boolean;
 }
 
 async function main() {
@@ -73,6 +83,19 @@ async function main() {
     { name: "Hobson-Jobson (Anglo-Indian)", file: "hobson-jobson.txt", processor: processHobsonJobson },
     { name: "1811 Vulgar Tongue", file: "vulgar-tongue.txt", processor: processVulgarTongue },
     { name: "Word Frequency", file: "wordfreq.json", processor: processFrequency },
+    // Phase 1: Thesaurus
+    { name: "Moby Thesaurus", file: "moby-thesaurus.txt", processor: processMoby },
+    { name: "WordNet 3.1", file: "dict", processor: processWordNet, isDir: true },
+    { name: "Roget's Thesaurus (1911)", file: "rogets-thesaurus.txt", processor: processRogets },
+    // Phase 2: Pronunciation
+    { name: "CMU Pronouncing Dictionary", file: "cmudict.txt", processor: processCmuDict },
+    // Phase 3: Biblical
+    { name: "Easton's Bible Dictionary", file: "bible-dict-index.json", processor: processEastons },
+    { name: "Hitchcock's Bible Names", file: "hitchcocks-names.csv", processor: processHitchcocks },
+    { name: "Nave's Topical Bible", file: "naves-topical.csv", processor: processNaves },
+    // Phase 4: Enrichment
+    { name: "GCIDE", file: "gcide-0.53", processor: processGcide, isDir: true },
+    { name: "Academic Word List", file: "academic-word-list.json", processor: processAWL },
   ];
 
   // Process each source
@@ -109,6 +132,18 @@ async function main() {
     { id: "blacks-law", name: "Black's Law Dictionary", year: 1910, desc: "The most widely cited legal dictionary in American jurisprudence, 2nd Edition." },
     { id: "hobson-jobson", name: "Hobson-Jobson", year: 1886, desc: "A glossary of colloquial Anglo-Indian words and phrases — the definitive reference for English words borrowed from Indian languages." },
     { id: "vulgar-tongue", name: "1811 Vulgar Tongue", year: 1811, desc: "Francis Grose's dictionary of slang, cant, and vulgar language of the Georgian era." },
+    // Phase 1: Thesaurus
+    { id: "moby", name: "Moby Thesaurus", year: 1996, desc: "The largest thesaurus in the English language with over 2.5 million synonyms across 30,000 root words. Public domain." },
+    { id: "wordnet", name: "WordNet", year: 2024, desc: "Princeton's lexical database organizing English into synsets — groups of cognitive synonyms linked by semantic relations." },
+    { id: "rogets", name: "Roget's Thesaurus", year: 1911, desc: "Peter Mark Roget's classic thesaurus organizing the English language by concepts and ideas, not alphabetically." },
+    // Phase 2: Pronunciation
+    { id: "cmudict", name: "CMU Pronouncing Dict", year: 2015, desc: "Carnegie Mellon University's pronunciation dictionary with phonetic transcriptions for over 134,000 English words." },
+    // Phase 3: Biblical
+    { id: "eastons", name: "Easton's Bible Dictionary", year: 1897, desc: "Matthew George Easton's comprehensive dictionary of biblical terms, places, names, and topics." },
+    { id: "hitchcocks", name: "Hitchcock's Bible Names", year: 1869, desc: "Roswell D. Hitchcock's dictionary of Bible names with their meanings and etymologies." },
+    { id: "naves", name: "Nave's Topical Bible", year: 1896, desc: "Orville J. Nave's topical index and concordance of biblical topics with scripture references." },
+    // Phase 4: Enrichment
+    { id: "gcide", name: "GCIDE", year: 2024, desc: "The GNU Collaborative International Dictionary of English — an expanded, community-maintained edition of Webster's 1913." },
   ];
 
   const insertDict = db.prepare("INSERT OR REPLACE INTO dictionaries (id, name, year, description, entry_count) VALUES (?, ?, ?, ?, ?)");
@@ -119,6 +154,14 @@ async function main() {
     "blacks-law": "SELECT COUNT(*) as c FROM blacks_law",
     "hobson-jobson": "SELECT COUNT(*) as c FROM hobson_jobson",
     "vulgar-tongue": "SELECT COUNT(*) as c FROM vulgar_tongue",
+    moby: "SELECT COUNT(*) as c FROM moby_thesaurus",
+    wordnet: "SELECT COUNT(*) as c FROM wordnet_synsets",
+    rogets: "SELECT COUNT(*) as c FROM rogets",
+    cmudict: "SELECT COUNT(DISTINCT word) as c FROM cmu_pronunciation",
+    eastons: "SELECT COUNT(*) as c FROM eastons",
+    hitchcocks: "SELECT COUNT(*) as c FROM hitchcocks",
+    naves: "SELECT COUNT(*) as c FROM naves",
+    gcide: "SELECT COUNT(DISTINCT word) as c FROM gcide",
   };
 
   for (const meta of dictMeta) {
