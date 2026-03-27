@@ -1,10 +1,11 @@
-import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink, MorphologyData, NgramDataPoint, CognateData } from "@/types/lexica";
+import type { LexicaResult, DefinitionSource, WordTaxonomy, WordFrequency, ThesaurusData, WordNetSense, RogetCategory, BiblicalStudyData, PronunciationData, EtymologyLink, MorphologyData, NgramDataPoint, CognateData, FirstUseData } from "@/types/lexica";
 import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBlacksLaw, lookupBouvier, lookupStrongs,
   lookupMobyThesaurus, lookupWordNet, getWordNetSynonyms, getWordNetRelations, lookupRogets,
   lookupPronunciation, lookupEastons, lookupSmiths, lookupHitchcocks, lookupNaves, lookupGcide,
   lookupScowl, lookupAcademicWord, lookupEtymologyLinks,
   lookupIpaDict, lookupCefrLevel, lookupMorphology, lookupGoogleFrequency, lookupBDB,
-  lookupNgramHistory, lookupCognates } from "./database";
+  lookupNgramHistory, lookupCognates,
+  lookupNuttall, lookupBritannica, lookupCatholicEncyclopedia, lookupFirstUse } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
 import { buildHiddenConnections } from "./build-connections";
@@ -318,7 +319,27 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
       }
     : undefined;
 
-  // === Phase 7: Hidden Connections ===
+  // === Phase 7: Encyclopedias ===
+  const nuttall = lookupNuttall(word);
+  if (nuttall) {
+    definitions.push({ source: "nuttall", label: "Nuttall Encyclopaedia", year: 1907, definition: nuttall.definition });
+  }
+  const britannica = lookupBritannica(word);
+  if (britannica) {
+    definitions.push({ source: "britannica", label: "Britannica 11th Ed.", year: 1911, definition: britannica.definition });
+  }
+  const catholicEnc = lookupCatholicEncyclopedia(word);
+  if (catholicEnc) {
+    definitions.push({ source: "catholic_encyclopedia", label: "Catholic Encyclopedia", year: 1913, definition: catholicEnc.definition });
+  }
+
+  // === First Use Dates ===
+  const firstUseRow = lookupFirstUse(word);
+  const firstUse: FirstUseData | undefined = firstUseRow
+    ? { year: firstUseRow.year, century: firstUseRow.century, source: firstUseRow.source }
+    : undefined;
+
+  // === Phase 8: Hidden Connections ===
   const hiddenConnections = buildHiddenConnections(
     word, etymologyTemplates, etymologyText,
     morphology, strata, definitions, strongsEntries,
@@ -360,5 +381,6 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     hiddenConnections,
     ngramHistory,
     cognates,
+    firstUse,
   };
 }

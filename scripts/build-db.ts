@@ -30,6 +30,10 @@ import { processGoogleFreq } from "./process-google-freq";
 import { processNgrams } from "./process-ngrams";
 import { processCognates } from "./process-cognates";
 import { processEtymologyDb } from "./process-etymology-db";
+import { processNuttall } from "./process-nuttall";
+import { processBritannica } from "./process-britannica";
+import { processCatholicEncyclopedia } from "./process-catholic-encyclopedia";
+import { processFirstUse } from "./process-first-use";
 
 const DB_PATH = path.join(__dirname, "..", "data", "lexica.db");
 const RAW_DIR = path.join(__dirname, "..", "data", "raw");
@@ -131,6 +135,11 @@ async function main() {
     // Phase 6: Etymology DB + Cognates
     { name: "Etymology Database", file: "etymology-db.csv", processor: processEtymologyDb },
     { name: "Cognates (from Etymology DB)", file: "etymology-db.csv", processor: processCognates },
+    // Phase 7: Encyclopedias
+    { name: "Nuttall Encyclopaedia", file: "nuttall.txt", processor: processNuttall },
+    { name: "Catholic Encyclopedia", file: "cathen-master", processor: processCatholicEncyclopedia, isDir: true },
+    // Phase 7: First Use Dates (extracted from existing words table — uses dummy file path)
+    { name: "First Use Dates", file: "kaikki-english.jsonl", processor: processFirstUse },
   ];
 
   // Process each source
@@ -188,6 +197,10 @@ async function main() {
     { id: "ipadict", name: "IPA Dictionary", year: 2023, desc: "Open-source IPA pronunciation dictionary providing phonetic transcriptions for English words." },
     { id: "oxford5000", name: "Oxford 5000", year: 2020, desc: "The 5,000 most important English words for learners, tagged with CEFR proficiency levels." },
     { id: "morpholex", name: "MorphoLex", year: 2020, desc: "Morphological database decomposing 70,000 English words into their prefixes, roots, and suffixes." },
+    // Phase 7: Encyclopedias
+    { id: "nuttall", name: "Nuttall Encyclopaedia", year: 1907, desc: "A concise encyclopaedia of general knowledge with ~16,000 short entries covering people, places, events, and ideas." },
+    { id: "britannica", name: "Britannica 11th Ed.", year: 1911, desc: "The Encyclopædia Britannica 11th Edition — widely considered the finest edition ever published." },
+    { id: "catholic-encyclopedia", name: "Catholic Encyclopedia", year: 1913, desc: "The original Catholic Encyclopedia with ~11,000 articles covering theology, philosophy, history, and culture." },
   ];
 
   const insertDict = db.prepare("INSERT OR REPLACE INTO dictionaries (id, name, year, description, entry_count) VALUES (?, ?, ?, ?, ?)");
@@ -214,6 +227,9 @@ async function main() {
     ipadict: "SELECT COUNT(*) as c FROM ipa_dict",
     oxford5000: "SELECT COUNT(*) as c FROM oxford_5000",
     morpholex: "SELECT COUNT(*) as c FROM morpholex",
+    nuttall: "SELECT COUNT(*) as c FROM nuttall",
+    britannica: "SELECT COUNT(*) as c FROM britannica",
+    "catholic-encyclopedia": "SELECT COUNT(*) as c FROM catholic_encyclopedia",
   };
 
   for (const meta of dictMeta) {

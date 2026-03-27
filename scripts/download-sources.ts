@@ -346,6 +346,19 @@ const SOURCES: Source[] = [
     filename: "etymology-db.csv",
     optional: true,
   },
+  // Phase 7: Encyclopedias
+  {
+    name: "Nuttall Encyclopaedia (1907)",
+    url: "https://raw.githubusercontent.com/GITenberg/The-Nuttall-Encyclop-dia--13-Being-a-Concise-and-Comprehensive-Dictionary-of-General-Knowledg__12342/master/12342-8.txt",
+    filename: "nuttall.txt",
+    optional: true,
+  },
+  {
+    name: "Catholic Encyclopedia (1913 HTML)",
+    url: "https://github.com/CWilsonTSP/cathen/archive/refs/heads/master.zip",
+    filename: "cathen-master.zip",
+    optional: true,
+  },
 ];
 
 function download(url: string, dest: string): Promise<void> {

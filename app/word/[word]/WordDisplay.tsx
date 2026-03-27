@@ -184,6 +184,11 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           {result.isAcademic && (
             <Badge variant="accent">Academic (List {result.isAcademic.sublist})</Badge>
           )}
+          {result.firstUse && (
+            <Badge variant="muted">
+              First attested: {result.firstUse.year ? `c. ${result.firstUse.year}` : result.firstUse.century}
+            </Badge>
+          )}
           {result.dialect && result.dialect[0] && result.dialect[0] !== "english" && (
             <Badge variant="muted">{result.dialect[0]}</Badge>
           )}

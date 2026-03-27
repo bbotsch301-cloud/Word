@@ -172,6 +172,13 @@ export interface CognateData {
   cognates: Cognate[];
 }
 
+// First use date
+export interface FirstUseData {
+  year?: number;
+  century: string;
+  source: string;
+}
+
 export interface LexicaResult {
   word: string;
   phonetic: string;
@@ -197,4 +204,5 @@ export interface LexicaResult {
   hiddenConnections?: HiddenConnectionsData;
   ngramHistory?: NgramDataPoint[];
   cognates?: CognateData;
+  firstUse?: FirstUseData;
 }

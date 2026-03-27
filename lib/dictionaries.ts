@@ -46,6 +46,9 @@ const DICT_CONFIG: Record<string, { table: string; wordCol: string; defCol: stri
   ipadict: { table: "ipa_dict", wordCol: "word", defCol: "ipa" },
   oxford5000: { table: "oxford_5000", wordCol: "word", defCol: "cefr_level" },
   morpholex: { table: "morpholex", wordCol: "word", defCol: "morphemes" },
+  nuttall: { table: "nuttall", wordCol: "word", defCol: "definition" },
+  britannica: { table: "britannica", wordCol: "word", defCol: "definition" },
+  "catholic-encyclopedia": { table: "catholic_encyclopedia", wordCol: "word", defCol: "definition" },
 };
 
 export function getAllDictionaries(): DictionaryMeta[] {

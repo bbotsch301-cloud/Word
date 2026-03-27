@@ -611,6 +611,53 @@ export function lookupCognates(word: string, limit: number = 30): CognateRow[] {
   }
 }
 
+// === Nuttall Encyclopaedia ===
+export function lookupNuttall(word: string): { word: string; definition: string } | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM nuttall WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Catholic Encyclopedia ===
+export function lookupCatholicEncyclopedia(word: string): { word: string; definition: string } | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM catholic_encyclopedia WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === Britannica ===
+export function lookupBritannica(word: string): { word: string; definition: string } | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM britannica WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+// === First Use Dates ===
+export interface FirstUseRow {
+  word: string;
+  year: number;
+  century: string;
+  source: string;
+}
+
+export function lookupFirstUse(word: string): FirstUseRow | undefined {
+  const db = getDatabase();
+  try {
+    return db.prepare("SELECT * FROM first_use WHERE word = ?").get(word.toLowerCase()) as FirstUseRow | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 // === Word of the Day ===
 export function getWordOfTheDay(): { word: string; definition: string } | undefined {
   const db = getDatabase();

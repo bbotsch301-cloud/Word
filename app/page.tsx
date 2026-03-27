@@ -18,7 +18,7 @@ const FEATURED_WORDS = [
 
 const STATS = [
   { value: "1M+", label: "Words" },
-  { value: "24", label: "Sources" },
+  { value: "27+", label: "Sources" },
   { value: "1811\u20132024", label: "Spanning Centuries" },
 ];
 
@@ -72,7 +72,7 @@ export default function Home() {
             </h1>
             <p className="font-serif text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
               Every word has a story. Trace definitions, etymologies, and meaning shifts
-              across twenty-four historical, legal, biblical, and linguistic sources.
+              across twenty-seven historical, legal, biblical, encyclopedic, and linguistic sources.
             </p>
           </motion.div>
 
@@ -132,8 +132,8 @@ export default function Home() {
                   ),
                 },
                 {
-                  title: "24 Sources",
-                  desc: "Compare definitions across centuries from dictionaries, thesauri, biblical concordances, and linguistic databases.",
+                  title: "27+ Sources",
+                  desc: "Compare definitions across centuries from dictionaries, thesauri, biblical concordances, encyclopedias, and linguistic databases.",
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
