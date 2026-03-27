@@ -137,6 +137,13 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-6">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs text-text-muted">
+        <Link href="/" className="hover:text-accent transition-colors">Home</Link>
+        <span className="mx-1.5">/</span>
+        <span className="text-text-secondary">{result.word}</span>
+      </nav>
+
       {/* Inline search */}
       <div className="mb-8 max-w-md">
         <SearchField size="md" placeholder="Search another word..." onSubmit={handleSearch} />
@@ -259,8 +266,53 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         </motion.div>
       </motion.section>
 
+      {/* ============ AT A GLANCE ============ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="mt-8 bg-surface border border-border rounded-xl p-5"
+      >
+        <div className="flex items-baseline gap-2 mb-2">
+          <h2 className="font-serif text-lg font-semibold text-text-primary">At a Glance</h2>
+          <span className="text-xs text-text-muted font-mono">
+            {sections.length} sections below
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="text-text-muted">Definition: </span>
+            <span className="text-text-primary">
+              {result.modern_meaning
+                ? result.modern_meaning.length > 100
+                  ? result.modern_meaning.slice(0, 100) + "..."
+                  : result.modern_meaning
+                : result.definitions[0]?.definition?.slice(0, 100) || "—"}
+            </span>
+          </div>
+          <div>
+            <span className="text-text-muted">Origin: </span>
+            <span className="text-text-primary">
+              {rootStratum
+                ? `${rootStratum.language}${rootStratum.form ? ` — ${rootStratum.form}` : ""}`
+                : result.strata.length > 0
+                  ? result.strata[result.strata.length - 1].language
+                  : "Unknown"}
+            </span>
+          </div>
+          <div>
+            <span className="text-text-muted">First attested: </span>
+            <span className="text-text-primary">
+              {result.firstUse
+                ? result.firstUse.year ? `c. ${result.firstUse.year}` : result.firstUse.century
+                : "Unknown"}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+
       {/* ============ COLLAPSIBLE SECTIONS ============ */}
-      <div className="mt-12 space-y-8">
+      <div className="mt-8 space-y-8">
 
         {/* ——— ORIGINS ——— */}
         <GroupDivider group="origins" sections={sections} />
@@ -294,7 +346,6 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           <CollapsibleSection
             id="etymology"
             title="Etymology Chain"
-            defaultOpen
             preview={`${result.strata.length} languages \u2014 ${result.strata[result.strata.length - 1]?.language || ""} to Modern English`}
           >
             {result.strata.length >= 3 && (
@@ -379,7 +430,6 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           <CollapsibleSection
             id="connections"
             title="Hidden Connections"
-            defaultOpen
             preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
           >
             <HiddenConnectionsSection data={result.hiddenConnections} word={result.word} />

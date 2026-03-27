@@ -282,65 +282,58 @@ export default function Home() {
         </section>
       )}
 
-      {/* ============ SOURCES ============ */}
+      {/* ============ DISCOVER FEATURES ============ */}
       <section className="border-t border-border">
         <div className="max-w-4xl mx-auto px-6 py-12">
-          <h3 className="font-serif text-lg font-semibold text-text-primary text-center mb-6">Our Sources</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[
-              // Dictionaries
-              { name: "Wiktionary", year: "2024", desc: "Modern definitions & etymologies" },
-              { name: "Webster\u2019s 1828", year: "1828", desc: "Noah Webster\u2019s American Dictionary" },
-              { name: "Webster\u2019s 1913", year: "1913", desc: "The Unabridged International" },
-              { name: "GCIDE", year: "2024", desc: "GNU Collaborative Dictionary" },
-              // Legal
-              { name: "Black\u2019s Law", year: "1910", desc: "Legal terminology reference" },
-              { name: "Bouvier\u2019s Law", year: "1856", desc: "American legal dictionary" },
-              // Thesaurus
-              { name: "Moby Thesaurus", year: "1996", desc: "2.5M synonyms, 30K roots" },
-              { name: "WordNet", year: "2024", desc: "Princeton\u2019s semantic database" },
-              { name: "Roget\u2019s Thesaurus", year: "1911", desc: "Classic concept-organized" },
-              // Biblical
-              { name: "Strong\u2019s Concordance", year: "1890", desc: "Hebrew & Greek roots" },
-              { name: "Easton\u2019s Bible Dict.", year: "1897", desc: "Biblical terms & places" },
-              { name: "Hitchcock\u2019s Names", year: "1869", desc: "Bible name meanings" },
-              { name: "Nave\u2019s Topical Bible", year: "1896", desc: "7,000+ biblical topics" },
-              // Historical
-              { name: "Hobson-Jobson", year: "1886", desc: "Anglo-Indian words" },
-              { name: "1811 Vulgar Tongue", year: "1811", desc: "Georgian era slang" },
-              // Linguistic
-              { name: "CMU Pronouncing", year: "2015", desc: "134K word pronunciations" },
-              // New sources
-              { name: "Smith\u2019s Bible Dict.", year: "1863", desc: "Biblical encyclopedia" },
-              { name: "Brown-Driver-Briggs", year: "1906", desc: "Hebrew-Aramaic lexicon" },
-              { name: "IPA Dictionary", year: "2023", desc: "Phonetic transcriptions" },
-              { name: "Oxford 5000", year: "2020", desc: "CEFR-tagged vocabulary" },
-              { name: "MorphoLex", year: "2020", desc: "Word structure analysis" },
-              { name: "SCOWL", year: "2020", desc: "Dialect word lists" },
-              { name: "Google 10K", year: "2012", desc: "Corpus frequency data" },
-            ].map((src) => (
-              <Link
-                key={src.name}
-                href="/dictionaries"
-                className="bg-surface border border-border rounded-lg p-4 hover:border-border-hover hover:bg-surface-hover transition-colors group"
-              >
-                <div className="font-serif font-semibold text-sm text-text-primary group-hover:text-accent transition-colors">{src.name}</div>
-                <div className="text-xs text-accent-secondary font-mono">{src.year}</div>
-                <div className="text-xs text-text-muted mt-1">{src.desc}</div>
-              </Link>
-            ))}
+          <h3 className="font-serif text-lg font-semibold text-text-primary text-center mb-6">More ways to explore</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link
+              href="/spells"
+              className="bg-surface border border-border rounded-xl p-5 hover:border-accent/40 hover:shadow-md transition-all group text-center"
+            >
+              <div className="text-2xl mb-2">&#10024;</div>
+              <div className="font-serif font-semibold text-text-primary group-hover:text-accent transition-colors">Word Spells</div>
+              <p className="text-xs text-text-muted mt-1">Find hidden connections between words that sound alike or share roots</p>
+            </Link>
+            <Link
+              href="/compare"
+              className="bg-surface border border-border rounded-xl p-5 hover:border-accent/40 hover:shadow-md transition-all group text-center"
+            >
+              <div className="text-2xl mb-2">&#8596;</div>
+              <div className="font-serif font-semibold text-text-primary group-hover:text-accent transition-colors">Compare Words</div>
+              <p className="text-xs text-text-muted mt-1">Put any two words side by side to compare etymology, frequency, and more</p>
+            </Link>
+            <Link
+              href="/explore"
+              className="bg-surface border border-border rounded-xl p-5 hover:border-accent/40 hover:shadow-md transition-all group text-center"
+            >
+              <div className="text-2xl mb-2">&#127758;</div>
+              <div className="font-serif font-semibold text-text-primary group-hover:text-accent transition-colors">Time Travel</div>
+              <p className="text-xs text-text-muted mt-1">Explore words by century, origin language, and language family</p>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ============ FOOTER CTA ============ */}
-      <section className="border-t border-border bg-gradient-to-b from-accent/5 to-transparent">
-        <div className="max-w-2xl mx-auto px-6 py-16 text-center">
-          <h2 className="font-serif text-2xl font-bold text-text-primary mb-3">Start exploring</h2>
-          <p className="text-text-muted mb-6">Type any word to uncover its full history.</p>
-          <div className="max-w-md mx-auto">
-            <SearchField size="lg" placeholder="Try a word..." onSubmit={handleSearch} />
-          </div>
+      {/* ============ SOURCES BANNER ============ */}
+      <section className="border-t border-border">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <Link
+            href="/dictionaries"
+            className="flex items-center justify-between bg-surface border border-border rounded-xl p-5 hover:border-accent/40 transition-all group"
+          >
+            <div>
+              <p className="font-serif font-semibold text-text-primary group-hover:text-accent transition-colors">
+                Built on 27+ sources
+              </p>
+              <p className="text-sm text-text-muted mt-0.5">
+                From Webster&apos;s 1828 to modern Wiktionary, spanning two centuries of English.
+              </p>
+            </div>
+            <span className="text-accent text-sm font-medium shrink-0 ml-4">
+              Browse all &rarr;
+            </span>
+          </Link>
         </div>
       </section>
     </main>

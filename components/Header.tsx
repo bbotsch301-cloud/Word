@@ -7,11 +7,11 @@ import { useSession, signOut } from 'next-auth/react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
-  { href: '/explore', label: 'Explore' },
-  { href: '/spells', label: 'Spells' },
-  { href: '/search', label: 'Search' },
-  { href: '/dictionaries', label: 'Dictionaries' },
-  { href: '/lists', label: 'My Words' },
+  { href: '/explore', label: 'Explore', title: 'Browse words by century, language, and family' },
+  { href: '/spells', label: 'Spells', title: 'Discover hidden word connections' },
+  { href: '/search', label: 'Search', title: 'Filter by pattern, origin, and more' },
+  { href: '/dictionaries', label: 'Dictionaries', title: 'Browse 27+ historical sources' },
+  { href: '/lists', label: 'My Words', title: 'Your bookmarks and word lists' },
 ];
 
 function UserMenu({ onToggle }: { onToggle?: () => void }) {
@@ -140,6 +140,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
+                title={link.title}
                 className={`text-sm transition-colors ${
                   isActive
                     ? 'text-accent font-medium'
@@ -187,6 +188,7 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  title={link.title}
                   className={`block py-2.5 px-3 rounded-lg text-sm transition-colors ${
                     isActive
                       ? 'text-accent bg-accent/10 font-medium'
