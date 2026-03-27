@@ -21,6 +21,7 @@ import MeaningTimeline from "@/components/word/MeaningTimeline";
 import ConceptGalaxy from "@/components/word/ConceptGalaxy";
 import { NgramChart } from "@/components/word/NgramChart";
 import { CognatesSection } from "@/components/word/CognatesSection";
+import { EtymologyTree } from "@/components/word/EtymologyTree";
 import { useWordLists } from "@/components/WordListProvider";
 import Link from "next/link";
 
@@ -299,6 +300,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 <EtymologyChain strata={result.strata} />
               </>
             )}
+            <EtymologyTree word={result.word} />
           </CollapsibleSection>
         )}
 

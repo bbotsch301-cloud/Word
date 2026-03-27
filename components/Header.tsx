@@ -12,16 +12,22 @@ export default function Header() {
         </Link>
         <div className="flex items-center gap-6">
           <Link
+            href="/explore"
+            className="text-sm text-text-muted hover:text-text-primary transition-colors"
+          >
+            Explore
+          </Link>
+          <Link
+            href="/search"
+            className="text-sm text-text-muted hover:text-text-primary transition-colors"
+          >
+            Search
+          </Link>
+          <Link
             href="/dictionaries"
             className="text-sm text-text-muted hover:text-text-primary transition-colors"
           >
             Dictionaries
-          </Link>
-          <Link
-            href="/compare"
-            className="text-sm text-text-muted hover:text-text-primary transition-colors"
-          >
-            Compare
           </Link>
           <Link
             href="/lists"
