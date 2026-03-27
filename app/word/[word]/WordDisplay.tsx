@@ -14,6 +14,11 @@ import DefinitionCard from "@/components/word/DefinitionCard";
 import ThesaurusSection from "@/components/word/ThesaurusSection";
 import BiblicalStudySection from "@/components/word/BiblicalStudySection";
 import MorphologySection from "@/components/word/MorphologySection";
+import HiddenConnectionsSection from "@/components/word/HiddenConnectionsSection";
+import ConstellationGraph from "@/components/word/ConstellationGraph";
+import EtymologyRiver from "@/components/word/EtymologyRiver";
+import MeaningTimeline from "@/components/word/MeaningTimeline";
+import ConceptGalaxy from "@/components/word/ConceptGalaxy";
 import Link from "next/link";
 
 const fadeUp = {
@@ -36,6 +41,7 @@ interface SectionDef {
 export default function WordDisplay({ result }: { result: LexicaResult }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>("");
+  const [etymView, setEtymView] = useState<"chain" | "river">("chain");
 
   useEffect(() => {
     try {
@@ -67,10 +73,12 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   const hasBiblical = result.biblical && (
     result.biblical.eastons || result.biblical.smiths || result.biblical.hitchcocks || result.biblical.naves
   );
+  const hasConnections = result.hiddenConnections && result.hiddenConnections.connections.length > 0;
 
   // Build available sections for nav
   const sections: SectionDef[] = [];
   if (result.truest_meaning) sections.push({ id: "story", label: "The Story", shortLabel: "Story" });
+  if (hasConnections) sections.push({ id: "connections", label: "Hidden Connections", shortLabel: "Discover" });
   if (result.strata.length > 0) sections.push({ id: "etymology", label: "Etymology Chain", shortLabel: "Etymology" });
   if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural" });
   if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828" });
@@ -79,6 +87,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   if (hasThesaurus) sections.push({ id: "thesaurus", label: "Thesaurus", shortLabel: "Thes." });
   if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible" });
   if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related" });
+  if (result.constellation.length >= 4) sections.push({ id: "constellation-graph", label: "Word Constellation", shortLabel: "Map" });
 
   // Intersection observer for sticky nav
   useEffect(() => {
@@ -206,7 +215,19 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </CollapsibleSection>
         )}
 
-        {/* Etymology Chain */}
+        {/* Hidden Connections */}
+        {hasConnections && result.hiddenConnections && (
+          <CollapsibleSection
+            id="connections"
+            title="Hidden Connections"
+            defaultOpen
+            preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
+          >
+            <HiddenConnectionsSection data={result.hiddenConnections} word={result.word} />
+          </CollapsibleSection>
+        )}
+
+        {/* Etymology Chain / River */}
         {result.strata.length > 0 && (
           <CollapsibleSection
             id="etymology"
@@ -214,10 +235,32 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             defaultOpen
             preview={`${result.strata.length} languages \u2014 ${result.strata[result.strata.length - 1]?.language || ""} to Modern English`}
           >
-            <p className="text-sm text-text-muted mb-4">
-              Click any node to expand or collapse its details.
-            </p>
-            <EtymologyChain strata={result.strata} />
+            {result.strata.length >= 3 && (
+              <div className="flex gap-1 mb-4">
+                <button
+                  onClick={() => setEtymView("chain")}
+                  className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors ${etymView === "chain" ? "border-accent text-accent bg-accent/10" : "border-border text-text-muted hover:border-border-hover"}`}
+                >
+                  Timeline
+                </button>
+                <button
+                  onClick={() => setEtymView("river")}
+                  className={`text-xs font-mono px-3 py-1 rounded-full border transition-colors ${etymView === "river" ? "border-accent text-accent bg-accent/10" : "border-border text-text-muted hover:border-border-hover"}`}
+                >
+                  River
+                </button>
+              </div>
+            )}
+            {etymView === "river" && result.strata.length >= 3 ? (
+              <EtymologyRiver strata={result.strata} />
+            ) : (
+              <>
+                <p className="text-sm text-text-muted mb-4">
+                  Click any node to expand or collapse its details.
+                </p>
+                <EtymologyChain strata={result.strata} />
+              </>
+            )}
           </CollapsibleSection>
         )}
 
@@ -270,9 +313,11 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             title="Definitions Across Time"
             preview={`${sortedDefs.length} definitions from ${sortedDefs[0]?.year} to ${sortedDefs[sortedDefs.length - 1]?.year}`}
           >
-            <p className="text-sm text-text-muted mb-6">
-              Click a year on the timeline to read that definition.
-            </p>
+            {sortedDefs.length >= 3 && (sortedDefs[sortedDefs.length - 1]?.year - sortedDefs[0]?.year) > 50 && (
+              <div className="mb-6">
+                <MeaningTimeline definitions={result.definitions} />
+              </div>
+            )}
             <DefinitionTimeline definitions={result.definitions} />
           </CollapsibleSection>
         )}
@@ -285,6 +330,11 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             preview={`${result.thesaurus.synonyms.length} synonyms · ${result.thesaurus.wordnetSenses.length} senses · ${result.thesaurus.rogetCategories.length} concept groups`}
           >
             <ThesaurusSection data={result.thesaurus} />
+            {result.thesaurus.rogetCategories.length >= 2 && (
+              <div className="mt-6">
+                <ConceptGalaxy word={result.word} rogetCategories={result.thesaurus.rogetCategories} />
+              </div>
+            )}
           </CollapsibleSection>
         )}
 
@@ -339,6 +389,22 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 </div>
               )}
             </div>
+          </CollapsibleSection>
+        )}
+
+        {/* Word Constellation Graph */}
+        {result.constellation.length >= 4 && (
+          <CollapsibleSection
+            id="constellation-graph"
+            title="Word Constellation"
+            preview={`Visual map of ${result.constellation.length + (result.taxonomy ? result.taxonomy.hypernyms.length + result.taxonomy.hyponyms.length : 0)} connections`}
+          >
+            <ConstellationGraph
+              word={result.word}
+              constellation={result.constellation}
+              taxonomy={result.taxonomy}
+              connections={result.hiddenConnections?.connections}
+            />
           </CollapsibleSection>
         )}
       </div>

@@ -431,6 +431,125 @@ export function lookupGoogleFrequency(word: string): number | undefined {
   }
 }
 
+// === WordNet Meronyms/Holonyms ===
+export function getWordNetMeronyms(word: string, limit: number = 8): { word: string; relation: string }[] {
+  const db = getDatabase();
+  try {
+    const rows = db.prepare(`
+      SELECT DISTINCT wl2.word, wr.relation_type as relation
+      FROM wordnet_lemmas wl1
+      JOIN wordnet_relations wr ON wl1.synset_id = wr.source_synset
+      JOIN wordnet_lemmas wl2 ON wr.target_synset = wl2.synset_id
+      WHERE wl1.word = ? AND wr.relation_type IN ('has_part', 'member_meronym', 'substance_meronym', 'part_meronym')
+      AND wl2.word != ?
+      LIMIT ?
+    `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
+    return rows;
+  } catch {
+    return [];
+  }
+}
+
+export function getWordNetHolonyms(word: string, limit: number = 8): { word: string; relation: string }[] {
+  const db = getDatabase();
+  try {
+    const rows = db.prepare(`
+      SELECT DISTINCT wl2.word, wr.relation_type as relation
+      FROM wordnet_lemmas wl1
+      JOIN wordnet_relations wr ON wl1.synset_id = wr.source_synset
+      JOIN wordnet_lemmas wl2 ON wr.target_synset = wl2.synset_id
+      WHERE wl1.word = ? AND wr.relation_type IN ('part_of', 'member_holonym', 'substance_holonym', 'part_holonym')
+      AND wl2.word != ?
+      LIMIT ?
+    `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
+    return rows;
+  } catch {
+    return [];
+  }
+}
+
+// === WordNet Polysemy Count ===
+export function getPolysemyCount(word: string): { count: number; senses: string[] } {
+  const db = getDatabase();
+  try {
+    const rows = db.prepare(`
+      SELECT ws.definition FROM wordnet_synsets ws
+      JOIN wordnet_lemmas wl ON ws.synset_id = wl.synset_id
+      WHERE wl.word = ?
+    `).all(word.toLowerCase()) as { definition: string }[];
+    return { count: rows.length, senses: rows.map(r => r.definition) };
+  } catch {
+    return { count: 0, senses: [] };
+  }
+}
+
+// === Doublet Search ===
+export function findDoublets(word: string): string[] {
+  const db = getDatabase();
+  try {
+    const row = db.prepare(
+      "SELECT etymology_templates FROM words WHERE word = ? AND etymology_templates LIKE '%doublet%' LIMIT 1"
+    ).get(word.toLowerCase()) as { etymology_templates: string } | undefined;
+    if (!row) return [];
+    const templates = JSON.parse(row.etymology_templates) as Record<string, unknown>[];
+    const doublets: string[] = [];
+    for (const t of templates) {
+      if ((t.name as string) === "doublet" || (t.name as string) === "dbt") {
+        const args = t.args as Record<string, string> | undefined;
+        if (args) {
+          // Doublet template args are numbered: 2, 3, 4, etc.
+          for (let i = 2; i <= 10; i++) {
+            if (args[String(i)] && args[String(i)] !== "-") {
+              doublets.push(args[String(i)]);
+            }
+          }
+        }
+      }
+    }
+    return doublets;
+  } catch {
+    return [];
+  }
+}
+
+// === Borrowing Chain from Etymology Links ===
+export function getBorrowingChain(word: string, maxDepth: number = 6): { word: string; language: string; type: string }[] {
+  const db = getDatabase();
+  try {
+    const chain: { word: string; language: string; type: string }[] = [];
+    let current = word.toLowerCase();
+    const seen = new Set<string>();
+
+    for (let i = 0; i < maxDepth; i++) {
+      if (seen.has(current)) break;
+      seen.add(current);
+      const link = db.prepare(
+        "SELECT parent_word, parent_lang, relation_type FROM etymology_links WHERE word = ? LIMIT 1"
+      ).get(current) as { parent_word: string; parent_lang: string; relation_type: string } | undefined;
+      if (!link) break;
+      chain.push({ word: link.parent_word, language: link.parent_lang, type: link.relation_type });
+      current = link.parent_word;
+    }
+    return chain;
+  } catch {
+    return [];
+  }
+}
+
+// === Etymology Root Search ===
+export function findWordsByEtymologyRoot(root: string, excludeWord: string, limit: number = 10): string[] {
+  const db = getDatabase();
+  try {
+    const pattern = `%"root"%${root}%`;
+    const rows = db.prepare(
+      "SELECT DISTINCT word FROM words WHERE etymology_templates LIKE ? AND word != ? LIMIT ?"
+    ).all(pattern, excludeWord.toLowerCase(), limit) as { word: string }[];
+    return rows.map(r => r.word);
+  } catch {
+    return [];
+  }
+}
+
 // === BDB Hebrew ===
 export interface BDBRow {
   strongs_id: string;

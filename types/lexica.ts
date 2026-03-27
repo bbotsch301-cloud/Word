@@ -96,6 +96,63 @@ export interface EtymologyLink {
   relationType: string;
 }
 
+// Hidden Connections types
+export interface HiddenConnection {
+  type:
+    | "word_splitting"
+    | "root_siblings"
+    | "meaning_shift"
+    | "cross_cultural"
+    | "biblical_echo"
+    | "secret_story"
+    | "doublets"
+    | "semantic_flip"
+    | "part_whole"
+    | "concept_map"
+    | "polysemy"
+    | "borrowing_chain";
+  headline: string;
+  description: string;
+  surpriseScore: number;
+  evidence: ConnectionEvidence;
+}
+
+export interface ConnectionEvidence {
+  parts?: { fragment: string; meaning: string; language: string }[];
+  sharedRoot?: { root: string; language: string; meaning?: string };
+  siblings?: string[];
+  oldMeaning?: string;
+  newMeaning?: string;
+  period?: string;
+  languageChain?: { word: string; language: string }[];
+  strongsId?: string;
+  originalWord?: string;
+  originalLanguage?: string;
+  // Secret Story
+  literalMeaning?: string;
+  originStory?: string;
+  sourceLanguage?: string;
+  // Doublets
+  doubletWords?: string[];
+  sharedAncestor?: string;
+  // Part-Whole
+  partsOf?: string[];
+  hasParts?: string[];
+  // Concept Map
+  conceptName?: string;
+  conceptNeighbors?: string[];
+  // Polysemy
+  senseCount?: number;
+  sampleSenses?: string[];
+  // Borrowing Chain
+  borrowingSteps?: { word: string; language: string; type: string }[];
+}
+
+export interface HiddenConnectionsData {
+  connections: HiddenConnection[];
+  wordEquation?: string;
+}
+
 export interface LexicaResult {
   word: string;
   phonetic: string;
@@ -118,4 +175,5 @@ export interface LexicaResult {
   dialect?: string[];
   etymologyLinks?: EtymologyLink[];
   googleRank?: number;
+  hiddenConnections?: HiddenConnectionsData;
 }

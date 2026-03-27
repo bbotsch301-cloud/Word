@@ -6,6 +6,7 @@ import { lookupWord, lookupWebster, lookupWebster1828, lookupBlacksLaw, searchBl
   lookupIpaDict, lookupCefrLevel, lookupMorphology, lookupGoogleFrequency, lookupBDB } from "./database";
 import { buildStrata } from "./build-strata";
 import { buildConstellation } from "./build-constellation";
+import { buildHiddenConnections } from "./build-connections";
 import { buildRevelationText, extractCulturalMoment } from "./etymology-parser";
 import { getWordFrequency, lookupInDictionary } from "./dictionaries";
 import { arpabetToReadable } from "./pronunciation";
@@ -297,6 +298,15 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   const googleRank = lookupGoogleFrequency(word) || undefined;
 
+  // === Phase 6: Hidden Connections ===
+  const hiddenConnections = buildHiddenConnections(
+    word, etymologyTemplates, etymologyText,
+    morphology, strata, definitions, strongsEntries,
+    webster1828?.etymology || undefined,
+    etymologyLinks,
+    thesaurus,
+  );
+
   return {
     word,
     phonetic: bestIpa || ipa,
@@ -327,5 +337,6 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     dialect,
     etymologyLinks,
     googleRank,
+    hiddenConnections,
   };
 }
