@@ -33,6 +33,14 @@ const DICT_CONFIG: Record<string, { table: string; wordCol: string; defCol: stri
   "vulgar-tongue": { table: "vulgar_tongue", wordCol: "word", defCol: "definition" },
   bouvier: { table: "bouvier", wordCol: "term", defCol: "definition" },
   strongs: { table: "strongs", wordCol: "lemma", defCol: "strongs_def" },
+  moby: { table: "moby_thesaurus", wordCol: "word", defCol: "synonyms" },
+  wordnet: { table: "wordnet_lemmas", wordCol: "word", defCol: "synset_id" },
+  rogets: { table: "rogets", wordCol: "category_name", defCol: "words" },
+  cmudict: { table: "cmu_pronunciation", wordCol: "word", defCol: "phonemes" },
+  eastons: { table: "eastons", wordCol: "word", defCol: "definition" },
+  hitchcocks: { table: "hitchcocks", wordCol: "name", defCol: "meaning" },
+  naves: { table: "naves", wordCol: "topic", defCol: "subtopics" },
+  gcide: { table: "gcide", wordCol: "word", defCol: "definition", posCol: "pos", etymCol: "etymology" },
 };
 
 export function getAllDictionaries(): DictionaryMeta[] {

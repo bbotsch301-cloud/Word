@@ -16,8 +16,8 @@ const FEATURED_WORDS = [
 ];
 
 const STATS = [
-  { value: "800K+", label: "Words" },
-  { value: "9", label: "Dictionaries" },
+  { value: "1M+", label: "Words" },
+  { value: "22", label: "Sources" },
   { value: "1811\u20132024", label: "Spanning Centuries" },
 ];
 
@@ -63,7 +63,7 @@ export default function Home() {
             </h1>
             <p className="font-serif text-xl md:text-2xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
               Every word has a story. Trace definitions, etymologies, and meaning shifts
-              across nine historical, legal, and biblical dictionaries.
+              across twenty-two historical, legal, biblical, and linguistic sources.
             </p>
           </motion.div>
 
@@ -123,8 +123,8 @@ export default function Home() {
                   ),
                 },
                 {
-                  title: "Seven Dictionaries",
-                  desc: "Compare how the same word was defined in 1811, 1828, 1913, and today. See meaning drift in real time across centuries.",
+                  title: "22 Sources",
+                  desc: "Compare definitions across centuries from dictionaries, thesauri, biblical concordances, and linguistic databases.",
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -132,8 +132,8 @@ export default function Home() {
                   ),
                 },
                 {
-                  title: "Word Frequency",
-                  desc: "Discover how common or rare a word is, and explore related terms, synonyms, and the full semantic neighborhood.",
+                  title: "Thesaurus & Synonyms",
+                  desc: "Explore 2.5 million synonyms from Moby, semantic senses from WordNet, and conceptual groups from Roget's Thesaurus.",
                   icon: (
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
@@ -217,16 +217,30 @@ export default function Home() {
       <section className="border-t border-border">
         <div className="max-w-4xl mx-auto px-6 py-12">
           <h3 className="font-serif text-lg font-semibold text-text-primary text-center mb-6">Our Sources</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {[
-              { name: "Wiktionary", year: "2024", desc: "Modern definitions and etymologies" },
+              // Dictionaries
+              { name: "Wiktionary", year: "2024", desc: "Modern definitions & etymologies" },
               { name: "Webster\u2019s 1828", year: "1828", desc: "Noah Webster\u2019s American Dictionary" },
               { name: "Webster\u2019s 1913", year: "1913", desc: "The Unabridged International" },
+              { name: "GCIDE", year: "2024", desc: "GNU Collaborative Dictionary" },
+              // Legal
               { name: "Black\u2019s Law", year: "1910", desc: "Legal terminology reference" },
               { name: "Bouvier\u2019s Law", year: "1856", desc: "American legal dictionary" },
-              { name: "Strong\u2019s Concordance", year: "1890", desc: "Biblical Hebrew & Greek roots" },
-              { name: "Hobson-Jobson", year: "1886", desc: "Anglo-Indian words and phrases" },
-              { name: "1811 Vulgar Tongue", year: "1811", desc: "Historical slang dictionary" },
+              // Thesaurus
+              { name: "Moby Thesaurus", year: "1996", desc: "2.5M synonyms, 30K roots" },
+              { name: "WordNet", year: "2024", desc: "Princeton\u2019s semantic database" },
+              { name: "Roget\u2019s Thesaurus", year: "1911", desc: "Classic concept-organized" },
+              // Biblical
+              { name: "Strong\u2019s Concordance", year: "1890", desc: "Hebrew & Greek roots" },
+              { name: "Easton\u2019s Bible Dict.", year: "1897", desc: "Biblical terms & places" },
+              { name: "Hitchcock\u2019s Names", year: "1869", desc: "Bible name meanings" },
+              { name: "Nave\u2019s Topical Bible", year: "1896", desc: "5,000+ biblical topics" },
+              // Historical
+              { name: "Hobson-Jobson", year: "1886", desc: "Anglo-Indian words" },
+              { name: "1811 Vulgar Tongue", year: "1811", desc: "Georgian era slang" },
+              // Linguistic
+              { name: "CMU Pronouncing", year: "2015", desc: "134K word pronunciations" },
             ].map((src) => (
               <Link
                 key={src.name}
