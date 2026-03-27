@@ -26,6 +26,7 @@ import { EtymologyTree } from "@/components/word/EtymologyTree";
 import { OriginMap } from "@/components/word/OriginMap";
 import { SynonymCloud } from "@/components/word/SynonymCloud";
 import { useWordLists } from "@/components/WordListProvider";
+import { SITE_URL } from "@/lib/config";
 import Link from "next/link";
 
 const fadeUp = {
@@ -60,6 +61,60 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   const [etymView, setEtymView] = useState<"chain" | "river">("chain");
   const { isBookmarked, toggleBookmark } = useWordLists();
   const bookmarked = isBookmarked(result.word);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const wordUrl = `${SITE_URL}/word/${encodeURIComponent(result.word)}`;
+  const shareText = `${result.word}: ${result.modern_meaning?.slice(0, 100) || ""}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(wordUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement("input");
+      input.value = wordUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+    setShareOpen(false);
+  };
+
+  const handleShareTwitter = () => {
+    window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(wordUrl)}&text=${encodeURIComponent(shareText)}`, "_blank", "noopener,width=550,height=420");
+    setShareOpen(false);
+  };
+
+  const handleShareFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(wordUrl)}`, "_blank", "noopener,width=550,height=420");
+    setShareOpen(false);
+  };
+
+  const handleSpeak = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(result.word);
+      utterance.lang = "en-US";
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  // Close share dropdown on outside click
+  useEffect(() => {
+    if (!shareOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest("[data-share-menu]")) setShareOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [shareOpen]);
 
   useEffect(() => {
     try {
@@ -182,6 +237,41 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
               </svg>
             </Link>
+            <div className="relative" data-share-menu>
+              <button
+                onClick={() => setShareOpen(!shareOpen)}
+                className="p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
+                title="Share this word"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
+              {shareOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-xl shadow-lg py-1 z-50">
+                  <button onClick={handleCopyLink} className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    {copied ? "Copied!" : "Copy link"}
+                  </button>
+                  <button onClick={handleShareTwitter} className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                    Share on X
+                  </button>
+                  <button onClick={handleShareFacebook} className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                    Share on Facebook
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -189,6 +279,18 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           {result.phonetic && (
             <span className="font-mono text-base text-accent-secondary">{result.phonetic}</span>
           )}
+          <button
+            onClick={handleSpeak}
+            className="p-1 rounded-md text-text-muted hover:text-accent transition-colors"
+            title="Listen to pronunciation"
+            aria-label={`Pronounce ${result.word}`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+            </svg>
+          </button>
           {result.pronunciation?.arpabet && result.pronunciation.arpabet[0] && (
             <span className="font-mono text-xs text-text-muted" title="ARPAbet pronunciation">
               [{result.pronunciation.arpabet[0]}]
