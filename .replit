@@ -10,6 +10,10 @@ localPort = 3000
 externalPort = 3002
 
 [[ports]]
+localPort = 3001
+externalPort = 3003
+
+[[ports]]
 localPort = 3456
 externalPort = 3001
 
@@ -49,5 +53,5 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "pkill -f 'next-server' 2>/dev/null; pkill -f 'next start' 2>/dev/null; fuser -k 5000/tcp 2>/dev/null; sleep 2; rm -rf .next && npm run dev"
+args = "pkill -f 'next-server' 2>/dev/null; pkill -f 'next start' 2>/dev/null; fuser -k 5000/tcp 2>/dev/null; sleep 2; rm -rf .next && node_modules/.bin/next dev -p 5000 --turbo"
 waitForPort = 5000
