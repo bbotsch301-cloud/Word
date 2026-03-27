@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
+import { LanguageComposition } from "@/components/word/LanguageComposition";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -68,6 +69,11 @@ export default function ExplorePage() {
               </Card>
             </motion.div>
           )}
+        </section>
+
+        {/* Language Composition */}
+        <section className="mb-10">
+          <LanguageComposition />
         </section>
 
         {/* Explorer Tools */}

@@ -22,6 +22,8 @@ import ConceptGalaxy from "@/components/word/ConceptGalaxy";
 import { NgramChart } from "@/components/word/NgramChart";
 import { CognatesSection } from "@/components/word/CognatesSection";
 import { EtymologyTree } from "@/components/word/EtymologyTree";
+import { OriginMap } from "@/components/word/OriginMap";
+import { SynonymCloud } from "@/components/word/SynonymCloud";
 import { useWordLists } from "@/components/WordListProvider";
 import Link from "next/link";
 
@@ -36,11 +38,20 @@ const stagger = {
 };
 
 // Section config for sticky nav
+type SectionGroup = "origins" | "meaning" | "usage" | "reference";
 interface SectionDef {
   id: string;
   label: string;
   shortLabel: string;
+  group: SectionGroup;
 }
+
+const GROUP_LABELS: Record<SectionGroup, string> = {
+  origins: "Origins",
+  meaning: "Meaning",
+  usage: "Usage & Spread",
+  reference: "Reference",
+};
 
 export default function WordDisplay({ result }: { result: LexicaResult }) {
   const router = useRouter();
@@ -81,21 +92,25 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   );
   const hasConnections = result.hiddenConnections && result.hiddenConnections.connections.length > 0;
 
-  // Build available sections for nav
+  // Build available sections for nav (grouped)
   const sections: SectionDef[] = [];
-  if (result.truest_meaning) sections.push({ id: "story", label: "The Story", shortLabel: "Story" });
-  if (hasConnections) sections.push({ id: "connections", label: "Hidden Connections", shortLabel: "Discover" });
-  if (result.strata.length > 0) sections.push({ id: "etymology", label: "Etymology Chain", shortLabel: "Etymology" });
-  if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural" });
-  if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828" });
-  if (sortedDefs.length > 0) sections.push({ id: "definitions", label: "Definitions", shortLabel: "Defs" });
-  if (result.morphology) sections.push({ id: "morphology", label: "Word Structure", shortLabel: "Morph." });
-  if (hasThesaurus) sections.push({ id: "thesaurus", label: "Thesaurus", shortLabel: "Thes." });
-  if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible" });
-  if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related" });
-  if (result.constellation.length >= 4) sections.push({ id: "constellation-graph", label: "Word Constellation", shortLabel: "Map" });
-  if (result.ngramHistory && result.ngramHistory.length >= 2) sections.push({ id: "usage-over-time", label: "Usage Over Time", shortLabel: "Usage" });
-  if (result.cognates && result.cognates.cognates.length > 0) sections.push({ id: "cognates", label: "Cognates", shortLabel: "Cognates" });
+  // Origins group
+  if (result.truest_meaning) sections.push({ id: "story", label: "The Story", shortLabel: "Story", group: "origins" });
+  if (result.strata.length > 0) sections.push({ id: "etymology", label: "Etymology Chain", shortLabel: "Etymology", group: "origins" });
+  if (result.cultural_moment?.description?.trim()) sections.push({ id: "cultural", label: "Cultural Context", shortLabel: "Cultural", group: "origins" });
+  if (result.webster1828_etymology) sections.push({ id: "webster", label: "Webster's 1828", shortLabel: "1828", group: "origins" });
+  if (result.morphology) sections.push({ id: "morphology", label: "Word Structure", shortLabel: "Morph.", group: "origins" });
+  // Meaning group
+  if (hasConnections) sections.push({ id: "connections", label: "Hidden Connections", shortLabel: "Discover", group: "meaning" });
+  if (sortedDefs.length > 0) sections.push({ id: "definitions", label: "Definitions", shortLabel: "Defs", group: "meaning" });
+  if (hasThesaurus) sections.push({ id: "thesaurus", label: "Thesaurus", shortLabel: "Thes.", group: "meaning" });
+  if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related", group: "meaning" });
+  // Usage group
+  if (result.ngramHistory && result.ngramHistory.length >= 2) sections.push({ id: "usage-over-time", label: "Usage Over Time", shortLabel: "Usage", group: "usage" });
+  if (result.cognates && result.cognates.cognates.length > 0) sections.push({ id: "cognates", label: "Cognates", shortLabel: "Cognates", group: "usage" });
+  if (result.constellation.length >= 4) sections.push({ id: "constellation-graph", label: "Word Constellation", shortLabel: "Map", group: "usage" });
+  // Reference group
+  if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible", group: "reference" });
 
   // Intersection observer for sticky nav
   useEffect(() => {
@@ -172,23 +187,35 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             </span>
           )}
           {result.definitions[0]?.pos && (
-            <Badge variant="accent">{result.definitions[0].pos}</Badge>
+            <span title="Part of speech"><Badge variant="accent">{result.definitions[0].pos}</Badge></span>
           )}
           {result.frequency && (
-            <Badge variant="muted">
-              {result.frequency.label} &middot; #{result.frequency.rank.toLocaleString()}
-            </Badge>
+            <span title={`Word frequency rank among all English words. Lower = more common.`}>
+              <Badge variant="muted">
+                {result.frequency.label} &middot; #{result.frequency.rank.toLocaleString()}
+              </Badge>
+            </span>
           )}
           {result.cefrLevel && (
-            <Badge variant="accent">CEFR {result.cefrLevel}</Badge>
+            <span title={`Common European Framework of Reference for Languages. ${
+              result.cefrLevel === "A1" ? "Beginner" : result.cefrLevel === "A2" ? "Elementary" :
+              result.cefrLevel === "B1" ? "Intermediate" : result.cefrLevel === "B2" ? "Upper Intermediate" :
+              result.cefrLevel === "C1" ? "Advanced" : "Mastery"
+            } level.`}>
+              <Badge variant="accent">CEFR {result.cefrLevel}</Badge>
+            </span>
           )}
           {result.isAcademic && (
-            <Badge variant="accent">Academic (List {result.isAcademic.sublist})</Badge>
+            <span title={`Part of the Academic Word List, Sublist ${result.isAcademic.sublist}. Essential vocabulary for academic reading and writing.`}>
+              <Badge variant="accent">Academic (List {result.isAcademic.sublist})</Badge>
+            </span>
           )}
           {result.firstUse && (
-            <Badge variant="muted">
-              First attested: {result.firstUse.year ? `c. ${result.firstUse.year}` : result.firstUse.century}
-            </Badge>
+            <span title={`Earliest recorded use in English. Source: ${result.firstUse.source}`}>
+              <Badge variant="muted">
+                First attested: {result.firstUse.year ? `c. ${result.firstUse.year}` : result.firstUse.century}
+              </Badge>
+            </span>
           )}
           {result.dialect && result.dialect[0] && result.dialect[0] !== "english" && (
             <Badge variant="muted">{result.dialect[0]}</Badge>
@@ -233,6 +260,10 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
 
       {/* ============ COLLAPSIBLE SECTIONS ============ */}
       <div className="mt-12 space-y-8">
+
+        {/* ——— ORIGINS ——— */}
+        <GroupDivider group="origins" sections={sections} />
+
         {/* The Story */}
         {result.truest_meaning && (
           <CollapsibleSection
@@ -251,18 +282,6 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 {result.root_revelation}
               </p>
             )}
-          </CollapsibleSection>
-        )}
-
-        {/* Hidden Connections */}
-        {hasConnections && result.hiddenConnections && (
-          <CollapsibleSection
-            id="connections"
-            title="Hidden Connections"
-            defaultOpen
-            preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
-          >
-            <HiddenConnectionsSection data={result.hiddenConnections} word={result.word} />
           </CollapsibleSection>
         )}
 
@@ -301,6 +320,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               </>
             )}
             <EtymologyTree word={result.word} />
+            <OriginMap strata={result.strata} />
           </CollapsibleSection>
         )}
 
@@ -346,6 +366,21 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </CollapsibleSection>
         )}
 
+        {/* ——— MEANING ——— */}
+        <GroupDivider group="meaning" sections={sections} />
+
+        {/* Hidden Connections */}
+        {hasConnections && result.hiddenConnections && (
+          <CollapsibleSection
+            id="connections"
+            title="Hidden Connections"
+            defaultOpen
+            preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
+          >
+            <HiddenConnectionsSection data={result.hiddenConnections} word={result.word} />
+          </CollapsibleSection>
+        )}
+
         {/* Definitions Across Time */}
         {sortedDefs.length > 0 && (
           <CollapsibleSection
@@ -370,27 +405,14 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             preview={`${result.thesaurus.synonyms.length} synonyms · ${result.thesaurus.wordnetSenses.length} senses · ${result.thesaurus.rogetCategories.length} concept groups`}
           >
             <ThesaurusSection data={result.thesaurus} />
+            {result.thesaurus.synonyms.length >= 5 && (
+              <SynonymCloud synonyms={result.thesaurus.synonyms} word={result.word} />
+            )}
             {result.thesaurus.rogetCategories.length >= 2 && (
               <div className="mt-6">
                 <ConceptGalaxy word={result.word} rogetCategories={result.thesaurus.rogetCategories} />
               </div>
             )}
-          </CollapsibleSection>
-        )}
-
-        {/* Biblical Study */}
-        {hasBiblical && result.biblical && (
-          <CollapsibleSection
-            id="biblical"
-            title="Biblical Study"
-            preview={[
-              result.biblical.eastons ? "Easton's" : "",
-              result.biblical.smiths ? "Smith's" : "",
-              result.biblical.hitchcocks ? "Hitchcock's" : "",
-              result.biblical.naves?.length ? "Nave's" : "",
-            ].filter(Boolean).join(" · ")}
-          >
-            <BiblicalStudySection data={result.biblical} />
           </CollapsibleSection>
         )}
 
@@ -432,21 +454,8 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </CollapsibleSection>
         )}
 
-        {/* Word Constellation Graph */}
-        {result.constellation.length >= 4 && (
-          <CollapsibleSection
-            id="constellation-graph"
-            title="Word Constellation"
-            preview={`Visual map of ${result.constellation.length + (result.taxonomy ? result.taxonomy.hypernyms.length + result.taxonomy.hyponyms.length : 0)} connections`}
-          >
-            <ConstellationGraph
-              word={result.word}
-              constellation={result.constellation}
-              taxonomy={result.taxonomy}
-              connections={result.hiddenConnections?.connections}
-            />
-          </CollapsibleSection>
-        )}
+        {/* ——— USAGE & SPREAD ——— */}
+        <GroupDivider group="usage" sections={sections} />
 
         {/* Usage Over Time (Ngrams) */}
         {result.ngramHistory && result.ngramHistory.length >= 2 && (
@@ -469,6 +478,41 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             <CognatesSection data={result.cognates} word={result.word} />
           </CollapsibleSection>
         )}
+
+        {/* Word Constellation Graph */}
+        {result.constellation.length >= 4 && (
+          <CollapsibleSection
+            id="constellation-graph"
+            title="Word Constellation"
+            preview={`Visual map of ${result.constellation.length + (result.taxonomy ? result.taxonomy.hypernyms.length + result.taxonomy.hyponyms.length : 0)} connections`}
+          >
+            <ConstellationGraph
+              word={result.word}
+              constellation={result.constellation}
+              taxonomy={result.taxonomy}
+              connections={result.hiddenConnections?.connections}
+            />
+          </CollapsibleSection>
+        )}
+
+        {/* ——— REFERENCE ——— */}
+        <GroupDivider group="reference" sections={sections} />
+
+        {/* Biblical Study */}
+        {hasBiblical && result.biblical && (
+          <CollapsibleSection
+            id="biblical"
+            title="Biblical Study"
+            preview={[
+              result.biblical.eastons ? "Easton's" : "",
+              result.biblical.smiths ? "Smith's" : "",
+              result.biblical.hitchcocks ? "Hitchcock's" : "",
+              result.biblical.naves?.length ? "Nave's" : "",
+            ].filter(Boolean).join(" · ")}
+          >
+            <BiblicalStudySection data={result.biblical} />
+          </CollapsibleSection>
+        )}
       </div>
 
       {/* ============ EXPLORE MORE ============ */}
@@ -487,38 +531,94 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   );
 }
 
+function GroupDivider({ group, sections }: { group: SectionGroup; sections: SectionDef[] }) {
+  const hasGroupSections = sections.some(s => s.group === group);
+  if (!hasGroupSections) return null;
+  return (
+    <div className="flex items-center gap-3 pt-4 first:pt-0">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-accent font-semibold">
+        {GROUP_LABELS[group]}
+      </span>
+      <div className="h-px flex-1 bg-gradient-to-r from-accent/20 to-transparent" />
+    </div>
+  );
+}
+
 function StickyNav({ sections, activeSection, onNavigate }: {
   sections: SectionDef[];
   activeSection: string;
   onNavigate: (id: string) => void;
 }) {
+  // Group sections for nav
+  const groups: SectionGroup[] = ["origins", "meaning", "usage", "reference"];
+  const activeGroup = sections.find(s => s.id === activeSection)?.group;
+
   return (
-    <nav className="fixed right-4 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-3 items-end">
-      {sections.map((section) => {
-        const isActive = section.id === activeSection;
-        return (
-          <button
-            key={section.id}
-            onClick={() => onNavigate(section.id)}
-            className="flex items-center gap-2 group"
-            aria-label={`Jump to ${section.label}`}
-          >
-            <span className={`text-[10px] font-mono uppercase tracking-wider transition-all ${
-              isActive
-                ? 'opacity-100 text-accent translate-x-0'
-                : 'opacity-0 text-text-muted translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'
-            }`}>
-              {section.shortLabel}
-            </span>
-            <span className={`block rounded-full transition-all ${
-              isActive
-                ? 'w-3 h-3 bg-accent shadow-sm'
-                : 'w-2 h-2 bg-border-hover group-hover:bg-accent/50'
-            }`} />
-          </button>
-        );
-      })}
-    </nav>
+    <>
+      {/* Desktop: right sidebar */}
+      <nav className="fixed right-4 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-1.5 items-end" aria-label="Section navigation">
+        {groups.map(group => {
+          const groupSections = sections.filter(s => s.group === group);
+          if (groupSections.length === 0) return null;
+          return (
+            <div key={group} className="flex flex-col gap-1.5 items-end mb-2">
+              <span className={`text-[8px] font-mono uppercase tracking-widest transition-colors ${activeGroup === group ? "text-accent" : "text-text-muted/50"}`}>
+                {GROUP_LABELS[group]}
+              </span>
+              {groupSections.map(section => {
+                const isActive = section.id === activeSection;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => onNavigate(section.id)}
+                    className="flex items-center gap-2 group"
+                    aria-label={`Jump to ${section.label}`}
+                  >
+                    <span className={`text-[10px] font-mono uppercase tracking-wider transition-all ${
+                      isActive
+                        ? 'opacity-100 text-accent translate-x-0'
+                        : 'opacity-0 text-text-muted translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'
+                    }`}>
+                      {section.shortLabel}
+                    </span>
+                    <span className={`block rounded-full transition-all ${
+                      isActive
+                        ? 'w-3 h-3 bg-accent shadow-sm'
+                        : 'w-2 h-2 bg-border-hover group-hover:bg-accent/50'
+                    }`} />
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </nav>
+
+      {/* Mobile: bottom pills */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-bg/95 backdrop-blur-sm border-t border-border" aria-label="Section groups">
+        <div className="flex justify-around py-2 px-4">
+          {groups.map(group => {
+            const groupSections = sections.filter(s => s.group === group);
+            if (groupSections.length === 0) return null;
+            const isActive = activeGroup === group;
+            const firstSection = groupSections[0];
+            return (
+              <button
+                key={group}
+                onClick={() => onNavigate(firstSection.id)}
+                className={`text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 rounded-full transition-all ${
+                  isActive
+                    ? "bg-accent/10 text-accent border border-accent/30"
+                    : "text-text-muted"
+                }`}
+              >
+                {GROUP_LABELS[group]}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }
 

@@ -16,7 +16,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('lexica-theme') as Theme | null;
-    const initial = stored === 'dark' ? 'dark' : 'light';
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initial = stored ? stored : (systemDark ? 'dark' : 'light');
     setTheme(initial);
     if (initial === 'dark') {
       document.documentElement.classList.add('dark');
