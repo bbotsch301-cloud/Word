@@ -85,10 +85,11 @@ export function browseDictionary(
   const params: unknown[] = [];
 
   if (options.query) {
-    whereClause = `WHERE ${config.wordCol} LIKE ?`;
-    params.push(`%${options.query}%`);
+    const escaped = options.query.replace(/%/g, "\\%").replace(/_/g, "\\_");
+    whereClause = `WHERE ${config.wordCol} LIKE ? ESCAPE '\\'`;
+    params.push(`%${escaped}%`);
   } else if (options.letter) {
-    whereClause = `WHERE ${config.wordCol} LIKE ?`;
+    whereClause = `WHERE ${config.wordCol} LIKE ? ESCAPE '\\'`;
     params.push(`${options.letter.toLowerCase()}%`);
   }
 

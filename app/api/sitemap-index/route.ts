@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getChunkCount } from "@/lib/sitemap-helpers";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lexica.app";
+import { SITE_URL } from "@/lib/config";
 
 export async function GET() {
   const chunkCount = getChunkCount();

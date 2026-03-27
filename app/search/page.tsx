@@ -30,6 +30,7 @@ export default function SearchPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("alpha");
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<Filters | null>(null);
 
@@ -47,6 +48,7 @@ export default function SearchPage() {
     if (century) params.set("century", century);
     if (pos) params.set("pos", pos);
     if (cefrLevel) params.set("cefrLevel", cefrLevel);
+    if (sort !== "alpha") params.set("sort", sort);
     params.set("page", String(p));
 
     if (!pattern && !originLang && !century && !pos && !cefrLevel) return;
@@ -64,7 +66,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [pattern, originLang, century, pos, cefrLevel]);
+  }, [pattern, originLang, century, pos, cefrLevel, sort]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,9 +169,19 @@ export default function SearchPage() {
             >
               {loading ? "Searching..." : "Search"}
             </button>
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value)}
+              className="h-10 px-3 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
+              aria-label="Sort results by"
+            >
+              <option value="alpha">A-Z</option>
+              <option value="length">Shortest first</option>
+              <option value="frequency">Most common</option>
+            </select>
             <button
               type="button"
-              onClick={() => { setPattern(""); setOriginLang(""); setCentury(""); setPos(""); setCefrLevel(""); setResults([]); setTotal(0); }}
+              onClick={() => { setPattern(""); setOriginLang(""); setCentury(""); setPos(""); setCefrLevel(""); setSort("alpha"); setResults([]); setTotal(0); }}
               className="h-10 px-4 rounded-lg border border-border text-text-muted text-sm hover:text-text-primary transition-colors"
             >
               Clear
@@ -183,6 +195,17 @@ export default function SearchPage() {
             {total.toLocaleString()} result{total !== 1 ? "s" : ""} found
             {total > 50 && ` — showing page ${page}`}
           </p>
+        )}
+
+        {!loading && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
+          <div className="bg-surface border border-border rounded-xl p-8 text-center">
+            <p className="text-text-muted mb-2">No results found.</p>
+            <p className="text-sm text-text-muted">
+              Try a different pattern. Use <code className="font-mono bg-bg px-1 rounded">*</code> for any characters
+              and <code className="font-mono bg-bg px-1 rounded">?</code> for a single character.
+              For example: <code className="font-mono bg-bg px-1 rounded">*ology</code>, <code className="font-mono bg-bg px-1 rounded">un*able</code>.
+            </p>
+          </div>
         )}
 
         <div className="space-y-2">

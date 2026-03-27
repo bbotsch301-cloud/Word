@@ -26,14 +26,19 @@ export interface SearchResponse {
 }
 
 function wildcardToSql(pattern: string): string {
-  // Convert user wildcards: * → %, ? → _
-  return pattern.replace(/\*/g, "%").replace(/\?/g, "_");
+  // Escape SQL LIKE special chars, then convert user wildcards
+  return pattern
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_")
+    .replace(/\*/g, "%")
+    .replace(/\?/g, "_");
 }
 
 export function advancedSearch(
   filters: SearchFilters,
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
+  sort: "alpha" | "length" | "frequency" = "alpha"
 ): SearchResponse {
   const db = getDatabase();
   const conditions: string[] = [];
@@ -46,7 +51,7 @@ export function advancedSearch(
   // Pattern filter
   if (filters.pattern) {
     const sqlPattern = wildcardToSql(filters.pattern.toLowerCase());
-    conditions.push("w.word LIKE ?");
+    conditions.push("w.word LIKE ? ESCAPE '\\'");
     params.push(sqlPattern);
   }
 
@@ -110,7 +115,10 @@ export function advancedSearch(
     // Fetch
     const selectExtra = useFirstUse ? ", fu.year as first_use_year" : "";
     const selectLang = useEtymLinks ? ", el.parent_lang as origin_lang" : "";
-    const fetchSql = `SELECT DISTINCT w.word, w.pos, SUBSTR(w.definition, 1, 120) as preview${selectExtra}${selectLang} FROM words w${joins} WHERE ${whereClause} ORDER BY w.word LIMIT ? OFFSET ?`;
+    const useFreqJoin = sort === "frequency";
+    const freqJoin = useFreqJoin ? " LEFT JOIN google_frequency gf ON gf.word = w.word" : "";
+    const orderBy = sort === "length" ? "LENGTH(w.word), w.word" : sort === "frequency" ? "COALESCE(gf.frequency, 0) DESC, w.word" : "w.word";
+    const fetchSql = `SELECT DISTINCT w.word, w.pos, SUBSTR(w.definition, 1, 120) as preview${selectExtra}${selectLang} FROM words w${joins}${freqJoin} WHERE ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
 
     const rows = db.prepare(fetchSql).all(...params, pageSize, offset) as {
       word: string; pos?: string; preview?: string;

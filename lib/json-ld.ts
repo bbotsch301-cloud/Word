@@ -1,6 +1,5 @@
 import type { LexicaResult } from "@/types/lexica";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lexica.app";
+import { SITE_URL } from "./config";
 
 export function websiteJsonLd() {
   return {

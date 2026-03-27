@@ -30,7 +30,9 @@ export async function POST(request: Request) {
 
   try {
     const result = await excavateWord(word);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Excavation failed";
 

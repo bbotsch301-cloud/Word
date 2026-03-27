@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWordChunk, getChunkCount } from "@/lib/sitemap-helpers";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lexica.app";
+import { SITE_URL } from "@/lib/config";
 
 export async function GET(
   _req: NextRequest,

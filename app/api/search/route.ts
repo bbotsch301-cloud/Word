@@ -27,13 +27,17 @@ export async function GET(request: NextRequest) {
       }
       case "by-origin": {
         const lang = searchParams.get("lang") || "";
-        const page = parseInt(searchParams.get("page") || "1");
-        return NextResponse.json(getWordsByOrigin(lang, page));
+        const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+        return NextResponse.json(getWordsByOrigin(lang, page), {
+          headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
+        });
       }
       case "by-century": {
         const century = searchParams.get("century") || "";
-        const page = parseInt(searchParams.get("page") || "1");
-        return NextResponse.json(getWordsByCentury(century, page));
+        const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+        return NextResponse.json(getWordsByCentury(century, page), {
+          headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
+        });
       }
       case "tree": {
         const word = searchParams.get("word") || "";
@@ -47,14 +51,22 @@ export async function GET(request: NextRequest) {
         const century = searchParams.get("century") || undefined;
         const pos = searchParams.get("pos") || undefined;
         const cefrLevel = searchParams.get("cefrLevel") || undefined;
-        const page = parseInt(searchParams.get("page") || "1");
+        const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
 
         if (!pattern && !originLang && !century && !pos && !cefrLevel) {
           return NextResponse.json({ results: [], total: 0, page: 1, pageSize: 50 });
         }
 
-        const results = advancedSearch({ pattern, originLang, century, pos, cefrLevel }, page);
-        return NextResponse.json(results);
+        if (pattern && pattern.length > 100) {
+          return NextResponse.json({ error: "Pattern too long" }, { status: 400 });
+        }
+
+        const sortParam = searchParams.get("sort");
+        const sort = (sortParam === "length" || sortParam === "frequency") ? sortParam : "alpha";
+        const results = advancedSearch({ pattern, originLang, century, pos, cefrLevel }, page, 50, sort);
+        return NextResponse.json(results, {
+          headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
+        });
       }
     }
   } catch {

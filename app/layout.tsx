@@ -6,8 +6,7 @@ import { WordListProvider } from "@/components/WordListProvider";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import { websiteJsonLd } from "@/lib/json-ld";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://lexica.app";
+import { SITE_URL } from "@/lib/config";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,11 +68,16 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
         />
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium">
+          Skip to content
+        </a>
         <ThemeProvider>
           <AuthProvider>
             <WordListProvider>
               <Header />
-              {children}
+              <div id="main-content">
+                {children}
+              </div>
             </WordListProvider>
           </AuthProvider>
         </ThemeProvider>

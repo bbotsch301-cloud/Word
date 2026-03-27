@@ -309,6 +309,35 @@ function buildSpellIndexes(db: Database.Database) {
   lettersTx();
   db.exec("CREATE INDEX IF NOT EXISTS idx_sorted_letters ON word_letters(sorted_letters)");
   console.log(`  Sorted letters: ${wordRows.length.toLocaleString()} words indexed`);
+
+  // 3. Add indexes for all lookup tables
+  console.log("\n📇 Adding lookup indexes...");
+  const indexes = [
+    "CREATE INDEX IF NOT EXISTS idx_webster_word ON webster(word)",
+    "CREATE INDEX IF NOT EXISTS idx_webster1828_word ON webster_1828(word)",
+    "CREATE INDEX IF NOT EXISTS idx_blacks_term ON blacks_law(term)",
+    "CREATE INDEX IF NOT EXISTS idx_strongs_word ON strongs_index(english_word)",
+    "CREATE INDEX IF NOT EXISTS idx_wordnet_lemmas_word ON wordnet_lemmas(word)",
+    "CREATE INDEX IF NOT EXISTS idx_rogets_word ON rogets_index(word)",
+    "CREATE INDEX IF NOT EXISTS idx_etymology_links_word ON etymology_links(word)",
+    "CREATE INDEX IF NOT EXISTS idx_first_use_word ON first_use(word)",
+    "CREATE INDEX IF NOT EXISTS idx_cefr_word ON cefr_words(word)",
+    "CREATE INDEX IF NOT EXISTS idx_oxford_word ON oxford_5000(word)",
+    "CREATE INDEX IF NOT EXISTS idx_cmu_word ON cmu_pronunciation(word)",
+    "CREATE INDEX IF NOT EXISTS idx_google_freq_word ON google_frequency(word)",
+    "CREATE INDEX IF NOT EXISTS idx_ngram_word ON ngram_data(word)",
+    "CREATE INDEX IF NOT EXISTS idx_cognates_word ON cognates(word)",
+    "CREATE INDEX IF NOT EXISTS idx_morphology_word ON morphology(word)",
+    "CREATE INDEX IF NOT EXISTS idx_ipa_word ON ipa_dict(word)",
+  ];
+  for (const sql of indexes) {
+    try {
+      db.exec(sql);
+    } catch {
+      // Table may not exist in all builds
+    }
+  }
+  console.log(`  Created ${indexes.length} lookup indexes`);
 }
 
 main().catch((err) => {

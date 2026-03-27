@@ -102,10 +102,11 @@ export default function ListsPage() {
                   </Link>
                   <button
                     onClick={() => toggleBookmark(word)}
-                    className="p-1 rounded-full text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                    className="p-2 rounded-full text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                     title="Remove bookmark"
+                    aria-label={`Remove bookmark for ${word}`}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
@@ -140,7 +141,8 @@ export default function ListsPage() {
 
           {lists.length === 0 ? (
             <div className="bg-surface border border-border rounded-xl p-8 text-center">
-              <p className="text-text-muted">No custom lists yet. Create one above to start organizing words.</p>
+              <p className="text-text-muted mb-2">No custom lists yet.</p>
+              <p className="text-sm text-text-muted">Create one above, then add words from any word page using the list menu.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -157,8 +159,12 @@ export default function ListsPage() {
                       <span className="text-sm font-mono text-text-muted ml-2">({list.words.length})</span>
                     </h3>
                     <button
-                      onClick={() => deleteList(list.id)}
-                      className="text-xs text-text-muted hover:text-red-500 transition-colors"
+                      onClick={() => {
+                        if (window.confirm(`Delete "${list.name}"? This cannot be undone.`)) {
+                          deleteList(list.id);
+                        }
+                      }}
+                      className="text-xs text-text-muted hover:text-red-500 transition-colors px-2 py-1.5 -mr-2 rounded"
                     >
                       Delete list
                     </button>
@@ -181,9 +187,10 @@ export default function ListsPage() {
                           </Link>
                           <button
                             onClick={() => removeFromList(list.id, word)}
-                            className="p-0.5 rounded-full text-text-muted hover:text-red-500 transition-colors"
+                            className="p-1.5 rounded-full text-text-muted hover:text-red-500 transition-colors"
+                            aria-label={`Remove ${word} from list`}
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
                           </button>

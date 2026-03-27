@@ -72,7 +72,7 @@ export function SpellCard({ word1, word2, def1, def2, spellType, description, de
       </div>
 
       {/* Definitions side by side */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <p className="text-xs text-text-muted line-clamp-2">{def1}</p>
         <p className="text-xs text-text-muted line-clamp-2">{def2}</p>
       </div>

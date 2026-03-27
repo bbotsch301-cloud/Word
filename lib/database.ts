@@ -71,7 +71,8 @@ export function lookupWebster1828(word: string): Webster1828Row | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM webster1828 WHERE word = ?").get(word.toLowerCase()) as Webster1828Row | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -80,7 +81,8 @@ export function lookupBlacksLaw(term: string): BlacksLawRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM blacks_law WHERE term = ?").get(term.toLowerCase()) as BlacksLawRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -91,7 +93,8 @@ export function searchBlacksLaw(term: string, limit: number = 8): BlacksLawRow[]
     return db.prepare(
       "SELECT * FROM blacks_law WHERE term LIKE ? AND term != ? ORDER BY LENGTH(term) ASC LIMIT ?"
     ).all(`%${term.toLowerCase()}%`, term.toLowerCase(), limit) as BlacksLawRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -105,7 +108,8 @@ export function lookupBouvier(term: string): BouvierRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM bouvier WHERE term = ?").get(term.toLowerCase()) as BouvierRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -131,7 +135,8 @@ export function lookupStrongs(word: string, limit: number = 5): StrongsRow[] {
       ORDER BY s.language, s.id
       LIMIT ?
     `).all(word.toLowerCase(), limit) as StrongsRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -146,7 +151,8 @@ export function lookupMobyThesaurus(word: string): MobyRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM moby_thesaurus WHERE word = ?").get(word.toLowerCase()) as MobyRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -174,7 +180,8 @@ export function lookupWordNet(word: string, limit: number = 10): WordNetSynsetRo
       WHERE wl.word = ?
       LIMIT ?
     `).all(word.toLowerCase(), limit) as WordNetSynsetRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -186,7 +193,8 @@ export function getWordNetSynonyms(synsetId: string): string[] {
       "SELECT word FROM wordnet_lemmas WHERE synset_id = ? LIMIT 20"
     ).all(synsetId) as { word: string }[];
     return rows.map(r => r.word);
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -200,7 +208,8 @@ export function getWordNetRelations(synsetId: string, relationType: string, limi
       WHERE wr.source_synset = ? AND wr.relation_type = ?
       LIMIT ?
     `).all(synsetId, relationType, limit) as WordNetSynsetRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -222,7 +231,8 @@ export function lookupRogets(word: string, limit: number = 5): RogetRow[] {
       WHERE ri.word = ?
       LIMIT ?
     `).all(word.toLowerCase(), limit) as RogetRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -240,7 +250,8 @@ export function lookupPronunciation(word: string): CmuRow[] {
     return db.prepare(
       "SELECT * FROM cmu_pronunciation WHERE word = ? ORDER BY variant"
     ).all(word.toLowerCase()) as CmuRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -255,7 +266,8 @@ export function lookupEastons(word: string): EastonsRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM eastons WHERE word = ?").get(word.toLowerCase()) as EastonsRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -270,7 +282,8 @@ export function lookupHitchcocks(word: string): HitchcocksRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM hitchcocks WHERE name = ?").get(word.toLowerCase()) as HitchcocksRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -289,7 +302,8 @@ export function lookupNaves(word: string, limit: number = 5): NavesRow[] {
     const exact = db.prepare("SELECT * FROM naves WHERE topic = ?").all(word.toLowerCase()) as NavesRow[];
     if (exact.length > 0) return exact.slice(0, limit);
     return db.prepare("SELECT * FROM naves WHERE topic LIKE ? LIMIT ?").all(`${word.toLowerCase()}%`, limit) as NavesRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -308,7 +322,8 @@ export function lookupGcide(word: string): GcideRow | undefined {
     return db.prepare(
       "SELECT * FROM gcide WHERE word = ? ORDER BY LENGTH(definition) DESC LIMIT 1"
     ).get(word.toLowerCase()) as GcideRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -325,7 +340,8 @@ export function lookupScowl(word: string): ScowlRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM scowl_words WHERE word = ?").get(word.toLowerCase()) as ScowlRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -341,7 +357,8 @@ export function lookupAcademicWord(word: string): AcademicWordRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM academic_words WHERE word = ?").get(word.toLowerCase()) as AcademicWordRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -361,7 +378,8 @@ export function lookupEtymologyLinks(word: string, limit: number = 10): Etymolog
     return db.prepare(
       "SELECT * FROM etymology_links WHERE word = ? LIMIT ?"
     ).all(word.toLowerCase(), limit) as EtymologyLinkRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -371,7 +389,8 @@ export function lookupSmiths(word: string): { word: string; definition: string }
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM smiths WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -382,7 +401,8 @@ export function lookupIpaDict(word: string): string | undefined {
   try {
     const row = db.prepare("SELECT ipa FROM ipa_dict WHERE word = ?").get(word.toLowerCase()) as { ipa: string } | undefined;
     return row?.ipa;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -396,7 +416,8 @@ export function lookupCefrLevel(word: string): string | undefined {
     if (oxford?.cefr_level) return oxford.cefr_level;
     const cefr = db.prepare("SELECT cefr_level FROM cefr_words WHERE word = ?").get(word.toLowerCase()) as { cefr_level: string } | undefined;
     return cefr?.cefr_level || undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -415,7 +436,8 @@ export function lookupMorphology(word: string): MorphoLexRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM morpholex WHERE word = ?").get(word.toLowerCase()) as MorphoLexRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -426,7 +448,8 @@ export function lookupGoogleFrequency(word: string): number | undefined {
   try {
     const row = db.prepare("SELECT rank FROM google_frequency WHERE word = ?").get(word.toLowerCase()) as { rank: number } | undefined;
     return row?.rank;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -445,7 +468,8 @@ export function getWordNetMeronyms(word: string, limit: number = 8): { word: str
       LIMIT ?
     `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
     return rows;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -463,7 +487,8 @@ export function getWordNetHolonyms(word: string, limit: number = 8): { word: str
       LIMIT ?
     `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
     return rows;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -478,7 +503,8 @@ export function getPolysemyCount(word: string): { count: number; senses: string[
       WHERE wl.word = ?
     `).all(word.toLowerCase()) as { definition: string }[];
     return { count: rows.length, senses: rows.map(r => r.definition) };
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return { count: 0, senses: [] };
   }
 }
@@ -507,7 +533,8 @@ export function findDoublets(word: string): string[] {
       }
     }
     return doublets;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -531,7 +558,8 @@ export function getBorrowingChain(word: string, maxDepth: number = 6): { word: s
       current = link.parent_word;
     }
     return chain;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -545,7 +573,8 @@ export function findWordsByEtymologyRoot(root: string, excludeWord: string, limi
       "SELECT DISTINCT word FROM words WHERE etymology_templates LIKE ? AND word != ? LIMIT ?"
     ).all(pattern, excludeWord.toLowerCase(), limit) as { word: string }[];
     return rows.map(r => r.word);
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -567,7 +596,8 @@ export function lookupBDB(strongsIds: string[]): BDBRow[] {
     return db.prepare(
       `SELECT * FROM bdb_hebrew WHERE strongs_id IN (${placeholders})`
     ).all(...strongsIds) as BDBRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -585,7 +615,8 @@ export function lookupNgramHistory(word: string): NgramRow[] {
     return db.prepare(
       "SELECT word, decade, frequency FROM ngram_history WHERE word = ? ORDER BY decade"
     ).all(word.toLowerCase()) as NgramRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -606,7 +637,8 @@ export function lookupCognates(word: string, limit: number = 30): CognateRow[] {
     return db.prepare(
       "SELECT * FROM cognates WHERE english_word = ? LIMIT ?"
     ).all(word.toLowerCase(), limit) as CognateRow[];
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -616,7 +648,8 @@ export function lookupNuttall(word: string): { word: string; definition: string 
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM nuttall WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -626,7 +659,8 @@ export function lookupCatholicEncyclopedia(word: string): { word: string; defini
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM catholic_encyclopedia WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -636,7 +670,8 @@ export function lookupBritannica(word: string): { word: string; definition: stri
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM britannica WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -653,7 +688,8 @@ export function lookupFirstUse(word: string): FirstUseRow | undefined {
   const db = getDatabase();
   try {
     return db.prepare("SELECT * FROM first_use WHERE word = ?").get(word.toLowerCase()) as FirstUseRow | undefined;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -666,7 +702,8 @@ export function lookupPhonemeKey(word: string): string | undefined {
       "SELECT phoneme_key FROM cmu_pronunciation WHERE word = ? AND variant = 0"
     ).get(word.toLowerCase()) as { phoneme_key: string } | undefined;
     return row?.phoneme_key;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -679,7 +716,8 @@ export function findWordsByPhonemeKey(key: string, excludeWord?: string, limit: 
     ).all(key, limit + 1) as { word: string }[];
     const words = rows.map(r => r.word);
     return (excludeWord ? words.filter(w => w !== excludeWord.toLowerCase()) : words).slice(0, limit);
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -693,7 +731,8 @@ export function findAnagrams(word: string, limit: number = 30): string[] {
       "SELECT word FROM word_letters WHERE sorted_letters = ? AND word != ? LIMIT ?"
     ).all(sorted, w, limit) as { word: string }[];
     return rows.map(r => r.word);
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return [];
   }
 }
@@ -708,7 +747,8 @@ export function getWordShortDef(word: string): string {
     // Return first sentence/line, truncated
     const first = row.definition.split(/[.;\n]/)[0].trim();
     return first.length > 120 ? first.slice(0, 117) + "..." : first;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return "";
   }
 }
@@ -730,7 +770,8 @@ export function getWordEtymologyBrief(word: string): { text: string; lang: strin
       ? row.etymology_text.slice(0, 147) + "..."
       : row.etymology_text;
     return { text, lang: link?.parent_lang || "" };
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return { text: "", lang: "" };
   }
 }
@@ -742,7 +783,8 @@ export function getWordPos(word: string): string {
       "SELECT pos FROM words WHERE word = ? AND pos IS NOT NULL LIMIT 1"
     ).get(word.toLowerCase()) as { pos: string } | undefined;
     return row?.pos || "";
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return "";
   }
 }
@@ -754,7 +796,8 @@ export function getWordFrequencyRank(word: string): number | undefined {
       "SELECT rank FROM word_frequency WHERE word = ?"
     ).get(word.toLowerCase()) as { rank: number } | undefined;
     return row?.rank;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }
@@ -784,7 +827,8 @@ export function getWordOfTheDay(): { word: string; definition: string } | undefi
     ).get(offset) as { word: string; definition: string } | undefined;
 
     return row;
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
     return undefined;
   }
 }

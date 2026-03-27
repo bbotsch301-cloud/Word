@@ -55,6 +55,10 @@ function initSchema(db: Database.Database) {
       created_at INTEGER DEFAULT (unixepoch()),
       PRIMARY KEY (list_id, word)
     );
+
+    CREATE INDEX IF NOT EXISTS idx_user_bookmarks_user ON user_bookmarks(user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_lists_user ON user_lists(user_id);
+    CREATE INDEX IF NOT EXISTS idx_user_list_words_list ON user_list_words(list_id);
   `);
 }
 
@@ -150,16 +154,22 @@ export function isBookmarked(userId: string, word: string): boolean {
 
 export function getUserLists(userId: string): UserList[] {
   const db = getUserDatabase();
-  const lists = db.prepare(
-    "SELECT * FROM user_lists WHERE user_id = ? ORDER BY created_at DESC"
-  ).all(userId) as Omit<UserList, "words">[];
+  const rows = db.prepare(`
+    SELECT ul.*, GROUP_CONCAT(ulw.word, '||') as words_str
+    FROM user_lists ul
+    LEFT JOIN user_list_words ulw ON ul.id = ulw.list_id
+    WHERE ul.user_id = ?
+    GROUP BY ul.id
+    ORDER BY ul.created_at DESC
+  `).all(userId) as (Omit<UserList, "words"> & { words_str: string | null })[];
 
-  return lists.map(list => {
-    const words = db.prepare(
-      "SELECT word FROM user_list_words WHERE list_id = ? ORDER BY created_at"
-    ).all(list.id) as { word: string }[];
-    return { ...list, words: words.map(w => w.word) };
-  });
+  return rows.map(r => ({
+    id: r.id,
+    user_id: r.user_id,
+    name: r.name,
+    created_at: r.created_at,
+    words: r.words_str ? r.words_str.split("||") : [],
+  }));
 }
 
 export function createUserList(userId: string, name: string): string {

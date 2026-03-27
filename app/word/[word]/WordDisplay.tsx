@@ -7,6 +7,7 @@ import type { LexicaResult } from "@/types/lexica";
 import SearchField from "@/components/ui/SearchField";
 import Badge from "@/components/ui/Badge";
 import CollapsibleSection from "@/components/word/CollapsibleSection";
+import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import FrequencyGauge from "@/components/word/FrequencyGauge";
 import EtymologyChain from "@/components/word/EtymologyChain";
 import DefinitionTimeline from "@/components/word/DefinitionTimeline";
@@ -233,7 +234,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         whileInView="show"
         viewport={{ once: true }}
         variants={stagger}
-        className="mt-10 grid grid-cols-3 gap-3"
+        className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3"
       >
         <motion.div variants={fadeUp} className="bg-surface border border-border rounded-lg p-4 shadow-sm">
           <div className="text-[10px] text-text-muted uppercase tracking-wider font-mono">Root Origin</div>
@@ -266,6 +267,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
 
         {/* The Story */}
         {result.truest_meaning && (
+          <SectionErrorBoundary>
           <CollapsibleSection
             id="story"
             title="The Story"
@@ -283,10 +285,12 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               </p>
             )}
           </CollapsibleSection>
+          </SectionErrorBoundary>
         )}
 
         {/* Etymology Chain / River */}
         {result.strata.length > 0 && (
+          <SectionErrorBoundary>
           <CollapsibleSection
             id="etymology"
             title="Etymology Chain"
@@ -322,6 +326,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             <EtymologyTree word={result.word} />
             <OriginMap strata={result.strata} />
           </CollapsibleSection>
+          </SectionErrorBoundary>
         )}
 
         {/* Cultural Context */}

@@ -22,8 +22,13 @@ export async function GET(req: NextRequest) {
     }
 
     if (word) {
+      if (word.length > 40) {
+        return NextResponse.json({ error: "Word too long" }, { status: 400 });
+      }
       const analysis = analyzeWord(word);
-      return NextResponse.json(analysis);
+      return NextResponse.json(analysis, {
+        headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
+      });
     }
 
     return NextResponse.json({ error: "Provide ?word= or ?action=featured|random" }, { status: 400 });

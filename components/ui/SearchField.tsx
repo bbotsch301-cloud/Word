@@ -115,9 +115,11 @@ export default function SearchField({
     onSubmit?.(word);
   };
 
+  const listboxId = 'search-suggestions';
+
   return (
     <div ref={containerRef} className="relative w-full">
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="relative" role="search">
         <svg
           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
           width="16"
@@ -128,6 +130,7 @@ export default function SearchField({
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          aria-hidden="true"
         >
           <circle cx="6.5" cy="6.5" r="5" />
           <line x1="10" y1="10" x2="15" y2="15" />
@@ -143,10 +146,15 @@ export default function SearchField({
           placeholder={placeholder}
           autoFocus={autoFocus}
           autoComplete="off"
+          role="combobox"
+          aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-controls={listboxId}
+          aria-activedescendant={selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined}
+          aria-autocomplete="list"
           className={`w-full bg-surface border border-border pl-10 pr-10 focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] shadow-sm transition-all text-text-primary placeholder:text-text-muted ${sizeStyles[size]}`}
         />
         {!focused && !value && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-text-muted bg-bg border border-border rounded px-1.5 py-0.5 pointer-events-none">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-text-muted bg-bg border border-border rounded px-1.5 py-0.5 pointer-events-none" aria-hidden="true">
             /
           </span>
         )}
@@ -154,22 +162,24 @@ export default function SearchField({
 
       {/* Autocomplete dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg overflow-hidden z-50">
+        <ul id={listboxId} role="listbox" className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg overflow-hidden z-50">
           {suggestions.map((word, i) => (
-            <button
+            <li
               key={word}
-              type="button"
+              id={`suggestion-${i}`}
+              role="option"
+              aria-selected={i === selectedIndex}
               onMouseDown={() => selectSuggestion(word)}
-              className={`w-full text-left px-3.5 py-2 text-sm transition-colors ${
+              className={`w-full text-left px-3.5 py-2 text-sm transition-colors cursor-pointer ${
                 i === selectedIndex
                   ? 'bg-accent/10 text-accent'
                   : 'text-text-primary hover:bg-surface-hover'
               }`}
             >
               {word}
-            </button>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

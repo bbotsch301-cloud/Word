@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from "react";
 import { useSession } from "next-auth/react";
 
 interface WordList {
@@ -357,21 +357,23 @@ export function WordListProvider({ children }: { children: ReactNode }) {
     }
   }, [isLoggedIn]);
 
+  const contextValue = useMemo(() => ({
+    bookmarks: data.bookmarks,
+    lists: data.lists,
+    isBookmarked,
+    toggleBookmark,
+    createList,
+    deleteList,
+    addToList,
+    removeFromList,
+    isLoggedIn,
+    isReady,
+    hasPendingMigration,
+    migrateLocalData: migrateLocal,
+  }), [data.bookmarks, data.lists, isBookmarked, toggleBookmark, createList, deleteList, addToList, removeFromList, isLoggedIn, isReady, hasPendingMigration, migrateLocal]);
+
   return (
-    <WordListContext.Provider value={{
-      bookmarks: data.bookmarks,
-      lists: data.lists,
-      isBookmarked,
-      toggleBookmark,
-      createList,
-      deleteList,
-      addToList,
-      removeFromList,
-      isLoggedIn,
-      isReady,
-      hasPendingMigration,
-      migrateLocalData: migrateLocal,
-    }}>
+    <WordListContext.Provider value={contextValue}>
       {children}
     </WordListContext.Provider>
   );
