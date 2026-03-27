@@ -68,7 +68,7 @@ export function DivergenceTimeline({ word1, word2, path1, path2 }: DivergencePro
           <motion.path
             d={buildPath(p2Points)}
             fill="none"
-            stroke="#D97706"
+            stroke="var(--accent-secondary, #D97706)"
             strokeWidth={2}
             strokeOpacity={0.6}
             initial={{ pathLength: 0 }}
@@ -117,8 +117,8 @@ export function DivergenceTimeline({ word1, word2, path1, path2 }: DivergencePro
                 transition={{ delay: i * 0.15 + 0.3 }}
               >
                 <circle cx={pt.x} cy={pt.y} r={i === 0 ? 5 : 3.5}
-                  fill={i === 0 ? "#D97706" : "var(--bg)"}
-                  stroke="#D97706" strokeWidth={1.5}
+                  fill={i === 0 ? "var(--accent-secondary, #D97706)" : "var(--bg)"}
+                  stroke="var(--accent-secondary, #D97706)" strokeWidth={1.5}
                 />
                 {i > 0 && (
                   <>
@@ -137,7 +137,7 @@ export function DivergenceTimeline({ word1, word2, path1, path2 }: DivergencePro
           {/* Legend */}
           <circle cx={width - 90} cy={12} r={4} fill="var(--accent)" />
           <text x={width - 82} y={15} className="fill-text-muted" fontSize="7">{word1}</text>
-          <circle cx={width - 90} cy={26} r={4} fill="#D97706" />
+          <circle cx={width - 90} cy={26} r={4} fill="var(--accent-secondary, #D97706)" />
           <text x={width - 82} y={29} className="fill-text-muted" fontSize="7">{word2}</text>
         </svg>
       </div>

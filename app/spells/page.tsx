@@ -38,7 +38,7 @@ export default function SpellsPage() {
     fetch("/api/spells?action=featured")
       .then(r => r.json())
       .then(d => { setFeatured(d.pairs || []); setLoadingFeatured(false); })
-      .catch(() => setLoadingFeatured(false));
+      .catch((err) => { console.error("Failed to load featured spells:", err); setLoadingFeatured(false); });
   }, []);
 
   const fetchRandom = useCallback(async () => {

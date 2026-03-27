@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ChainStep {
   word: string;
@@ -10,6 +10,8 @@ interface ChainStep {
 }
 
 export function SpellChainViz({ steps }: { steps: ChainStep[] }) {
+  const router = useRouter();
+
   if (steps.length < 2) return null;
 
   const nodeW = 70;
@@ -21,7 +23,13 @@ export function SpellChainViz({ steps }: { steps: ChainStep[] }) {
     <div className="mt-4">
       <h4 className="text-xs uppercase tracking-wider text-text-muted mb-3 font-semibold">Spell Chain</h4>
       <div className="bg-surface border border-border rounded-xl p-4 overflow-x-auto">
-        <svg viewBox={`0 0 ${Math.max(totalW, 300)} ${height}`} className="w-full min-w-[400px]" style={{ minHeight: 80 }}>
+        <svg
+          viewBox={`0 0 ${Math.max(totalW, 300)} ${height}`}
+          className="w-full min-w-[400px]"
+          style={{ minHeight: 80 }}
+          role="img"
+          aria-label={`Spell chain: ${steps.map(s => s.word).join(" → ")}`}
+        >
           {steps.map((step, i) => {
             const x = i * (nodeW + gap) + nodeW / 2;
             const cy = height / 2;
@@ -32,6 +40,8 @@ export function SpellChainViz({ steps }: { steps: ChainStep[] }) {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
+                style={{ cursor: "pointer" }}
+                onClick={() => router.push(`/spells/${encodeURIComponent(step.word)}`)}
               >
                 {/* Connector line to next */}
                 {i < steps.length - 1 && (
@@ -78,20 +88,17 @@ export function SpellChainViz({ steps }: { steps: ChainStep[] }) {
                 />
 
                 {/* Word label */}
-                <Link href={`/spells/${encodeURIComponent(step.word)}`}>
-                  <text
-                    x={x}
-                    y={cy + 4}
-                    textAnchor="middle"
-                    className={i === 0 ? "fill-accent" : "fill-text-primary"}
-                    fontSize="10"
-                    fontWeight={i === 0 ? "bold" : "normal"}
-                    fontFamily="var(--font-serif)"
-                    style={{ cursor: "pointer" }}
-                  >
-                    {step.word}
-                  </text>
-                </Link>
+                <text
+                  x={x}
+                  y={cy + 4}
+                  textAnchor="middle"
+                  className={i === 0 ? "fill-accent" : "fill-text-primary"}
+                  fontSize="10"
+                  fontWeight={i === 0 ? "bold" : "normal"}
+                  fontFamily="var(--font-serif)"
+                >
+                  {step.word}
+                </text>
 
                 {/* Step number */}
                 <text

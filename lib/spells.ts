@@ -98,7 +98,9 @@ function langFamily(code: string): string {
 
 function enrichWord(word: string): SpellMatch | null {
   const def = getWordShortDef(word);
-  if (!def) return null;
+  if (def === undefined || def === null) return null;
+  // Allow empty definitions — word exists but may lack definition text
+  if (def === "" && !getWordPos(word)) return null;
 
   const phonemeKey = lookupPhonemeKey(word) || "";
   const ipaEntry = lookupIpaDict(word);
@@ -182,8 +184,9 @@ export function findSonicSpells(word: string): SpellPair[] {
 
   const pairs: SpellPair[] = [];
   for (const h of homophones.slice(0, 15)) {
-    // Skip trivial variants (plurals, verb forms of same root)
-    if (h.startsWith(word.toLowerCase()) || word.toLowerCase().startsWith(h)) continue;
+    // Skip trivial variants (plurals, possessives of same root)
+    const w = word.toLowerCase();
+    if (h === w + "s" || h === w + "es" || h === w + "'s" || w === h + "s" || w === h + "es") continue;
 
     const match = enrichWord(h);
     if (!match) continue;
@@ -277,7 +280,7 @@ function generatePhonemeEdits(key: string): string[] {
 
 export function buildSpellChain(word: string, maxLength: number = 8): SpellChain {
   const startKey = lookupPhonemeKey(word);
-  if (!startKey) return { steps: [{ word, phonemeKey: "" }] };
+  if (!startKey) return { steps: [] };
 
   const steps: SpellChainStep[] = [{ word, phonemeKey: startKey }];
   const visited = new Set<string>([startKey, word.toLowerCase()]);
@@ -292,7 +295,7 @@ export function buildSpellChain(word: string, maxLength: number = 8): SpellChain
 
     for (const editKey of edits) {
       if (visited.has(editKey)) continue;
-      const matches = findWordsByPhonemeKey(editKey);
+      const matches = findWordsByPhonemeKey(editKey, steps[steps.length - 1].word);
       for (const m of matches) {
         if (visited.has(m)) continue;
         // Prefer common words
@@ -397,7 +400,7 @@ const FEATURED_PAIRS: [string, string, "sonic" | "letter"][] = [
   ["united", "untied", "letter"],
   ["sacred", "scared", "letter"],
   ["angered", "enraged", "letter"],
-  ["funeral", "real fun", "letter"],
+  ["notes", "stone", "letter"],
   ["danger", "garden", "letter"],
 ];
 

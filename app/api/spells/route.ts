@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ error: "Provide ?word= or ?action=featured|random" }, { status: 400 });
   } catch (e) {
+    console.error("Spells API error:", e);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

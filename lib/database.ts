@@ -671,27 +671,27 @@ export function lookupPhonemeKey(word: string): string | undefined {
   }
 }
 
-export function findWordsByPhonemeKey(key: string, excludeWord?: string): string[] {
+export function findWordsByPhonemeKey(key: string, excludeWord?: string, limit: number = 50): string[] {
   const db = getDatabase();
   try {
     const rows = db.prepare(
-      "SELECT DISTINCT word FROM cmu_pronunciation WHERE phoneme_key = ? ORDER BY word"
-    ).all(key) as { word: string }[];
+      "SELECT DISTINCT word FROM cmu_pronunciation WHERE phoneme_key = ? ORDER BY word LIMIT ?"
+    ).all(key, limit + 1) as { word: string }[];
     const words = rows.map(r => r.word);
-    return excludeWord ? words.filter(w => w !== excludeWord.toLowerCase()) : words;
+    return (excludeWord ? words.filter(w => w !== excludeWord.toLowerCase()) : words).slice(0, limit);
   } catch {
     return [];
   }
 }
 
-export function findAnagrams(word: string): string[] {
+export function findAnagrams(word: string, limit: number = 30): string[] {
   const db = getDatabase();
   try {
     const w = word.toLowerCase();
     const sorted = w.split("").sort().join("");
     const rows = db.prepare(
-      "SELECT word FROM word_letters WHERE sorted_letters = ? AND word != ?"
-    ).all(sorted, w) as { word: string }[];
+      "SELECT word FROM word_letters WHERE sorted_letters = ? AND word != ? LIMIT ?"
+    ).all(sorted, w, limit) as { word: string }[];
     return rows.map(r => r.word);
   } catch {
     return [];

@@ -65,12 +65,13 @@ export default function SpellWordPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
-    setData(null);
-    fetch(`/api/spells?word=${encodeURIComponent(word)}`)
+    fetch(`/api/spells?word=${encodeURIComponent(word)}`, { signal: controller.signal })
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .catch(e => { if (e.name !== 'AbortError') setLoading(false); });
+    return () => controller.abort();
   }, [word]);
 
   if (loading) {

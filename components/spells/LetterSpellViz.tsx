@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface LetterSpellVizProps {
   word1: string;
@@ -41,56 +41,59 @@ export function LetterSpellViz({ word1, word2 }: LetterSpellVizProps) {
           </button>
         </div>
 
-        <svg viewBox={`0 0 ${totalW + padX * 2} ${boxH + 20}`} className="w-full" style={{ maxHeight: 70 }}>
-          <AnimatePresence mode="wait">
-            {letters1.map((letter, i) => {
-              const fromX = padX + i * (boxW + gap);
-              const toIdx = mapping[i];
-              const toX = toIdx >= 0 ? padX + toIdx * (boxW + gap) : fromX;
+        <svg
+          viewBox={`0 0 ${totalW + padX * 2} ${boxH + 20}`}
+          className="w-full"
+          style={{ maxHeight: 70 }}
+          role="img"
+          aria-label={`Letters of "${word1}" rearranging to spell "${word2}"`}
+        >
+          {letters1.map((letter, i) => {
+            const fromX = padX + i * (boxW + gap);
+            const toIdx = mapping[i];
+            const toX = toIdx >= 0 ? padX + toIdx * (boxW + gap) : fromX;
 
-              return (
-                <motion.g
-                  key={`letter-${i}-${showSecond ? "b" : "a"}`}
-                  initial={false}
-                  animate={{
-                    x: showSecond ? toX - fromX : 0,
-                    y: 0,
-                  }}
-                  transition={{ type: "spring", stiffness: 120, damping: 15, delay: i * 0.04 }}
+            return (
+              <motion.g
+                key={`letter-${i}`}
+                initial={false}
+                animate={{
+                  x: showSecond ? toX - fromX : 0,
+                }}
+                transition={{ type: "spring", stiffness: 120, damping: 15, delay: i * 0.04 }}
+              >
+                <rect
+                  x={fromX}
+                  y={8}
+                  width={boxW}
+                  height={boxH}
+                  rx={5}
+                  fill="var(--bg)"
+                  stroke="var(--accent)"
+                  strokeWidth={1.5}
+                  strokeOpacity={0.5}
+                />
+                <text
+                  x={fromX + boxW / 2}
+                  y={8 + boxH / 2 + 5}
+                  textAnchor="middle"
+                  className="fill-text-primary"
+                  fontSize="16"
+                  fontWeight="bold"
+                  fontFamily="var(--font-serif)"
                 >
-                  <rect
-                    x={fromX}
-                    y={8}
-                    width={boxW}
-                    height={boxH}
-                    rx={5}
-                    fill="var(--bg)"
-                    stroke="var(--accent)"
-                    strokeWidth={1.5}
-                    strokeOpacity={0.5}
-                  />
-                  <text
-                    x={fromX + boxW / 2}
-                    y={8 + boxH / 2 + 5}
-                    textAnchor="middle"
-                    className="fill-text-primary"
-                    fontSize="16"
-                    fontWeight="bold"
-                    fontFamily="var(--font-serif)"
-                  >
-                    {letter}
-                  </text>
-                </motion.g>
-              );
-            })}
-          </AnimatePresence>
+                  {letter}
+                </text>
+              </motion.g>
+            );
+          })}
         </svg>
 
         <div className="flex justify-center gap-3 mt-2">
           <span className={`text-sm font-serif font-semibold transition-colors ${!showSecond ? "text-accent" : "text-text-muted"}`}>
             {word1}
           </span>
-          <span className="text-text-muted">→</span>
+          <span className="text-text-muted">&rarr;</span>
           <span className={`text-sm font-serif font-semibold transition-colors ${showSecond ? "text-accent" : "text-text-muted"}`}>
             {word2}
           </span>
