@@ -4,11 +4,9 @@ const NAV_SECTIONS = [
   {
     title: "Explore",
     links: [
-      { label: "Home", href: "/" },
       { label: "Search", href: "/search" },
       { label: "Explore", href: "/explore" },
       { label: "Word Spells", href: "/spells" },
-      { label: "Compare", href: "/compare" },
       { label: "Dictionaries", href: "/dictionaries" },
     ],
   },
@@ -17,15 +15,14 @@ const NAV_SECTIONS = [
     links: [
       { label: "My Words", href: "/lists" },
       { label: "Sign In", href: "/login" },
-      { label: "Create Account", href: "/register" },
     ],
   },
   {
     title: "About",
     links: [
-      { label: "About LEXICA", href: "/about" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
+      { label: "About", href: "/about" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
     ],
   },
 ];

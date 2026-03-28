@@ -6,9 +6,8 @@ import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
-  { href: '/explore', label: 'Explore', title: 'Browse words by century, language, and family' },
-  { href: '/spells', label: 'Spells', title: 'Discover hidden word connections' },
   { href: '/search', label: 'Search', title: 'Filter by pattern, origin, and more' },
+  { href: '/explore', label: 'Explore', title: 'Browse words by century, language, and family' },
   { href: '/dictionaries', label: 'Dictionaries', title: 'Browse 27+ historical sources' },
   { href: '/lists', label: 'My Words', title: 'Your bookmarks and word lists' },
 ];

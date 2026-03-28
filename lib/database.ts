@@ -77,7 +77,10 @@ export function lookupWebster1828(word: string): Webster1828Row | undefined {
   try {
     return db.prepare("SELECT * FROM webster1828 WHERE word = ?").get(word.toLowerCase()) as Webster1828Row | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -87,7 +90,10 @@ export function lookupBlacksLaw(term: string): BlacksLawRow | undefined {
   try {
     return db.prepare("SELECT * FROM blacks_law WHERE term = ?").get(term.toLowerCase()) as BlacksLawRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -99,7 +105,10 @@ export function searchBlacksLaw(term: string, limit: number = 8): BlacksLawRow[]
       "SELECT * FROM blacks_law WHERE term LIKE ? AND term != ? ORDER BY LENGTH(term) ASC LIMIT ?"
     ).all(`%${term.toLowerCase()}%`, term.toLowerCase(), limit) as BlacksLawRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -114,7 +123,10 @@ export function lookupBouvier(term: string): BouvierRow | undefined {
   try {
     return db.prepare("SELECT * FROM bouvier WHERE term = ?").get(term.toLowerCase()) as BouvierRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -141,7 +153,10 @@ export function lookupStrongs(word: string, limit: number = 5): StrongsRow[] {
       LIMIT ?
     `).all(word.toLowerCase(), limit) as StrongsRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -157,7 +172,10 @@ export function lookupMobyThesaurus(word: string): MobyRow | undefined {
   try {
     return db.prepare("SELECT * FROM moby_thesaurus WHERE word = ?").get(word.toLowerCase()) as MobyRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -186,7 +204,10 @@ export function lookupWordNet(word: string, limit: number = 10): WordNetSynsetRo
       LIMIT ?
     `).all(word.toLowerCase(), limit) as WordNetSynsetRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -199,7 +220,10 @@ export function getWordNetSynonyms(synsetId: string): string[] {
     ).all(synsetId) as { word: string }[];
     return rows.map(r => r.word);
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -214,7 +238,10 @@ export function getWordNetRelations(synsetId: string, relationType: string, limi
       LIMIT ?
     `).all(synsetId, relationType, limit) as WordNetSynsetRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -237,7 +264,10 @@ export function lookupRogets(word: string, limit: number = 5): RogetRow[] {
       LIMIT ?
     `).all(word.toLowerCase(), limit) as RogetRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -256,7 +286,10 @@ export function lookupPronunciation(word: string): CmuRow[] {
       "SELECT * FROM cmu_pronunciation WHERE word = ? ORDER BY variant"
     ).all(word.toLowerCase()) as CmuRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -272,7 +305,10 @@ export function lookupEastons(word: string): EastonsRow | undefined {
   try {
     return db.prepare("SELECT * FROM eastons WHERE word = ?").get(word.toLowerCase()) as EastonsRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -288,7 +324,10 @@ export function lookupHitchcocks(word: string): HitchcocksRow | undefined {
   try {
     return db.prepare("SELECT * FROM hitchcocks WHERE name = ?").get(word.toLowerCase()) as HitchcocksRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -308,7 +347,10 @@ export function lookupNaves(word: string, limit: number = 5): NavesRow[] {
     if (exact.length > 0) return exact.slice(0, limit);
     return db.prepare("SELECT * FROM naves WHERE topic LIKE ? LIMIT ?").all(`${word.toLowerCase()}%`, limit) as NavesRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -328,7 +370,10 @@ export function lookupGcide(word: string): GcideRow | undefined {
       "SELECT * FROM gcide WHERE word = ? ORDER BY LENGTH(definition) DESC LIMIT 1"
     ).get(word.toLowerCase()) as GcideRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -346,7 +391,10 @@ export function lookupScowl(word: string): ScowlRow | undefined {
   try {
     return db.prepare("SELECT * FROM scowl_words WHERE word = ?").get(word.toLowerCase()) as ScowlRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -363,7 +411,10 @@ export function lookupAcademicWord(word: string): AcademicWordRow | undefined {
   try {
     return db.prepare("SELECT * FROM academic_words WHERE word = ?").get(word.toLowerCase()) as AcademicWordRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -384,7 +435,10 @@ export function lookupEtymologyLinks(word: string, limit: number = 10): Etymolog
       "SELECT * FROM etymology_links WHERE word = ? LIMIT ?"
     ).all(word.toLowerCase(), limit) as EtymologyLinkRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -395,7 +449,10 @@ export function lookupSmiths(word: string): { word: string; definition: string }
   try {
     return db.prepare("SELECT * FROM smiths WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -407,7 +464,10 @@ export function lookupIpaDict(word: string): string | undefined {
     const row = db.prepare("SELECT ipa FROM ipa_dict WHERE word = ?").get(word.toLowerCase()) as { ipa: string } | undefined;
     return row?.ipa;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -422,7 +482,10 @@ export function lookupCefrLevel(word: string): string | undefined {
     const cefr = db.prepare("SELECT cefr_level FROM cefr_words WHERE word = ?").get(word.toLowerCase()) as { cefr_level: string } | undefined;
     return cefr?.cefr_level || undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -442,7 +505,10 @@ export function lookupMorphology(word: string): MorphoLexRow | undefined {
   try {
     return db.prepare("SELECT * FROM morpholex WHERE word = ?").get(word.toLowerCase()) as MorphoLexRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -454,7 +520,10 @@ export function lookupGoogleFrequency(word: string): number | undefined {
     const row = db.prepare("SELECT rank FROM google_frequency WHERE word = ?").get(word.toLowerCase()) as { rank: number } | undefined;
     return row?.rank;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -474,7 +543,10 @@ export function getWordNetMeronyms(word: string, limit: number = 8): { word: str
     `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
     return rows;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -493,7 +565,10 @@ export function getWordNetHolonyms(word: string, limit: number = 8): { word: str
     `).all(word.toLowerCase(), word.toLowerCase(), limit) as { word: string; relation: string }[];
     return rows;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -509,7 +584,10 @@ export function getPolysemyCount(word: string): { count: number; senses: string[
     `).all(word.toLowerCase()) as { definition: string }[];
     return { count: rows.length, senses: rows.map(r => r.definition) };
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return { count: 0, senses: [] };
   }
 }
@@ -539,7 +617,10 @@ export function findDoublets(word: string): string[] {
     }
     return doublets;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -564,7 +645,10 @@ export function getBorrowingChain(word: string, maxDepth: number = 6): { word: s
     }
     return chain;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -579,7 +663,10 @@ export function findWordsByEtymologyRoot(root: string, excludeWord: string, limi
     ).all(pattern, excludeWord.toLowerCase(), limit) as { word: string }[];
     return rows.map(r => r.word);
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -602,7 +689,10 @@ export function lookupBDB(strongsIds: string[]): BDBRow[] {
       `SELECT * FROM bdb_hebrew WHERE strongs_id IN (${placeholders})`
     ).all(...strongsIds) as BDBRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -621,7 +711,10 @@ export function lookupNgramHistory(word: string): NgramRow[] {
       "SELECT word, decade, frequency FROM ngram_history WHERE word = ? ORDER BY decade"
     ).all(word.toLowerCase()) as NgramRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -643,7 +736,10 @@ export function lookupCognates(word: string, limit: number = 30): CognateRow[] {
       "SELECT * FROM cognates WHERE english_word = ? LIMIT ?"
     ).all(word.toLowerCase(), limit) as CognateRow[];
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -654,7 +750,10 @@ export function lookupNuttall(word: string): { word: string; definition: string 
   try {
     return db.prepare("SELECT * FROM nuttall WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -665,7 +764,10 @@ export function lookupCatholicEncyclopedia(word: string): { word: string; defini
   try {
     return db.prepare("SELECT * FROM catholic_encyclopedia WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -676,7 +778,10 @@ export function lookupBritannica(word: string): { word: string; definition: stri
   try {
     return db.prepare("SELECT * FROM britannica WHERE word = ?").get(word.toLowerCase()) as { word: string; definition: string } | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -694,7 +799,10 @@ export function lookupFirstUse(word: string): FirstUseRow | undefined {
   try {
     return db.prepare("SELECT * FROM first_use WHERE word = ?").get(word.toLowerCase()) as FirstUseRow | undefined;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -708,7 +816,10 @@ export function lookupPhonemeKey(word: string): string | undefined {
     ).get(word.toLowerCase()) as { phoneme_key: string } | undefined;
     return row?.phoneme_key;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -722,7 +833,10 @@ export function findWordsByPhonemeKey(key: string, excludeWord?: string, limit: 
     const words = rows.map(r => r.word);
     return (excludeWord ? words.filter(w => w !== excludeWord.toLowerCase()) : words).slice(0, limit);
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -737,7 +851,10 @@ export function findAnagrams(word: string, limit: number = 30): string[] {
     ).all(sorted, w, limit) as { word: string }[];
     return rows.map(r => r.word);
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return [];
   }
 }
@@ -753,7 +870,10 @@ export function getWordShortDef(word: string): string {
     const first = row.definition.split(/[.;\n]/)[0].trim();
     return first.length > 120 ? first.slice(0, 117) + "..." : first;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return "";
   }
 }
@@ -776,7 +896,10 @@ export function getWordEtymologyBrief(word: string): { text: string; lang: strin
       : row.etymology_text;
     return { text, lang: link?.parent_lang || "" };
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return { text: "", lang: "" };
   }
 }
@@ -789,7 +912,10 @@ export function getWordPos(word: string): string {
     ).get(word.toLowerCase()) as { pos: string } | undefined;
     return row?.pos || "";
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return "";
   }
 }
@@ -802,7 +928,10 @@ export function getWordFrequencyRank(word: string): number | undefined {
     ).get(word.toLowerCase()) as { rank: number } | undefined;
     return row?.rank;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
@@ -833,7 +962,10 @@ export function getWordOfTheDay(): { word: string; definition: string } | undefi
 
     return row;
   } catch (err) {
-    if (process.env.NODE_ENV === "development") console.error("DB lookup error:", err);
+    // Suppress "no such table" errors (optional data sources may not be loaded)
+    if (process.env.NODE_ENV === "development" && !(err instanceof Error && err.message.includes("no such table"))) {
+      console.error("DB lookup error:", err);
+    }
     return undefined;
   }
 }
