@@ -103,16 +103,16 @@ function CompareColumn({ result }: { result: LexicaResult }) {
         <div>
           <h3 className="text-xs uppercase tracking-wider text-text-muted mb-1">Peak Usage</h3>
           <p className="text-sm text-text-secondary">
-            {result.ngramHistory.reduce((a, b) => a.frequency > b.frequency ? a : b).decade}s
+            {result.ngramHistory.reduce((a, b) => (a?.frequency ?? 0) > (b?.frequency ?? 0) ? a : b)?.decade}s
           </p>
         </div>
       )}
 
       {/* Cognates count */}
-      {result.cognates && result.cognates.cognates.length > 0 && (
+      {(result.cognates?.cognates?.length ?? 0) > 0 && (
         <div>
           <h3 className="text-xs uppercase tracking-wider text-text-muted mb-1">Cognates</h3>
-          <p className="text-sm text-text-secondary">{result.cognates.cognates.length} cognates across languages</p>
+          <p className="text-sm text-text-secondary">{result.cognates!.cognates.length} cognates across languages</p>
         </div>
       )}
     </div>

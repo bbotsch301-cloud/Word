@@ -68,9 +68,9 @@ export default function EtymologyTab({ result }: EtymologyTabProps) {
               Cultural Context
             </h3>
             <div className="flex items-start gap-2">
-              <Badge variant="accent">{result.cultural_moment.period}</Badge>
+              <Badge variant="accent">{result.cultural_moment?.period}</Badge>
               <p className="text-sm text-text-secondary leading-relaxed">
-                {result.cultural_moment.description}
+                {result.cultural_moment?.description}
               </p>
             </div>
           </Card>

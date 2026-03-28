@@ -31,14 +31,15 @@ export function computeLetterStats(word: string): { vowels: number; consonants: 
 }
 
 export function computeSyllableCount(arpabet: string[] | undefined): number | null {
-  if (!arpabet || arpabet.length === 0) return null;
+  if (!arpabet || arpabet.length === 0 || !arpabet[0]) return null;
   // Count vowel phonemes (they have stress markers: 0, 1, or 2)
   const phonemes = arpabet[0].split(" ");
-  return phonemes.filter(p => /\d$/.test(p)).length;
+  const count = phonemes.filter(p => /\d$/.test(p)).length;
+  return count > 0 ? count : null;
 }
 
 export function computeStressPattern(arpabet: string[] | undefined): string | null {
-  if (!arpabet || arpabet.length === 0) return null;
+  if (!arpabet || arpabet.length === 0 || !arpabet[0]) return null;
   const phonemes = arpabet[0].split(" ");
   const stresses = phonemes
     .filter(p => /\d$/.test(p))

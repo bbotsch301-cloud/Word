@@ -75,7 +75,7 @@ export default function WordProperties({ result }: Props) {
   if (rarity) properties.push({ label: "Frequency", value: rarity, detail: result.frequency ? `Rank #${result.frequency.rank.toLocaleString()}` : undefined });
   properties.push({ label: "Scrabble", value: `${scrabble} pts`, detail: `${result.word.length} letters` });
   properties.push({ label: "Letters", value: `${letters.vowels}V ${letters.consonants}C`, detail: `${letters.unique} unique` });
-  if (journey) properties.push({ label: "Journey", value: journey, detail: `${result.strata[0]?.language} → ${result.strata[result.strata.length - 1]?.language}` });
+  if (journey && result.strata.length > 0) properties.push({ label: "Journey", value: journey, detail: `${result.strata[0]?.language} → ${result.strata[result.strata.length - 1]?.language}` });
   if (formality) properties.push({ label: "Register", value: formality, detail: result.cefrLevel ? `CEFR ${result.cefrLevel}` : undefined });
 
   const hasExtras = rhymes.length > 0 || anagrams.length > 0;

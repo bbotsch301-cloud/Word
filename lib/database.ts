@@ -6,8 +6,13 @@ let db: Database.Database | null = null;
 export function getDatabase(): Database.Database {
   if (!db) {
     const dbPath = path.join(process.cwd(), "data", "lexica.db");
-    db = new Database(dbPath, { readonly: true });
-    db.pragma("journal_mode = WAL");
+    try {
+      db = new Database(dbPath, { readonly: true });
+      db.pragma("journal_mode = WAL");
+    } catch (err) {
+      // Re-throw with a clearer message; db stays null so next call retries
+      throw new Error(`Cannot open database at ${dbPath}: ${(err as Error).message}`);
+    }
   }
   return db;
 }

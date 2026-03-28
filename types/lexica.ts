@@ -187,7 +187,7 @@ export interface LexicaResult {
   truest_meaning: string;
   truest_meaning_source: string;
   root_revelation: string;
-  cultural_moment: CulturalMoment;
+  cultural_moment?: CulturalMoment;
   constellation: ConstellationWord[];
   definitions: DefinitionSource[];
   taxonomy?: WordTaxonomy;

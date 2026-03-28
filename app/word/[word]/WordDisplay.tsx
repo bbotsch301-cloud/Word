@@ -164,7 +164,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   if (hasTaxonomy || result.constellation.length > 0) sections.push({ id: "related", label: "Related Words", shortLabel: "Related", group: "meaning" });
   // Usage group
   if (result.ngramHistory && result.ngramHistory.length >= 2) sections.push({ id: "usage-over-time", label: "Usage Over Time", shortLabel: "Usage", group: "usage" });
-  if (result.cognates && result.cognates.cognates.length > 0) sections.push({ id: "cognates", label: "Cognates", shortLabel: "Cognates", group: "usage" });
+  if ((result.cognates?.cognates?.length ?? 0) > 0) sections.push({ id: "cognates", label: "Cognates", shortLabel: "Cognates", group: "usage" });
   if (result.constellation.length >= 4) sections.push({ id: "constellation-graph", label: "Word Constellation", shortLabel: "Map", group: "usage" });
   // Reference group
   if (hasBiblical) sections.push({ id: "biblical", label: "Biblical Study", shortLabel: "Bible", group: "reference" });
@@ -495,12 +495,12 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           <CollapsibleSection
             id="cultural"
             title="Historical Note"
-            preview={`${result.cultural_moment.period} \u2014 ${result.cultural_moment.description.slice(0, 60)}...`}
+            preview={`${result.cultural_moment?.period} \u2014 ${result.cultural_moment?.description?.slice(0, 60)}...`}
           >
             <div className="bg-surface border border-border rounded-xl p-5 shadow-sm flex items-start gap-3">
-              <Badge variant="accent">{result.cultural_moment.period}</Badge>
+              <Badge variant="accent">{result.cultural_moment?.period}</Badge>
               <p className="text-sm text-text-secondary leading-relaxed">
-                {result.cultural_moment.description}
+                {result.cultural_moment?.description}
               </p>
             </div>
             <p className="text-xs text-text-muted mt-2">Extracted from etymology sources</p>
@@ -544,7 +544,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           <CollapsibleSection
             id="connections"
             title="Hidden Connections"
-            preview={result.hiddenConnections.wordEquation || `${result.hiddenConnections.connections.length} hidden connections discovered`}
+            preview={result.hiddenConnections?.wordEquation || `${result.hiddenConnections?.connections?.length ?? 0} hidden connections discovered`}
           >
             <p className="text-xs text-text-muted mb-4">
               Patterns discovered algorithmically from etymological data — not all connections are scholarly consensus.
@@ -571,7 +571,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             title="Definitions Across Time"
             preview={`${sortedDefs.length} definitions from ${sortedDefs[0]?.year} to ${sortedDefs[sortedDefs.length - 1]?.year}`}
           >
-            {sortedDefs.length >= 3 && (sortedDefs[sortedDefs.length - 1]?.year - sortedDefs[0]?.year) > 50 && (
+            {sortedDefs.length >= 3 && sortedDefs[sortedDefs.length - 1]?.year != null && sortedDefs[0]?.year != null && (sortedDefs[sortedDefs.length - 1].year - sortedDefs[0].year) > 50 && (
               <div className="mb-6">
                 <MeaningTimeline definitions={result.definitions} />
               </div>
@@ -652,13 +652,13 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         )}
 
         {/* Cognates Across Languages */}
-        {result.cognates && result.cognates.cognates.length > 0 && (
+        {(result.cognates?.cognates?.length ?? 0) > 0 && (
           <CollapsibleSection
             id="cognates"
             title="Cognates Across Languages"
-            preview={`${result.cognates.cognates.length} related words in other languages`}
+            preview={`${result.cognates!.cognates.length} related words in other languages`}
           >
-            <CognatesSection data={result.cognates} word={result.word} />
+            <CognatesSection data={result.cognates!} word={result.word} />
           </CollapsibleSection>
         )}
 
