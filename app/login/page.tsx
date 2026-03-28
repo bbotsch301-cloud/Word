@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -13,7 +13,7 @@ function getSafeCallbackUrl(raw: string | null): string {
   return "/lists";
 }
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
@@ -150,5 +150,13 @@ export default function LoginPage() {
         </p>
       </motion.div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="max-w-md mx-auto px-4 py-16"><div className="h-64 bg-surface border border-border rounded-xl animate-pulse" /></div>}>
+      <LoginPageInner />
+    </Suspense>
   );
 }

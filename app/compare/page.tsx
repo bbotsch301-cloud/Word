@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import SearchField from "@/components/ui/SearchField";
@@ -119,7 +119,7 @@ function CompareColumn({ result }: { result: LexicaResult }) {
   );
 }
 
-export default function ComparePage() {
+function ComparePageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const wordsParam = searchParams.get("words") || "";
@@ -275,5 +275,13 @@ export default function ComparePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense fallback={<div className="max-w-6xl mx-auto px-4 sm:px-6 py-8"><div className="h-32 bg-surface border border-border rounded-xl animate-pulse" /></div>}>
+      <ComparePageInner />
+    </Suspense>
   );
 }
