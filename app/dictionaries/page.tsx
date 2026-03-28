@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getAllDictionaries } from "@/lib/dictionaries";
 import DictionaryGrid from "@/components/DictionaryGrid";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dictionaries — LEXICA",
   description: "Browse 7 reference works spanning centuries of the English language.",
