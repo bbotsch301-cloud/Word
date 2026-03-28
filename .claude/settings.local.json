@@ -110,7 +110,15 @@
       "Bash(pkill -f next)",
       "Bash(rm -rf /home/runner/workspace/.next)",
       "Bash(npm ls:*)",
-      "Bash(do curl:*)"
+      "Bash(do curl:*)",
+      "Bash(gh auth:*)",
+      "Bash(git push:*)",
+      "Bash(grep -r \"etymologyLinks\\\\|taxonomy\\\\|constellation\" /home/runner/workspace/types /home/runner/workspace/lib --include=*.ts)",
+      "WebFetch(domain:www.youtube.com)",
+      "WebFetch(domain:eightify.app)",
+      "Bash(done)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
