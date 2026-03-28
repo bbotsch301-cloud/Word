@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDatabase } from "@/lib/database";
+import { queryAll } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const db = getDatabase();
-    const rows = db.prepare(
-      "SELECT DISTINCT word FROM words WHERE word LIKE ? ORDER BY LENGTH(word), word LIMIT 8"
-    ).all(`${q}%`) as { word: string }[];
+    const rows = await queryAll<{ word: string }>(
+      "SELECT DISTINCT word FROM words WHERE word LIKE ? ORDER BY LENGTH(word), word LIMIT 8",
+      `${q}%`
+    );
     return NextResponse.json(rows.map(r => r.word), {
       headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
     });

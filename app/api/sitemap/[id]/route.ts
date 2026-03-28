@@ -7,11 +7,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const chunkIndex = parseInt(params.id, 10);
-  if (isNaN(chunkIndex) || chunkIndex < 0 || chunkIndex >= getChunkCount()) {
+  const totalChunks = await getChunkCount();
+  if (isNaN(chunkIndex) || chunkIndex < 0 || chunkIndex >= totalChunks) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const words = getWordChunk(chunkIndex);
+  const words = await getWordChunk(chunkIndex);
 
   const urls = words.map(word => `  <url>
     <loc>${SITE_URL}/word/${encodeURIComponent(word)}</loc>

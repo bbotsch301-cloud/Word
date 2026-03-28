@@ -10,7 +10,7 @@ import {
   getBorrowingChain,
   lookupPronunciation,
   lookupIpaDict,
-  getDatabase,
+  queryAll,
 } from "./database";
 
 // === Types ===
@@ -96,19 +96,19 @@ function langFamily(code: string): string {
 
 // === Enrichment ===
 
-function enrichWord(word: string): SpellMatch | null {
-  const def = getWordShortDef(word);
+async function enrichWord(word: string): Promise<SpellMatch | null> {
+  const def = await getWordShortDef(word);
   if (def === undefined || def === null) return null;
   // Allow empty definitions — word exists but may lack definition text
-  if (def === "" && !getWordPos(word)) return null;
+  if (def === "" && !(await getWordPos(word))) return null;
 
-  const phonemeKey = lookupPhonemeKey(word) || "";
-  const ipaEntry = lookupIpaDict(word);
-  const cmu = lookupPronunciation(word);
+  const phonemeKey = (await lookupPhonemeKey(word)) || "";
+  const ipaEntry = await lookupIpaDict(word);
+  const cmu = await lookupPronunciation(word);
   const ipa = ipaEntry || (cmu.length > 0 ? cmu[0].phonemes : "");
-  const etym = getWordEtymologyBrief(word);
-  const pos = getWordPos(word);
-  const freq = getWordFrequencyRank(word);
+  const etym = await getWordEtymologyBrief(word);
+  const pos = await getWordPos(word);
+  const freq = await getWordFrequencyRank(word);
 
   return {
     word,
@@ -172,14 +172,14 @@ function buildSpellDescription(a: SpellMatch, b: SpellMatch, type: "sonic" | "le
 
 // === Core Spell Detection ===
 
-export function findSonicSpells(word: string): SpellPair[] {
-  const phonemeKey = lookupPhonemeKey(word);
+export async function findSonicSpells(word: string): Promise<SpellPair[]> {
+  const phonemeKey = await lookupPhonemeKey(word);
   if (!phonemeKey) return [];
 
-  const homophones = findWordsByPhonemeKey(phonemeKey, word);
+  const homophones = await findWordsByPhonemeKey(phonemeKey, word);
   if (homophones.length === 0) return [];
 
-  const source = enrichWord(word);
+  const source = await enrichWord(word);
   if (!source) return [];
 
   const pairs: SpellPair[] = [];
@@ -188,7 +188,7 @@ export function findSonicSpells(word: string): SpellPair[] {
     const w = word.toLowerCase();
     if (h === w + "s" || h === w + "es" || h === w + "'s" || w === h + "s" || w === h + "es") continue;
 
-    const match = enrichWord(h);
+    const match = await enrichWord(h);
     if (!match) continue;
 
     const depth = computeSpellDepth(source, match);
@@ -204,16 +204,16 @@ export function findSonicSpells(word: string): SpellPair[] {
   return pairs.sort((a, b) => b.depthScore - a.depthScore);
 }
 
-export function findLetterSpells(word: string): SpellPair[] {
-  const anagrams = findAnagrams(word);
+export async function findLetterSpells(word: string): Promise<SpellPair[]> {
+  const anagrams = await findAnagrams(word);
   if (anagrams.length === 0) return [];
 
-  const source = enrichWord(word);
+  const source = await enrichWord(word);
   if (!source) return [];
 
   const pairs: SpellPair[] = [];
   for (const a of anagrams.slice(0, 15)) {
-    const match = enrichWord(a);
+    const match = await enrichWord(a);
     if (!match) continue;
 
     const depth = computeSpellDepth(source, match);
@@ -294,8 +294,8 @@ function generatePhonemeEdits(key: string): string[] {
   return [...edits];
 }
 
-export function buildSpellChain(word: string, maxLength: number = 8): SpellChain {
-  const startKey = lookupPhonemeKey(word);
+export async function buildSpellChain(word: string, maxLength: number = 8): Promise<SpellChain> {
+  const startKey = await lookupPhonemeKey(word);
   if (!startKey) return { steps: [] };
 
   const steps: SpellChainStep[] = [{ word, phonemeKey: startKey }];
@@ -311,11 +311,11 @@ export function buildSpellChain(word: string, maxLength: number = 8): SpellChain
 
     for (const editKey of edits) {
       if (visited.has(editKey)) continue;
-      const matches = findWordsByPhonemeKey(editKey, steps[steps.length - 1].word);
+      const matches = await findWordsByPhonemeKey(editKey, steps[steps.length - 1].word);
       for (const m of matches) {
         if (visited.has(m)) continue;
         // Prefer common words
-        const freq = getWordFrequencyRank(m) || 50000;
+        const freq = (await getWordFrequencyRank(m)) || 50000;
         if (freq < bestFreq) {
           bestWord = m;
           bestKey = editKey;
@@ -351,9 +351,9 @@ export function buildSpellChain(word: string, maxLength: number = 8): SpellChain
 
 // === Etymological Divergence ===
 
-export function getEtymologicalDivergence(word1: string, word2: string): DivergenceData {
-  const chain1 = getBorrowingChain(word1, 8);
-  const chain2 = getBorrowingChain(word2, 8);
+export async function getEtymologicalDivergence(word1: string, word2: string): Promise<DivergenceData> {
+  const chain1 = await getBorrowingChain(word1, 8);
+  const chain2 = await getBorrowingChain(word2, 8);
 
   return {
     word1,
@@ -365,16 +365,16 @@ export function getEtymologicalDivergence(word1: string, word2: string): Diverge
 
 // === Lost Distinctions ===
 
-export function detectLostDistinctions(word: string): LostDistinction[] {
-  const phonemeKey = lookupPhonemeKey(word);
+export async function detectLostDistinctions(word: string): Promise<LostDistinction[]> {
+  const phonemeKey = await lookupPhonemeKey(word);
   if (!phonemeKey) return [];
 
-  const homophones = findWordsByPhonemeKey(phonemeKey, word);
+  const homophones = await findWordsByPhonemeKey(phonemeKey, word);
   const results: LostDistinction[] = [];
 
   for (const h of homophones.slice(0, 10)) {
-    const etym1 = getWordEtymologyBrief(word);
-    const etym2 = getWordEtymologyBrief(h);
+    const etym1 = await getWordEtymologyBrief(word);
+    const etym2 = await getWordEtymologyBrief(h);
 
     if (!etym1.lang || !etym2.lang) continue;
 
@@ -420,12 +420,12 @@ const FEATURED_PAIRS: [string, string, "sonic" | "letter"][] = [
   ["danger", "garden", "letter"],
 ];
 
-export function getFeaturedSpells(): SpellPair[] {
+export async function getFeaturedSpells(): Promise<SpellPair[]> {
   const pairs: SpellPair[] = [];
 
   for (const [w1, w2, type] of FEATURED_PAIRS) {
-    const m1 = enrichWord(w1);
-    const m2 = enrichWord(w2);
+    const m1 = await enrichWord(w1);
+    const m2 = await enrichWord(w2);
     if (!m1 || !m2) continue;
 
     const depth = computeSpellDepth(m1, m2);
@@ -441,11 +441,10 @@ export function getFeaturedSpells(): SpellPair[] {
   return pairs;
 }
 
-export function getRandomSpell(): SpellPair | null {
-  const db = getDatabase();
+export async function getRandomSpell(): Promise<SpellPair | null> {
   try {
     // Find a random word that has homophones
-    const row = db.prepare(`
+    const row = await queryAll(`
       SELECT c1.word, c1.phoneme_key FROM cmu_pronunciation c1
       WHERE c1.variant = 0 AND c1.phoneme_key IS NOT NULL
       AND EXISTS (
@@ -453,17 +452,17 @@ export function getRandomSpell(): SpellPair | null {
         WHERE c2.phoneme_key = c1.phoneme_key AND c2.word != c1.word AND c2.variant = 0
       )
       ORDER BY RANDOM() LIMIT 20
-    `).all() as { word: string; phoneme_key: string }[];
+    `) as { word: string; phoneme_key: string }[];
 
     for (const r of row) {
-      const spells = findSonicSpells(r.word);
+      const spells = await findSonicSpells(r.word);
       if (spells.length > 0 && spells[0].depthScore >= 2) {
         return spells[0];
       }
     }
 
     // Fallback: try a letter spell
-    const letterRow = db.prepare(`
+    const letterRow = await queryAll(`
       SELECT wl1.word FROM word_letters wl1
       WHERE EXISTS (
         SELECT 1 FROM word_letters wl2
@@ -471,10 +470,10 @@ export function getRandomSpell(): SpellPair | null {
       )
       AND wl1.letter_count >= 4
       ORDER BY RANDOM() LIMIT 10
-    `).all() as { word: string }[];
+    `) as { word: string }[];
 
     for (const r of letterRow) {
-      const spells = findLetterSpells(r.word);
+      const spells = await findLetterSpells(r.word);
       if (spells.length > 0) return spells[0];
     }
 
@@ -496,20 +495,20 @@ export interface SpellAnalysis {
   divergence?: DivergenceData;
 }
 
-export function analyzeWord(word: string): SpellAnalysis {
-  const sonic = findSonicSpells(word);
-  const letter = findLetterSpells(word);
-  const chain = buildSpellChain(word);
-  const lost = detectLostDistinctions(word);
+export async function analyzeWord(word: string): Promise<SpellAnalysis> {
+  const sonic = await findSonicSpells(word);
+  const letter = await findLetterSpells(word);
+  const chain = await buildSpellChain(word);
+  const lost = await detectLostDistinctions(word);
 
-  const ipaEntry = lookupIpaDict(word);
-  const cmu = lookupPronunciation(word);
+  const ipaEntry = await lookupIpaDict(word);
+  const cmu = await lookupPronunciation(word);
   const pronunciation = ipaEntry || (cmu.length > 0 ? cmu[0].phonemes : "");
 
   // Get divergence for the top sonic spell
   let divergence: DivergenceData | undefined;
   if (sonic.length > 0) {
-    divergence = getEtymologicalDivergence(word, sonic[0].words[1].word);
+    divergence = await getEtymologicalDivergence(word, sonic[0].words[1].word);
   }
 
   return {

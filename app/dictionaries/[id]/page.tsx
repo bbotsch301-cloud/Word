@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const dict = getDictionary(params.id);
+  const dict = await getDictionary(params.id);
   return {
     title: `${dict?.name || params.id} — LEXICA`,
     description: dict?.description || `Browse the ${params.id} dictionary.`,
@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 
-export default function DictionaryPage({ params, searchParams }: PageProps) {
-  const dict = getDictionary(params.id);
+export default async function DictionaryPage({ params, searchParams }: PageProps) {
+  const dict = await getDictionary(params.id);
 
   if (!dict) {
     return (
@@ -37,7 +37,7 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
   }
 
   const page = parseInt(searchParams.page || "1", 10);
-  const result = browseDictionary(params.id, {
+  const result = await browseDictionary(params.id, {
     page,
     pageSize: 50,
     letter: searchParams.letter,

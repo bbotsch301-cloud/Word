@@ -3,7 +3,7 @@ import { getChunkCount } from "@/lib/sitemap-helpers";
 import { SITE_URL } from "@/lib/config";
 
 export async function GET() {
-  const chunkCount = getChunkCount();
+  const chunkCount = await getChunkCount();
 
   const sitemaps = [
     `  <sitemap>

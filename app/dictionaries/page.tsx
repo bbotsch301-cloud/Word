@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: "Browse 7 reference works spanning centuries of the English language.",
 };
 
-export default function DictionariesPage() {
-  const dictionaries = getAllDictionaries();
+export default async function DictionariesPage() {
+  const dictionaries = await getAllDictionaries();
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
