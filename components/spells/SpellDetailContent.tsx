@@ -115,7 +115,22 @@ export default function SpellDetailContent({ word }: { word: string }) {
         {!hasContent && (
           <div className="text-center py-16">
             <p className="text-text-muted text-lg mb-2">No spells found for &ldquo;{word}&rdquo;</p>
-            <p className="text-text-muted text-sm">This word has no known homophones, anagrams, or phoneme neighbors in our database.</p>
+            <p className="text-text-muted text-sm mb-6">This word has no known homophones, anagrams, or phoneme neighbors in our database.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href={`/word/${encodeURIComponent(word)}`}
+                className="text-sm text-accent hover:underline"
+              >
+                Explore &ldquo;{word}&rdquo; etymology &rarr;
+              </Link>
+              <span className="text-text-muted hidden sm:inline">·</span>
+              <Link
+                href="/spells"
+                className="text-sm text-accent hover:underline"
+              >
+                Try featured spells &rarr;
+              </Link>
+            </div>
           </div>
         )}
 

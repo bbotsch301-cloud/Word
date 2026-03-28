@@ -246,9 +246,19 @@ const PHONEME_GROUPS: string[][] = [
 ];
 
 function getPhonemeSubstitutes(phoneme: string): string[] {
+  // Strip stress marker (0/1/2) for matching, then reapply to substitutes
+  const stress = phoneme.match(/[012]$/)?.[0] || "";
+  const base = phoneme.replace(/[012]$/, "");
+
   for (const group of PHONEME_GROUPS) {
-    if (group.includes(phoneme)) {
-      return group.filter(p => p !== phoneme);
+    if (group.includes(base)) {
+      return group
+        .filter(p => p !== base)
+        .map(p => {
+          // Apply same stress marker to vowel substitutes
+          const isVowel = "AA AE AH AO AW AY EH ER EY IH IY OW OY UH UW".includes(p);
+          return isVowel && stress ? p + stress : p;
+        });
     }
   }
   return [];
@@ -273,6 +283,12 @@ function generatePhonemeEdits(key: string): string[] {
       copy[i] = sub;
       edits.add(copy.join(" "));
     }
+  }
+
+  // Also try matching without stress markers (some DB entries vary)
+  const unstressed = key.replace(/[012]/g, "");
+  if (unstressed !== key) {
+    edits.add(unstressed);
   }
 
   return [...edits];
