@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
   try {
     // Get rhymes via phoneme key
     let rhymes: string[] = [];
-    const phonemeKey = lookupPhonemeKey(word);
+    const phonemeKey = await lookupPhonemeKey(word);
     if (phonemeKey) {
-      rhymes = findWordsByPhonemeKey(phonemeKey, word, 8);
+      rhymes = await findWordsByPhonemeKey(phonemeKey, word, 8);
     }
 
     // Get anagrams
-    const anagrams = findAnagrams(word, 8);
+    const anagrams = await findAnagrams(word, 8);
 
     return NextResponse.json(
       { rhymes, anagrams },

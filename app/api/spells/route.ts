@@ -8,16 +8,16 @@ export async function GET(req: NextRequest) {
 
   try {
     if (action === "featured") {
-      return NextResponse.json({ pairs: getFeaturedSpells() });
+      return NextResponse.json({ pairs: await getFeaturedSpells() });
     }
 
     if (action === "random") {
-      const spell = getRandomSpell();
+      const spell = await getRandomSpell();
       return NextResponse.json(spell || { words: [], spellType: "sonic", description: "", depthScore: 0 });
     }
 
     if (action === "chain" && word) {
-      const chain = buildSpellChain(word);
+      const chain = await buildSpellChain(word);
       return NextResponse.json(chain);
     }
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       if (word.length > 40) {
         return NextResponse.json({ error: "Word too long" }, { status: 400 });
       }
-      const analysis = analyzeWord(word);
+      const analysis = await analyzeWord(word);
       return NextResponse.json(analysis, {
         headers: { "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=2592000" },
       });

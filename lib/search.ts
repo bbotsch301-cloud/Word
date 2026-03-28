@@ -1,4 +1,4 @@
-import { getDatabase } from "./database";
+import { queryAll, queryOne } from "./database";
 
 export interface SearchFilters {
   pattern?: string;        // wildcard pattern like "*ology" or "un*able"
@@ -34,15 +34,14 @@ function wildcardToSql(pattern: string): string {
     .replace(/\?/g, "_");
 }
 
-export function advancedSearch(
+export async function advancedSearch(
   filters: SearchFilters,
   page: number = 1,
   pageSize: number = 50,
   sort: "alpha" | "length" | "frequency" = "alpha"
-): SearchResponse {
-  const db = getDatabase();
+): Promise<SearchResponse> {
   const conditions: string[] = [];
-  const params: unknown[] = [];
+  const params: (string | number)[] = [];
 
   // Base: search from words table
   let useFirstUse = false;
@@ -110,7 +109,7 @@ export function advancedSearch(
   try {
     // Count
     const countSql = `SELECT COUNT(DISTINCT w.word) as c FROM words w${joins} WHERE ${whereClause}`;
-    const total = (db.prepare(countSql).get(...params) as { c: number }).c;
+    const total = (await queryOne<{ c: number }>(countSql, ...params))!.c;
 
     // Fetch
     const selectExtra = useFirstUse ? ", fu.year as first_use_year" : "";
@@ -120,10 +119,10 @@ export function advancedSearch(
     const orderBy = sort === "length" ? "LENGTH(w.word), w.word" : sort === "frequency" ? "COALESCE(gf.rank, 999999) ASC, w.word" : "w.word";
     const fetchSql = `SELECT DISTINCT w.word, w.pos, SUBSTR(w.definition, 1, 120) as preview${selectExtra}${selectLang} FROM words w${joins}${freqJoin} WHERE ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
 
-    const rows = db.prepare(fetchSql).all(...params, pageSize, offset) as {
+    const rows = await queryAll<{
       word: string; pos?: string; preview?: string;
       first_use_year?: number; origin_lang?: string;
-    }[];
+    }>(fetchSql, ...params, pageSize, offset);
 
     const results: SearchResult[] = rows.map(r => ({
       word: r.word,
@@ -140,8 +139,7 @@ export function advancedSearch(
 }
 
 // Get available origin languages for filter dropdown
-export function getOriginLanguages(): { code: string; name: string; count: number }[] {
-  const db = getDatabase();
+export async function getOriginLanguages(): Promise<{ code: string; name: string; count: number }[]> {
   try {
     const langMap: Record<string, string> = {
       lat: "Latin", frm: "Middle French", fro: "Old French", fra: "French",
@@ -152,9 +150,9 @@ export function getOriginLanguages(): { code: string; name: string; count: numbe
       zho: "Chinese", hin: "Hindi", fas: "Persian", heb: "Hebrew",
       rus: "Russian", cel: "Celtic", peo: "Old Persian", tur: "Turkish",
     };
-    const rows = db.prepare(
+    const rows = await queryAll<{ parent_lang: string; c: number }>(
       "SELECT parent_lang, COUNT(DISTINCT word) as c FROM etymology_links GROUP BY parent_lang HAVING c > 50 ORDER BY c DESC LIMIT 30"
-    ).all() as { parent_lang: string; c: number }[];
+    );
     return rows.map(r => ({
       code: r.parent_lang,
       name: langMap[r.parent_lang] || r.parent_lang,
@@ -166,69 +164,66 @@ export function getOriginLanguages(): { code: string; name: string; count: numbe
 }
 
 // Get available centuries for filter dropdown
-export function getFirstUseCenturies(): { century: string; count: number }[] {
-  const db = getDatabase();
+export async function getFirstUseCenturies(): Promise<{ century: string; count: number }[]> {
   try {
-    return db.prepare(
+    return await queryAll<{ century: string; count: number }>(
       "SELECT century, COUNT(*) as count FROM first_use WHERE century IS NOT NULL AND century != '' GROUP BY century ORDER BY MIN(year)"
-    ).all() as { century: string; count: number }[];
+    );
   } catch {
     return [];
   }
 }
 
 // Get available POS values
-export function getPartsOfSpeech(): { pos: string; count: number }[] {
-  const db = getDatabase();
+export async function getPartsOfSpeech(): Promise<{ pos: string; count: number }[]> {
   try {
-    return db.prepare(
+    return await queryAll<{ pos: string; count: number }>(
       "SELECT pos, COUNT(*) as count FROM words WHERE pos IS NOT NULL AND pos != '' GROUP BY pos HAVING count > 100 ORDER BY count DESC"
-    ).all() as { pos: string; count: number }[];
+    );
   } catch {
     return [];
   }
 }
 
 // Random interesting word
-export function getRandomWord(): { word: string; definition: string; etymology: string } | undefined {
-  const db = getDatabase();
+export async function getRandomWord(): Promise<{ word: string; definition: string; etymology: string } | undefined> {
   try {
-    return db.prepare(`
+    return await queryOne<{ word: string; definition: string; etymology: string }>(`
       SELECT word, SUBSTR(definition, 1, 200) as definition, SUBSTR(etymology_text, 1, 200) as etymology
       FROM words
       WHERE etymology_text IS NOT NULL AND etymology_text != ''
         AND definition IS NOT NULL AND LENGTH(definition) > 30
         AND LENGTH(word) BETWEEN 4 AND 15
       ORDER BY RANDOM() LIMIT 1
-    `).get() as { word: string; definition: string; etymology: string } | undefined;
+    `);
   } catch {
     return undefined;
   }
 }
 
 // Timeline data: count words by century of first use
-export function getTimelineData(): { century: string; count: number; sampleWords: string[] }[] {
-  const db = getDatabase();
+export async function getTimelineData(): Promise<{ century: string; count: number; sampleWords: string[] }[]> {
   try {
-    const centuries = db.prepare(
+    const centuries = await queryAll<{ century: string; count: number }>(
       "SELECT century, COUNT(*) as count FROM first_use WHERE century IS NOT NULL AND century != '' GROUP BY century ORDER BY MIN(year)"
-    ).all() as { century: string; count: number }[];
+    );
 
-    return centuries.map(c => {
-      const samples = db.prepare(
-        "SELECT word FROM first_use WHERE century = ? ORDER BY RANDOM() LIMIT 8"
-      ).all(c.century) as { word: string }[];
-      return { ...c, sampleWords: samples.map(s => s.word) };
-    });
+    const results: { century: string; count: number; sampleWords: string[] }[] = [];
+    for (const c of centuries) {
+      const samples = await queryAll<{ word: string }>(
+        "SELECT word FROM first_use WHERE century = ? ORDER BY RANDOM() LIMIT 8",
+        c.century
+      );
+      results.push({ ...c, sampleWords: samples.map(s => s.word) });
+    }
+    return results;
   } catch {
     return [];
   }
 }
 
 // Language family data: count words by origin language
-export function getLanguageFamilyData(): { code: string; name: string; family: string; count: number; sampleWords: string[] }[] {
-  const db = getDatabase();
-
+export async function getLanguageFamilyData(): Promise<{ code: string; name: string; family: string; count: number; sampleWords: string[] }[]> {
   const langInfo: Record<string, { name: string; family: string }> = {
     lat: { name: "Latin", family: "Italic" },
     frm: { name: "Middle French", family: "Romance" },
@@ -259,41 +254,44 @@ export function getLanguageFamilyData(): { code: string; name: string; family: s
   };
 
   try {
-    const rows = db.prepare(
+    const rows = await queryAll<{ parent_lang: string; count: number }>(
       "SELECT parent_lang, COUNT(DISTINCT word) as count FROM etymology_links GROUP BY parent_lang HAVING count > 20 ORDER BY count DESC LIMIT 30"
-    ).all() as { parent_lang: string; count: number }[];
+    );
 
-    return rows
-      .filter(r => langInfo[r.parent_lang])
-      .map(r => {
-        const info = langInfo[r.parent_lang];
-        const samples = db.prepare(
-          "SELECT DISTINCT word FROM etymology_links WHERE parent_lang = ? ORDER BY RANDOM() LIMIT 8"
-        ).all(r.parent_lang) as { word: string }[];
-        return {
-          code: r.parent_lang,
-          name: info.name,
-          family: info.family,
-          count: r.count,
-          sampleWords: samples.map(s => s.word),
-        };
+    const filtered = rows.filter(r => langInfo[r.parent_lang]);
+    const results: { code: string; name: string; family: string; count: number; sampleWords: string[] }[] = [];
+    for (const r of filtered) {
+      const info = langInfo[r.parent_lang];
+      const samples = await queryAll<{ word: string }>(
+        "SELECT DISTINCT word FROM etymology_links WHERE parent_lang = ? ORDER BY RANDOM() LIMIT 8",
+        r.parent_lang
+      );
+      results.push({
+        code: r.parent_lang,
+        name: info.name,
+        family: info.family,
+        count: r.count,
+        sampleWords: samples.map(s => s.word),
       });
+    }
+    return results;
   } catch {
     return [];
   }
 }
 
 // Get words from a specific origin language
-export function getWordsByOrigin(langCode: string, page: number = 1, pageSize: number = 50): { words: string[]; total: number } {
-  const db = getDatabase();
+export async function getWordsByOrigin(langCode: string, page: number = 1, pageSize: number = 50): Promise<{ words: string[]; total: number }> {
   try {
     const offset = (page - 1) * pageSize;
-    const total = (db.prepare(
-      "SELECT COUNT(DISTINCT word) as c FROM etymology_links WHERE parent_lang = ?"
-    ).get(langCode) as { c: number }).c;
-    const rows = db.prepare(
-      "SELECT DISTINCT word FROM etymology_links WHERE parent_lang = ? ORDER BY word LIMIT ? OFFSET ?"
-    ).all(langCode, pageSize, offset) as { word: string }[];
+    const total = (await queryOne<{ c: number }>(
+      "SELECT COUNT(DISTINCT word) as c FROM etymology_links WHERE parent_lang = ?",
+      langCode
+    ))!.c;
+    const rows = await queryAll<{ word: string }>(
+      "SELECT DISTINCT word FROM etymology_links WHERE parent_lang = ? ORDER BY word LIMIT ? OFFSET ?",
+      langCode, pageSize, offset
+    );
     return { words: rows.map(r => r.word), total };
   } catch {
     return { words: [], total: 0 };
@@ -301,16 +299,17 @@ export function getWordsByOrigin(langCode: string, page: number = 1, pageSize: n
 }
 
 // Get words first used in a specific century
-export function getWordsByCentury(century: string, page: number = 1, pageSize: number = 50): { words: { word: string; year: number }[]; total: number } {
-  const db = getDatabase();
+export async function getWordsByCentury(century: string, page: number = 1, pageSize: number = 50): Promise<{ words: { word: string; year: number }[]; total: number }> {
   try {
     const offset = (page - 1) * pageSize;
-    const total = (db.prepare(
-      "SELECT COUNT(*) as c FROM first_use WHERE century = ?"
-    ).get(century) as { c: number }).c;
-    const rows = db.prepare(
-      "SELECT word, year FROM first_use WHERE century = ? ORDER BY year, word LIMIT ? OFFSET ?"
-    ).all(century, pageSize, offset) as { word: string; year: number }[];
+    const total = (await queryOne<{ c: number }>(
+      "SELECT COUNT(*) as c FROM first_use WHERE century = ?",
+      century
+    ))!.c;
+    const rows = await queryAll<{ word: string; year: number }>(
+      "SELECT word, year FROM first_use WHERE century = ? ORDER BY year, word LIMIT ? OFFSET ?",
+      century, pageSize, offset
+    );
     return { words: rows, total };
   } catch {
     return { words: [], total: 0 };
@@ -318,19 +317,20 @@ export function getWordsByCentury(century: string, page: number = 1, pageSize: n
 }
 
 // Etymology family tree: find words sharing same root
-export function getEtymologyTree(word: string): { root: string; rootLang: string; siblings: string[] } | undefined {
-  const db = getDatabase();
+export async function getEtymologyTree(word: string): Promise<{ root: string; rootLang: string; siblings: string[] } | undefined> {
   try {
     // Find the deepest etymological ancestor
-    const link = db.prepare(
-      "SELECT parent_word, parent_lang FROM etymology_links WHERE word = ? ORDER BY rowid LIMIT 1"
-    ).get(word.toLowerCase()) as { parent_word: string; parent_lang: string } | undefined;
+    const link = await queryOne<{ parent_word: string; parent_lang: string }>(
+      "SELECT parent_word, parent_lang FROM etymology_links WHERE word = ? ORDER BY rowid LIMIT 1",
+      word.toLowerCase()
+    );
     if (!link) return undefined;
 
     // Find other English words sharing that ancestor
-    const siblings = db.prepare(
-      "SELECT DISTINCT word FROM etymology_links WHERE parent_word = ? AND parent_lang = ? AND word != ? LIMIT 20"
-    ).all(link.parent_word, link.parent_lang, word.toLowerCase()) as { word: string }[];
+    const siblings = await queryAll<{ word: string }>(
+      "SELECT DISTINCT word FROM etymology_links WHERE parent_word = ? AND parent_lang = ? AND word != ? LIMIT 20",
+      link.parent_word, link.parent_lang, word.toLowerCase()
+    );
 
     if (siblings.length === 0) return undefined;
 

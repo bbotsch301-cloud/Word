@@ -3,7 +3,7 @@ import { getWordOfTheDay } from "@/lib/database";
 
 export async function GET() {
   try {
-    const wotd = getWordOfTheDay();
+    const wotd = await getWordOfTheDay();
     if (!wotd) {
       return NextResponse.json({ error: "No word of the day available" }, { status: 404 });
     }

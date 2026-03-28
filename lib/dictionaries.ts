@@ -1,4 +1,4 @@
-import { getDatabase } from "./database";
+import { queryAll, queryOne } from "./database";
 
 export interface DictionaryMeta {
   id: string;
@@ -51,29 +51,26 @@ const DICT_CONFIG: Record<string, { table: string; wordCol: string; defCol: stri
   "catholic-encyclopedia": { table: "catholic_encyclopedia", wordCol: "word", defCol: "definition" },
 };
 
-export function getAllDictionaries(): DictionaryMeta[] {
-  const db = getDatabase();
+export async function getAllDictionaries(): Promise<DictionaryMeta[]> {
   try {
-    return db.prepare("SELECT * FROM dictionaries ORDER BY year").all() as DictionaryMeta[];
+    return await queryAll("SELECT * FROM dictionaries ORDER BY year") as DictionaryMeta[];
   } catch {
     return [];
   }
 }
 
-export function getDictionary(id: string): DictionaryMeta | undefined {
-  const db = getDatabase();
+export async function getDictionary(id: string): Promise<DictionaryMeta | undefined> {
   try {
-    return db.prepare("SELECT * FROM dictionaries WHERE id = ?").get(id) as DictionaryMeta | undefined;
+    return await queryOne("SELECT * FROM dictionaries WHERE id = ?", id) as DictionaryMeta | undefined;
   } catch {
     return undefined;
   }
 }
 
-export function browseDictionary(
+export async function browseDictionary(
   dictId: string,
   options: { page?: number; pageSize?: number; letter?: string; query?: string } = {}
-): BrowseResult {
-  const db = getDatabase();
+): Promise<BrowseResult> {
   const config = DICT_CONFIG[dictId];
   if (!config) return { entries: [], total: 0, page: 1, pageSize: 50 };
 
@@ -82,7 +79,7 @@ export function browseDictionary(
   const offset = (page - 1) * pageSize;
 
   let whereClause = "";
-  const params: unknown[] = [];
+  const params: (string | number)[] = [];
 
   if (options.query) {
     const escaped = options.query.replace(/%/g, "\\%").replace(/_/g, "\\_");
@@ -104,7 +101,7 @@ export function browseDictionary(
   } else {
     countSql = `SELECT COUNT(*) as c FROM ${config.table} ${whereClause}`;
   }
-  const total = (db.prepare(countSql).get(...params) as { c: number }).c;
+  const total = (await queryOne(countSql, ...params) as { c: number }).c;
 
   // Fetch page
   const selectCols = [config.wordCol, config.defCol];
@@ -118,7 +115,7 @@ export function browseDictionary(
     fetchSql = `SELECT ${selectCols.join(", ")} FROM ${config.table} ${whereClause} ORDER BY ${config.wordCol} LIMIT ? OFFSET ?`;
   }
 
-  const rows = db.prepare(fetchSql).all(...params, pageSize, offset) as Record<string, string>[];
+  const rows = await queryAll(fetchSql, ...params, pageSize, offset) as Record<string, string>[];
 
   const entries: DictionaryEntry[] = rows.map((row) => ({
     word: row[config.wordCol] || "",
@@ -130,8 +127,7 @@ export function browseDictionary(
   return { entries, total, page, pageSize, letter: options.letter };
 }
 
-export function lookupInDictionary(dictId: string, word: string): DictionaryEntry | undefined {
-  const db = getDatabase();
+export async function lookupInDictionary(dictId: string, word: string): Promise<DictionaryEntry | undefined> {
   const config = DICT_CONFIG[dictId];
   if (!config) return undefined;
 
@@ -139,9 +135,10 @@ export function lookupInDictionary(dictId: string, word: string): DictionaryEntr
   if (config.posCol) selectCols.push(config.posCol);
   if (config.etymCol) selectCols.push(config.etymCol);
 
-  const row = db.prepare(
-    `SELECT ${selectCols.join(", ")} FROM ${config.table} WHERE ${config.wordCol} = ? LIMIT 1`
-  ).get(word.toLowerCase()) as Record<string, string> | undefined;
+  const row = await queryOne(
+    `SELECT ${selectCols.join(", ")} FROM ${config.table} WHERE ${config.wordCol} = ? LIMIT 1`,
+    word.toLowerCase()
+  ) as Record<string, string> | undefined;
 
   if (!row) return undefined;
 
@@ -153,10 +150,9 @@ export function lookupInDictionary(dictId: string, word: string): DictionaryEntr
   };
 }
 
-export function getWordFrequency(word: string): { rank: number; zipf: number; label: string } | undefined {
-  const db = getDatabase();
+export async function getWordFrequency(word: string): Promise<{ rank: number; zipf: number; label: string } | undefined> {
   try {
-    const row = db.prepare("SELECT frequency_rank, zipf_frequency FROM word_frequency WHERE word = ?").get(word.toLowerCase()) as { frequency_rank: number; zipf_frequency: number } | undefined;
+    const row = await queryOne("SELECT frequency_rank, zipf_frequency FROM word_frequency WHERE word = ?", word.toLowerCase()) as { frequency_rank: number; zipf_frequency: number } | undefined;
     if (!row) return undefined;
 
     let label: string;

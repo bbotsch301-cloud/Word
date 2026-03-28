@@ -1,11 +1,11 @@
 import type { ConstellationWord } from "@/types/lexica";
 import { lookupWebster, lookupAllPOS, lookupBlacksLaw } from "./database";
 
-export function buildConstellation(
+export async function buildConstellation(
   word: string,
   relatedWordsJson: string,
   _etymChainSource?: { word: string; lang: string }
-): ConstellationWord[] {
+): Promise<ConstellationWord[]> {
   const constellation: ConstellationWord[] = [];
   const seen = new Set<string>([word.toLowerCase()]);
 
@@ -31,7 +31,7 @@ export function buildConstellation(
 
   // 2. Multiple POS entries may have different related words
   if (constellation.length < 5) {
-    const allEntries = lookupAllPOS(word);
+    const allEntries = await lookupAllPOS(word);
     for (const entry of allEntries) {
       if (entry.related_words) {
         try {
@@ -48,7 +48,7 @@ export function buildConstellation(
 
   // 3. Black's Law related terms
   if (constellation.length < 5) {
-    const blacks = lookupBlacksLaw(word);
+    const blacks = await lookupBlacksLaw(word);
     if (blacks?.related_terms) {
       try {
         const related = JSON.parse(blacks.related_terms) as string[];
@@ -63,7 +63,7 @@ export function buildConstellation(
 
   // 4. Webster synonyms as fallback
   if (constellation.length < 5) {
-    const webster = lookupWebster(word);
+    const webster = await lookupWebster(word);
     if (webster?.synonyms) {
       try {
         const syns = JSON.parse(webster.synonyms) as string[];

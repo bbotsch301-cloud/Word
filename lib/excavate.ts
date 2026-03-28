@@ -22,10 +22,10 @@ function parseJsonArray(json: string): string[] {
 }
 
 export async function excavateWord(word: string): Promise<LexicaResult> {
-  const entry = lookupWord(word);
-  const webster = lookupWebster(word);
-  const webster1828 = lookupWebster1828(word);
-  const blacksLaw = lookupBlacksLaw(word);
+  const entry = await lookupWord(word);
+  const webster = await lookupWebster(word);
+  const webster1828 = await lookupWebster1828(word);
+  const blacksLaw = await lookupBlacksLaw(word);
 
   if (!entry && !webster && !webster1828 && !blacksLaw) {
     throw new Error(`Word "${word}" not found in database`);
@@ -75,7 +75,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   }
 
   // Related Black's Law entries (fuzzy match)
-  const relatedBlacks = searchBlacksLaw(word);
+  const relatedBlacks = await searchBlacksLaw(word);
   for (const rb of relatedBlacks) {
     definitions.push({
       source: "blacks_law",
@@ -86,7 +86,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   }
 
   // Bouvier's Law Dictionary
-  const bouvier = lookupBouvier(word);
+  const bouvier = await lookupBouvier(word);
   if (bouvier) {
     definitions.push({
       source: "bouvier",
@@ -97,7 +97,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   }
 
   // Strong's Concordance (Hebrew + Greek biblical roots)
-  const strongsEntries = lookupStrongs(word);
+  const strongsEntries = await lookupStrongs(word);
   for (const se of strongsEntries) {
     const lang = se.language === "hebrew" ? "Hebrew" : "Greek";
     const parts = [];
@@ -117,7 +117,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   }
 
   // New dictionaries
-  const hobsonJobson = lookupInDictionary("hobson-jobson", word);
+  const hobsonJobson = await lookupInDictionary("hobson-jobson", word);
   if (hobsonJobson) {
     definitions.push({
       source: "hobson_jobson",
@@ -127,7 +127,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     });
   }
 
-  const vulgarTongue = lookupInDictionary("vulgar-tongue", word);
+  const vulgarTongue = await lookupInDictionary("vulgar-tongue", word);
   if (vulgarTongue) {
     definitions.push({
       source: "vulgar_tongue",
@@ -153,7 +153,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   const etymSource = deepestRoot
     ? { word: deepestRoot.form, lang: deepestRoot.language }
     : undefined;
-  const constellation = buildConstellation(word, relatedWords, etymSource);
+  const constellation = await buildConstellation(word, relatedWords, etymSource);
 
   const rootRevelation = buildRevelationText(
     word,
@@ -192,18 +192,18 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   // === Phase 1: Thesaurus ===
   let thesaurus: ThesaurusData | undefined;
-  const moby = lookupMobyThesaurus(word);
-  const wordnetSynsets = lookupWordNet(word);
-  const rogetEntries = lookupRogets(word);
+  const moby = await lookupMobyThesaurus(word);
+  const wordnetSynsets = await lookupWordNet(word);
+  const rogetEntries = await lookupRogets(word);
 
   if (moby || wordnetSynsets.length > 0 || rogetEntries.length > 0) {
     const synonyms = moby ? moby.synonyms.split(",").map(s => s.trim()).filter(Boolean).slice(0, 50) : [];
 
-    const wordnetSenses: WordNetSense[] = wordnetSynsets.map(ws => {
+    const wordnetSenses: WordNetSense[] = await Promise.all(wordnetSynsets.map(async ws => {
       const examples = (() => { try { return JSON.parse(ws.examples) as string[]; } catch { return []; } })();
-      const synWords = getWordNetSynonyms(ws.synset_id).filter(w => w !== word);
-      const hypernyms = getWordNetRelations(ws.synset_id, "hypernym", 3).map(h => h.definition);
-      const hyponyms = getWordNetRelations(ws.synset_id, "hyponym", 3).map(h => h.definition);
+      const synWords = (await getWordNetSynonyms(ws.synset_id)).filter(w => w !== word);
+      const hypernyms = (await getWordNetRelations(ws.synset_id, "hypernym", 3)).map(h => h.definition);
+      const hyponyms = (await getWordNetRelations(ws.synset_id, "hyponym", 3)).map(h => h.definition);
       return {
         pos: ws.pos,
         definition: ws.definition,
@@ -212,7 +212,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
         hypernyms,
         hyponyms,
       };
-    });
+    }));
 
     const rogetCategories: RogetCategory[] = rogetEntries.map(r => ({
       number: r.category_num,
@@ -225,8 +225,8 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   // === Phase 2: Pronunciation ===
   let pronunciation: PronunciationData | undefined;
-  const cmuEntries = lookupPronunciation(word);
-  const ipaDictEntry = lookupIpaDict(word);
+  const cmuEntries = await lookupPronunciation(word);
+  const ipaDictEntry = await lookupIpaDict(word);
   const bestIpa = ipa || ipaDictEntry || "";
   if (bestIpa || cmuEntries.length > 0) {
     pronunciation = {
@@ -237,10 +237,10 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   // === Phase 3: Biblical ===
   let biblical: BiblicalStudyData | undefined;
-  const eastons = lookupEastons(word);
-  const smiths = lookupSmiths(word);
-  const hitchcocks = lookupHitchcocks(word);
-  const navesEntries = lookupNaves(word);
+  const eastons = await lookupEastons(word);
+  const smiths = await lookupSmiths(word);
+  const hitchcocks = await lookupHitchcocks(word);
+  const navesEntries = await lookupNaves(word);
 
   if (eastons || smiths || hitchcocks || navesEntries.length > 0) {
     biblical = {};
@@ -266,7 +266,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
 
   // === Phase 4: Enrichment ===
   // GCIDE
-  const gcide = lookupGcide(word);
+  const gcide = await lookupGcide(word);
   if (gcide) {
     definitions.push({
       source: "gcide",
@@ -279,36 +279,36 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
   }
 
   // SCOWL dialect info
-  const scowl = lookupScowl(word);
+  const scowl = await lookupScowl(word);
   const dialect = scowl ? [scowl.dialect] : undefined;
 
   // Academic Word List
-  const awl = lookupAcademicWord(word);
+  const awl = await lookupAcademicWord(word);
   const isAcademic = awl ? { sublist: awl.sublist } : undefined;
 
   // Etymology-DB links
-  const etymLinks = lookupEtymologyLinks(word);
+  const etymLinks = await lookupEtymologyLinks(word);
   const etymologyLinks: EtymologyLink[] | undefined = etymLinks.length > 0
     ? etymLinks.map(l => ({ parentWord: l.parent_word, parentLang: l.parent_lang, relationType: l.relation_type }))
     : undefined;
 
   // === Phase 5: New enrichment ===
-  const cefrLevel = lookupCefrLevel(word) || undefined;
+  const cefrLevel = (await lookupCefrLevel(word)) || undefined;
 
-  const morphoRow = lookupMorphology(word);
+  const morphoRow = await lookupMorphology(word);
   const morphology: MorphologyData | undefined = morphoRow && morphoRow.morphemes
     ? { morphemes: morphoRow.morphemes, prefix: morphoRow.prefix, root: morphoRow.root, suffix: morphoRow.suffix, morphemeCount: morphoRow.morpheme_count }
     : undefined;
 
-  const googleRank = lookupGoogleFrequency(word) || undefined;
+  const googleRank = (await lookupGoogleFrequency(word)) || undefined;
 
   // === Phase 6: Ngrams & Cognates ===
-  const ngramRows = lookupNgramHistory(word);
+  const ngramRows = await lookupNgramHistory(word);
   const ngramHistory: NgramDataPoint[] | undefined = ngramRows.length > 0
     ? ngramRows.map(r => ({ decade: r.decade, frequency: r.frequency }))
     : undefined;
 
-  const cognateRows = lookupCognates(word);
+  const cognateRows = await lookupCognates(word);
   const cognates: CognateData | undefined = cognateRows.length > 0
     ? {
         cognates: cognateRows.map(r => ({
@@ -322,27 +322,27 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     : undefined;
 
   // === Phase 7: Encyclopedias ===
-  const nuttall = lookupNuttall(word);
+  const nuttall = await lookupNuttall(word);
   if (nuttall) {
     definitions.push({ source: "nuttall", label: "Nuttall Encyclopaedia", year: 1907, definition: nuttall.definition });
   }
-  const britannica = lookupBritannica(word);
+  const britannica = await lookupBritannica(word);
   if (britannica) {
     definitions.push({ source: "britannica", label: "Britannica 11th Ed.", year: 1911, definition: britannica.definition });
   }
-  const catholicEnc = lookupCatholicEncyclopedia(word);
+  const catholicEnc = await lookupCatholicEncyclopedia(word);
   if (catholicEnc) {
     definitions.push({ source: "catholic_encyclopedia", label: "Catholic Encyclopedia", year: 1913, definition: catholicEnc.definition });
   }
 
   // === First Use Dates ===
-  const firstUseRow = lookupFirstUse(word);
+  const firstUseRow = await lookupFirstUse(word);
   const firstUse: FirstUseData | undefined = firstUseRow
     ? { year: firstUseRow.year ?? undefined, century: firstUseRow.century, source: firstUseRow.source }
     : undefined;
 
   // === Phase 8: Hidden Connections ===
-  const hiddenConnections = buildHiddenConnections(
+  const hiddenConnections = await buildHiddenConnections(
     word, etymologyTemplates, etymologyText,
     morphology, strata, definitions, strongsEntries,
     webster1828?.etymology || undefined,
@@ -374,7 +374,7 @@ export async function excavateWord(word: string): Promise<LexicaResult> {
     biblical,
     pronunciation,
     webster1828_etymology: webster1828?.etymology || undefined,
-    frequency: getWordFrequency(word) || undefined,
+    frequency: (await getWordFrequency(word)) || undefined,
     isAcademic,
     cefrLevel,
     morphology,

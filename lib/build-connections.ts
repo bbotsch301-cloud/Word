@@ -94,10 +94,10 @@ function buildWordSplitting(
 }
 
 // === Connection Type 2: Root Siblings ===
-function buildRootSiblings(
+async function buildRootSiblings(
   word: string,
   etymologyTemplates: string
-): HiddenConnection | undefined {
+): Promise<HiddenConnection | undefined> {
   if (!etymologyTemplates) return undefined;
 
   let rootForm = "";
@@ -121,7 +121,7 @@ function buildRootSiblings(
 
   if (!rootForm || !rootLang) return undefined;
 
-  const siblings = findWordsByEtymologyRoot(rootForm, word, 15);
+  const siblings = await findWordsByEtymologyRoot(rootForm, word, 15);
   if (siblings.length < 2) return undefined;
 
   const prefix = word.toLowerCase().slice(0, 3);
@@ -414,12 +414,12 @@ function buildSecretStory(
 }
 
 // === NEW Connection Type 7: Doublets & Cousins ===
-function buildDoublets(
+async function buildDoublets(
   word: string,
   etymologyTemplates: string
-): HiddenConnection | undefined {
+): Promise<HiddenConnection | undefined> {
   // Check for doublet template in etymology
-  const doubletWords = findDoublets(word);
+  const doubletWords = await findDoublets(word);
   if (doubletWords.length === 0) return undefined;
 
   // Try to find the shared ancestor
@@ -526,11 +526,11 @@ function buildSemanticFlip(
 }
 
 // === NEW Connection Type 9: Part-Whole Web ===
-function buildPartWhole(
+async function buildPartWhole(
   word: string
-): HiddenConnection | undefined {
-  const meronyms = getWordNetMeronyms(word);
-  const holonyms = getWordNetHolonyms(word);
+): Promise<HiddenConnection | undefined> {
+  const meronyms = await getWordNetMeronyms(word);
+  const holonyms = await getWordNetHolonyms(word);
 
   if (meronyms.length === 0 && holonyms.length === 0) return undefined;
 
@@ -566,12 +566,12 @@ function buildPartWhole(
 }
 
 // === NEW Connection Type 10: Concept Map (Roget's) ===
-function buildConceptMap(
+async function buildConceptMap(
   word: string,
   thesaurus: ThesaurusData | undefined
-): HiddenConnection | undefined {
+): Promise<HiddenConnection | undefined> {
   // Use Roget's categories to find surprising conceptual neighbors
-  const rogetEntries = lookupRogets(word, 3);
+  const rogetEntries = await lookupRogets(word, 3);
   if (rogetEntries.length === 0) return undefined;
 
   // Find the most interesting category (one with diverse words)
@@ -609,10 +609,10 @@ function buildConceptMap(
 }
 
 // === NEW Connection Type 11: Polysemy Explosion ===
-function buildPolysemy(
+async function buildPolysemy(
   word: string
-): HiddenConnection | undefined {
-  const { count, senses } = getPolysemyCount(word);
+): Promise<HiddenConnection | undefined> {
+  const { count, senses } = await getPolysemyCount(word);
 
   if (count < 8) return undefined;
 
@@ -634,12 +634,12 @@ function buildPolysemy(
 }
 
 // === NEW Connection Type 12: Borrowing Chain ===
-function buildBorrowingChain(
+async function buildBorrowingChain(
   word: string,
   etymologyLinks: EtymologyLink[] | undefined
-): HiddenConnection | undefined {
+): Promise<HiddenConnection | undefined> {
   // Use etymology_links to trace the borrowing path
-  const chain = getBorrowingChain(word, 8);
+  const chain = await getBorrowingChain(word, 8);
 
   if (chain.length < 2) return undefined;
 
@@ -673,7 +673,7 @@ function buildBorrowingChain(
 }
 
 // === Orchestrator ===
-export function buildHiddenConnections(
+export async function buildHiddenConnections(
   word: string,
   etymologyTemplates: string,
   etymologyText: string,
@@ -684,14 +684,14 @@ export function buildHiddenConnections(
   webster1828Etymology?: string,
   etymologyLinks?: EtymologyLink[],
   thesaurus?: ThesaurusData,
-): HiddenConnectionsData | undefined {
+): Promise<HiddenConnectionsData | undefined> {
   const connections: HiddenConnection[] = [];
 
   // Original 5
   const splitting = buildWordSplitting(word, etymologyTemplates, etymologyText, morphology);
   if (splitting) connections.push(splitting);
 
-  const siblings = buildRootSiblings(word, etymologyTemplates);
+  const siblings = await buildRootSiblings(word, etymologyTemplates);
   if (siblings) connections.push(siblings);
 
   const shift = buildMeaningShift(word, definitions, strata, etymologyText);
@@ -707,22 +707,22 @@ export function buildHiddenConnections(
   const secret = buildSecretStory(word, etymologyText, webster1828Etymology, definitions);
   if (secret) connections.push(secret);
 
-  const doublets = buildDoublets(word, etymologyTemplates);
+  const doublets = await buildDoublets(word, etymologyTemplates);
   if (doublets) connections.push(doublets);
 
   const flip = buildSemanticFlip(word, definitions, etymologyText);
   if (flip) connections.push(flip);
 
-  const partWhole = buildPartWhole(word);
+  const partWhole = await buildPartWhole(word);
   if (partWhole) connections.push(partWhole);
 
-  const concept = buildConceptMap(word, thesaurus);
+  const concept = await buildConceptMap(word, thesaurus);
   if (concept) connections.push(concept);
 
-  const polysemy = buildPolysemy(word);
+  const polysemy = await buildPolysemy(word);
   if (polysemy) connections.push(polysemy);
 
-  const borrowing = buildBorrowingChain(word, etymologyLinks);
+  const borrowing = await buildBorrowingChain(word, etymologyLinks);
   if (borrowing) connections.push(borrowing);
 
   // Filter by minimum score and sort
