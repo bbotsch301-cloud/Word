@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getDictionary, browseDictionary } from "@/lib/dictionaries";
+
+export const dynamic = "force-dynamic";
 import DictionaryTable from "@/components/DictionaryTable";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
