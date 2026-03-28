@@ -56,6 +56,9 @@ export default function Home() {
     if (word) router.push(`/word/${encodeURIComponent(word)}`);
   };
 
+  // Note: SearchField handles smart query routing (comparisons, pattern searches, etc.)
+  // handleSearch is only called for plain word lookups
+
   return (
     <main className="min-h-screen">
       {/* ============ HERO ============ */}

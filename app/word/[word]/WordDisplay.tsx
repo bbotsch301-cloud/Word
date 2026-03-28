@@ -26,6 +26,7 @@ import { EtymologyTree } from "@/components/word/EtymologyTree";
 import { OriginMap } from "@/components/word/OriginMap";
 import { SynonymCloud } from "@/components/word/SynonymCloud";
 import { useWordLists } from "@/components/WordListProvider";
+import WordProperties from "@/components/word/WordProperties";
 import { SITE_URL } from "@/lib/config";
 import Link from "next/link";
 
@@ -367,6 +368,9 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* ============ COMPUTED PROPERTIES ============ */}
+      <WordProperties result={result} />
 
       {/* ============ AT A GLANCE ============ */}
       <motion.div
