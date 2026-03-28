@@ -63,7 +63,7 @@ export default function TimelinePage() {
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-2 mb-1">
           <Link href="/explore" className="text-sm text-text-muted hover:text-accent transition-colors">&larr; Explore</Link>
@@ -92,7 +92,7 @@ export default function TimelinePage() {
                     className="w-full text-left"
                   >
                     <div className="flex items-center gap-3 group">
-                      <span className="font-serif text-sm font-semibold text-text-secondary w-28 shrink-0">
+                      <span className="font-serif text-sm font-semibold text-text-secondary w-20 sm:w-28 shrink-0">
                         {c.century}
                       </span>
                       <div className="flex-1 relative h-8 bg-surface rounded overflow-hidden border border-border group-hover:border-accent/30 transition-colors">

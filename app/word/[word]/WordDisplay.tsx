@@ -195,7 +195,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-6">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-4 text-xs text-text-muted">
         <Link href="/" className="hover:text-accent transition-colors">Home</Link>
@@ -214,14 +214,14 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-start gap-4">
-          <h1 className="font-serif text-5xl md:text-6xl font-bold text-text-primary tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text-primary tracking-tight">
             {result.word}
           </h1>
-          <div className="flex gap-2 mt-2 shrink-0">
+          <div className="flex gap-2 sm:mt-2 shrink-0">
             <button
               onClick={() => toggleBookmark(result.word)}
-              className={`p-2 rounded-lg border transition-all ${
+              className={`p-2.5 sm:p-2 rounded-lg border transition-all ${
                 bookmarked
                   ? "bg-accent/10 border-accent/40 text-accent"
                   : "border-border text-text-muted hover:border-accent/40 hover:text-accent"
@@ -234,7 +234,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             </button>
             <Link
               href={`/compare?words=${encodeURIComponent(result.word)}`}
-              className="p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
+              className="p-2.5 sm:p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
               title="Compare with another word"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -244,7 +244,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             <div className="relative" data-share-menu>
               <button
                 onClick={() => setShareOpen(!shareOpen)}
-                className="p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
+                className="p-2.5 sm:p-2 rounded-lg border border-border text-text-muted hover:border-accent/40 hover:text-accent transition-all"
                 title="Share this word"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -253,7 +253,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 </svg>
               </button>
               {shareOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-xl shadow-lg py-1 z-50">
+                <div className="absolute right-0 top-full mt-2 w-48 max-w-[calc(100vw-2rem)] bg-surface border border-border rounded-xl shadow-lg py-1 z-50">
                   <button onClick={handleCopyLink} className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors flex items-center gap-2">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -279,7 +279,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mt-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 mt-3 flex-wrap">
           {result.phonetic && (
             <span className="font-mono text-base text-accent-secondary">{result.phonetic}</span>
           )}
@@ -347,7 +347,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         whileInView="show"
         viewport={{ once: true }}
         variants={stagger}
-        className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3"
+        className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3"
       >
         <motion.div variants={fadeUp} className="bg-surface border border-border rounded-lg p-4 shadow-sm">
           <div className="text-[10px] text-text-muted uppercase tracking-wider font-mono">Root Origin</div>
@@ -388,7 +388,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             {sections.length} sections below
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
           <div>
             <span className="text-text-muted">Definition: </span>
             <span className="text-text-primary">

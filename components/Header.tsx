@@ -74,7 +74,7 @@ function UserMenu({ onToggle }: { onToggle?: () => void }) {
       <button
         ref={buttonRef}
         onClick={handleToggle}
-        className="w-8 h-8 rounded-full bg-accent/20 text-accent font-medium text-sm flex items-center justify-center hover:bg-accent/30 transition-colors"
+        className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-accent/20 text-accent font-medium text-sm flex items-center justify-center hover:bg-accent/30 transition-colors"
         aria-label="User menu"
         aria-expanded={open}
         aria-haspopup="menu"
@@ -127,7 +127,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-bg/95 backdrop-blur-sm">
-      <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4 sm:gap-6">
         <Link href="/" className="font-serif text-xl font-bold bg-gradient-to-r from-accent to-accent-secondary bg-clip-text text-transparent">
           LEXICA
         </Link>
@@ -161,7 +161,7 @@ export default function Header() {
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 rounded-md text-text-muted hover:text-text-primary hover:bg-surface active:scale-95 transition-all"
+            className="p-2.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface active:scale-95 transition-all"
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
           >
@@ -189,7 +189,7 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   title={link.title}
-                  className={`block py-2.5 px-3 rounded-lg text-sm transition-colors ${
+                  className={`block py-3 px-4 rounded-lg text-sm transition-colors ${
                     isActive
                       ? 'text-accent bg-accent/10 font-medium'
                       : 'text-text-secondary hover:text-text-primary hover:bg-surface'

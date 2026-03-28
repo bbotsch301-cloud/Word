@@ -32,7 +32,7 @@ export default function ExplorePage() {
   useEffect(() => { fetchRandom(); }, []);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">Explore</h1>
         <p className="text-text-muted mb-8">Discover the English language through different lenses.</p>

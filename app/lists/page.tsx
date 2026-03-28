@@ -28,7 +28,7 @@ export default function ListsPage() {
 
   return (
     <main className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">My Words</h1>
         <p className="text-text-muted mb-10">
           {isLoggedIn
@@ -95,7 +95,7 @@ export default function ListsPage() {
                   key={word}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="group flex items-center gap-1 bg-surface border border-border rounded-full pl-4 pr-1 py-1 hover:border-accent/40 transition-colors"
+                  className="group flex items-center gap-1 bg-surface border border-border rounded-full pl-4 pr-1 py-1.5 sm:py-1 hover:border-accent/40 transition-colors"
                 >
                   <Link
                     href={`/word/${encodeURIComponent(word)}`}
@@ -105,7 +105,7 @@ export default function ListsPage() {
                   </Link>
                   <button
                     onClick={() => toggleBookmark(word)}
-                    className="p-2 rounded-full text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                    className="p-2.5 sm:p-2 rounded-full text-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                     title="Remove bookmark"
                     aria-label={`Remove bookmark for ${word}`}
                   >
@@ -131,12 +131,12 @@ export default function ListsPage() {
               onChange={(e) => setNewListName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
               placeholder="New list name..."
-              className="flex-1 bg-surface border border-border rounded-lg px-4 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
+              className="flex-1 bg-surface border border-border rounded-lg px-4 py-2.5 sm:py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
             />
             <button
               onClick={handleCreateList}
               disabled={!newListName.trim()}
-              className="bg-accent text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="bg-accent text-white rounded-lg px-4 py-2.5 sm:py-2 text-sm font-medium hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Create
             </button>

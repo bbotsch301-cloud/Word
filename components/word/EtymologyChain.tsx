@@ -48,7 +48,7 @@ export default function EtymologyChain({ strata }: EtymologyChainProps) {
   };
 
   return (
-    <div className="relative ml-4">
+    <div className="relative ml-2 sm:ml-4">
       {/* Gradient timeline line */}
       <div
         className="absolute left-[7px] top-4 bottom-4 w-[2px] rounded-full"
@@ -70,7 +70,7 @@ export default function EtymologyChain({ strata }: EtymologyChainProps) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-20px' }}
             transition={{ delay: index * 0.08, duration: 0.4, ease: 'easeOut' }}
-            className="relative pl-8"
+            className="relative pl-6 sm:pl-8"
           >
             {/* Node marker */}
             <motion.div
@@ -125,7 +125,7 @@ export default function EtymologyChain({ strata }: EtymologyChainProps) {
                   {stratum.era}
                 </span>
                 {!isOpen && stratum.meaning && (
-                  <span className="text-xs text-text-muted truncate max-w-[200px]">
+                  <span className="text-xs text-text-muted truncate max-w-[120px] sm:max-w-[200px]">
                     &mdash; {stratum.meaning}
                   </span>
                 )}

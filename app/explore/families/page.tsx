@@ -77,7 +77,7 @@ export default function FamiliesPage() {
   const maxCount = Math.max(...data.map(d => d.count), 1);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-2 mb-1">
           <Link href="/explore" className="text-sm text-text-muted hover:text-accent transition-colors">&larr; Explore</Link>

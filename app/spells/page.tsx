@@ -65,7 +65,7 @@ export default function SpellsPage() {
     : featured.filter(p => p.spellType === activeTab);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         {/* Hero */}
         <div className="text-center mb-10">
@@ -141,7 +141,7 @@ export default function SpellsPage() {
                 <button
                   key={id}
                   onClick={() => setActiveTab(id)}
-                  className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`text-xs px-3 py-2.5 sm:py-1.5 rounded-lg transition-colors ${
                     activeTab === id
                       ? "bg-accent/10 text-accent font-medium"
                       : "text-text-muted hover:text-text-primary"

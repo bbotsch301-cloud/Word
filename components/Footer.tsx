@@ -33,8 +33,8 @@ const NAV_SECTIONS = [
 export default function Footer() {
   return (
     <footer className="border-t border-border mt-16">
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title}>
               <h4 className="font-serif text-sm font-semibold text-text-primary mb-3">

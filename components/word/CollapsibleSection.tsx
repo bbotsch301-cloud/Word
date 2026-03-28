@@ -24,10 +24,10 @@ export default function CollapsibleSection({
     <section id={id} className="scroll-mt-20">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-4 group cursor-pointer"
+        className="w-full flex items-center gap-3 sm:gap-4 py-1 group cursor-pointer"
         aria-expanded={isOpen}
       >
-        <h2 className="font-serif text-2xl font-bold text-text-primary whitespace-nowrap group-hover:text-accent transition-colors">
+        <h2 className="font-serif text-xl sm:text-2xl font-bold text-text-primary group-hover:text-accent transition-colors text-left">
           {title}
         </h2>
         <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />

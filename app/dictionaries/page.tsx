@@ -11,7 +11,7 @@ export default function DictionariesPage() {
   const dictionaries = getAllDictionaries();
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-6">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <h1 className="font-serif text-4xl font-bold text-text-primary tracking-tight mb-1">
         Dictionaries
       </h1>

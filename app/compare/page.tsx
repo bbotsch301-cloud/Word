@@ -202,7 +202,7 @@ export default function ComparePage() {
 
   return (
     <main className="min-h-screen">
-      <div className={`mx-auto px-6 py-12 ${words.length > 2 ? "max-w-7xl" : "max-w-5xl"}`}>
+      <div className={`mx-auto px-4 sm:px-6 py-8 sm:py-12 ${words.length > 2 ? "max-w-7xl" : "max-w-5xl"}`}>
         <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">Compare Words</h1>
         <p className="text-text-muted mb-8">Side-by-side comparison of etymology, definitions, and linguistic data.</p>
 

@@ -21,7 +21,7 @@ const SOURCES = [
 
 export default function AboutPage() {
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <h1 className="font-serif text-4xl font-bold text-text-primary mb-3">About LEXICA</h1>
       <p className="text-lg text-text-secondary leading-relaxed mb-10 max-w-3xl">
         LEXICA is a multi-source English dictionary that brings together 27+ historical and modern

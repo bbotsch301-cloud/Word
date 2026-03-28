@@ -78,7 +78,7 @@ export default function SearchPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-8">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">Advanced Search</h1>
         <p className="text-text-muted mb-8">Search by pattern, origin language, century, and more.</p>
@@ -100,14 +100,14 @@ export default function SearchPage() {
           </div>
 
           {/* Filter row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             {/* Origin language */}
             <div>
               <label className="block text-xs font-medium text-text-secondary mb-1">Origin Language</label>
               <select
                 value={originLang}
                 onChange={e => setOriginLang(e.target.value)}
-                className="w-full h-9 px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
+                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
               >
                 <option value="">Any</option>
                 {filters?.languages.map(l => (
@@ -122,7 +122,7 @@ export default function SearchPage() {
               <select
                 value={century}
                 onChange={e => setCentury(e.target.value)}
-                className="w-full h-9 px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
+                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
               >
                 <option value="">Any century</option>
                 {filters?.centuries.map(c => (
@@ -137,7 +137,7 @@ export default function SearchPage() {
               <select
                 value={pos}
                 onChange={e => setPos(e.target.value)}
-                className="w-full h-9 px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
+                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
               >
                 <option value="">Any</option>
                 {filters?.partsOfSpeech.map(p => (
@@ -152,7 +152,7 @@ export default function SearchPage() {
               <select
                 value={cefrLevel}
                 onChange={e => setCefrLevel(e.target.value)}
-                className="w-full h-9 px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
+                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
               >
                 <option value="">Any</option>
                 <option value="A1">A1 (Beginner)</option>

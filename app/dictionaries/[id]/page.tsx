@@ -44,7 +44,7 @@ export default function DictionaryPage({ params, searchParams }: PageProps) {
   const totalPages = Math.ceil(result.total / result.pageSize);
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-6">
+    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
       <Breadcrumb items={[
         { label: "Home", href: "/" },
         { label: "Dictionaries", href: "/dictionaries" },
