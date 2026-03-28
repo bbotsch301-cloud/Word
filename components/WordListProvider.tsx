@@ -95,9 +95,10 @@ export function WordListProvider({ children }: { children: ReactNode }) {
     if (isLoading) return;
 
     if (isLoggedIn) {
+      const controller = new AbortController();
       Promise.all([
-        fetch("/api/user/bookmarks").then(r => r.json()),
-        fetch("/api/user/lists").then(r => r.json()),
+        fetch("/api/user/bookmarks", { signal: controller.signal }).then(r => r.json()),
+        fetch("/api/user/lists", { signal: controller.signal }).then(r => r.json()),
       ]).then(([bookmarkRes, listRes]) => {
         setData({
           bookmarks: bookmarkRes.bookmarks || [],
@@ -110,10 +111,12 @@ export function WordListProvider({ children }: { children: ReactNode }) {
         setIsReady(true);
         setHasPendingMigration(hasLocalData());
       }).catch((err) => {
+        if (err.name === "AbortError") return;
         console.error("Failed to load user data:", err);
         setData(defaultData);
         setIsReady(true);
       });
+      return () => controller.abort();
     } else {
       setData(loadLocalData());
       setIsReady(true);

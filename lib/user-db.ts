@@ -8,10 +8,14 @@ let userDb: Database.Database | null = null;
 
 export function getUserDatabase(): Database.Database {
   if (!userDb) {
-    userDb = new Database(USER_DB_PATH);
-    userDb.pragma("journal_mode = WAL");
-    userDb.pragma("foreign_keys = ON");
-    initSchema(userDb);
+    try {
+      userDb = new Database(USER_DB_PATH);
+      userDb.pragma("journal_mode = WAL");
+      userDb.pragma("foreign_keys = ON");
+      initSchema(userDb);
+    } catch (err) {
+      throw new Error(`Cannot open user database at ${USER_DB_PATH}: ${(err as Error).message}`);
+    }
   }
   return userDb;
 }
@@ -181,14 +185,13 @@ export function createUserList(userId: string, name: string): string {
   return id;
 }
 
-export function deleteUserList(userId: string, listId: string): void {
+export function deleteUserList(userId: string, listId: string): boolean {
   const db = getUserDatabase();
-  // Verify ownership
-  const list = db.prepare(
-    "SELECT id FROM user_lists WHERE id = ? AND user_id = ?"
-  ).get(listId, userId);
-  if (!list) return;
-  db.prepare("DELETE FROM user_lists WHERE id = ?").run(listId);
+  // Atomic delete with ownership check
+  const result = db.prepare(
+    "DELETE FROM user_lists WHERE id = ? AND user_id = ?"
+  ).run(listId, userId);
+  return result.changes > 0;
 }
 
 export function addWordToList(listId: string, word: string): void {

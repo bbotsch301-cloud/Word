@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /lists
+
+Sitemap: https://lexica.app/api/sitemap-index

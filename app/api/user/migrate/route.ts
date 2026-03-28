@@ -9,9 +9,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { bookmarks, lists } = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { bookmarks, lists } = body;
 
   if (!Array.isArray(bookmarks) || !Array.isArray(lists)) {
+    return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
+  }
+
+  // Limit payload size to prevent abuse
+  if (bookmarks.length > 10000 || lists.length > 1000) {
+    return NextResponse.json({ error: "Data too large" }, { status: 400 });
+  }
+
+  // Validate content types
+  if (!bookmarks.every((b: unknown) => typeof b === "string") ||
+      !lists.every((l: unknown) => typeof l === "object" && l !== null && typeof (l as Record<string, unknown>).name === "string")) {
     return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
   }
 

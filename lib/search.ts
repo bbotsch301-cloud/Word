@@ -117,7 +117,7 @@ export function advancedSearch(
     const selectLang = useEtymLinks ? ", el.parent_lang as origin_lang" : "";
     const useFreqJoin = sort === "frequency";
     const freqJoin = useFreqJoin ? " LEFT JOIN google_frequency gf ON gf.word = w.word" : "";
-    const orderBy = sort === "length" ? "LENGTH(w.word), w.word" : sort === "frequency" ? "COALESCE(gf.frequency, 0) DESC, w.word" : "w.word";
+    const orderBy = sort === "length" ? "LENGTH(w.word), w.word" : sort === "frequency" ? "COALESCE(gf.rank, 999999) ASC, w.word" : "w.word";
     const fetchSql = `SELECT DISTINCT w.word, w.pos, SUBSTR(w.definition, 1, 120) as preview${selectExtra}${selectLang} FROM words w${joins}${freqJoin} WHERE ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
 
     const rows = db.prepare(fetchSql).all(...params, pageSize, offset) as {

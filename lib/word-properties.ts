@@ -58,11 +58,14 @@ export function computeWordAge(firstUse: { year?: number; century: string } | un
     if (age > 0) return `~${age} years`;
   }
   // Estimate from century
-  const match = firstUse.century.match(/(\d+)/);
+  const match = firstUse.century?.match(/(\d+)/);
   if (match) {
-    const centuryMid = (parseInt(match[1]) - 1) * 100 + 50;
-    const age = new Date().getFullYear() - centuryMid;
-    if (age > 0) return `~${age} years`;
+    const centuryNum = parseInt(match[1], 10);
+    if (centuryNum >= 1 && centuryNum <= 25) {
+      const centuryMid = (centuryNum - 1) * 100 + 50;
+      const age = new Date().getFullYear() - centuryMid;
+      if (age > 0) return `~${age} years`;
+    }
   }
   return null;
 }

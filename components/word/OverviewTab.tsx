@@ -27,10 +27,11 @@ export default function OverviewTab({ result }: OverviewTabProps) {
       ? result.definitions[0].definition
       : result.modern_meaning;
 
-  const etymologySummary =
-    result.truest_meaning.length > 200
+  const etymologySummary = result.truest_meaning
+    ? (result.truest_meaning.length > 200
       ? result.truest_meaning.slice(0, 200) + '...'
-      : result.truest_meaning;
+      : result.truest_meaning)
+    : '';
 
   return (
     <motion.div

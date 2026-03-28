@@ -32,6 +32,7 @@ export default function SearchPage() {
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState("alpha");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters | null>(null);
 
   useEffect(() => {
@@ -54,15 +55,18 @@ export default function SearchPage() {
     if (!pattern && !originLang && !century && !pos && !cefrLevel) return;
 
     setLoading(true);
+    setError(null);
     if (p === 1) window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       const res = await fetch(`/api/search?${params}`);
+      if (!res.ok) throw new Error("Search failed");
       const data = await res.json();
       setResults(data.results || []);
       setTotal(data.total || 0);
       setPage(p);
     } catch {
       setResults([]);
+      setError("Search failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -197,7 +201,13 @@ export default function SearchPage() {
           </p>
         )}
 
-        {!loading && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
+        {error && (
+          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
           <div className="bg-surface border border-border rounded-xl p-10 text-center">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-text-muted/40 mb-3">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />

@@ -68,7 +68,24 @@ export function parseQuery(input: string): QueryIntent {
     // Check for century: "from the 14th century"
     const centuryMatch = lang.match(/(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)\s+century/i);
     if (centuryMatch) {
-      const num = parseInt(centuryMatch[1]);
+      const num = parseInt(centuryMatch[1], 10);
+      if (num >= 1 && num <= 21) {
+        const suffix = num === 1 ? "st" : num === 2 ? "nd" : num === 3 ? "rd" : "th";
+        const century = `${num}${suffix} century`;
+        return {
+          type: "search",
+          searchParams: { century },
+          label: `Words from the ${century}`,
+        };
+      }
+    }
+  }
+
+  // 3. Century: "14th century words"
+  const centuryMatch = lower.match(/(\d{1,2})(?:st|nd|rd|th)\s+century\s+words?/);
+  if (centuryMatch) {
+    const num = parseInt(centuryMatch[1], 10);
+    if (num >= 1 && num <= 21) {
       const suffix = num === 1 ? "st" : num === 2 ? "nd" : num === 3 ? "rd" : "th";
       const century = `${num}${suffix} century`;
       return {
@@ -77,19 +94,6 @@ export function parseQuery(input: string): QueryIntent {
         label: `Words from the ${century}`,
       };
     }
-  }
-
-  // 3. Century: "14th century words"
-  const centuryMatch = lower.match(/(\d{1,2})(?:st|nd|rd|th)\s+century\s+words?/);
-  if (centuryMatch) {
-    const num = parseInt(centuryMatch[1]);
-    const suffix = num === 1 ? "st" : num === 2 ? "nd" : num === 3 ? "rd" : "th";
-    const century = `${num}${suffix} century`;
-    return {
-      type: "search",
-      searchParams: { century },
-      label: `Words from the ${century}`,
-    };
   }
 
   // 4. Suffix pattern: "words ending in -tion" or "ending in ly"

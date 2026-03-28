@@ -23,7 +23,9 @@ export default function ExplorePage() {
       const res = await fetch("/api/search?action=random");
       const data = await res.json();
       setRandomWord(data);
-    } catch {}
+    } catch {
+      setRandomWord(null);
+    }
     setLoading(false);
   };
 

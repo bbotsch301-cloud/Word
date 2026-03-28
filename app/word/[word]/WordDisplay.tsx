@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import type { LexicaResult } from "@/types/lexica";
 import SearchField from "@/components/ui/SearchField";
@@ -16,19 +17,21 @@ import ThesaurusSection from "@/components/word/ThesaurusSection";
 import BiblicalStudySection from "@/components/word/BiblicalStudySection";
 import MorphologySection from "@/components/word/MorphologySection";
 import HiddenConnectionsSection from "@/components/word/HiddenConnectionsSection";
-import ConstellationGraph from "@/components/word/ConstellationGraph";
-import EtymologyRiver from "@/components/word/EtymologyRiver";
-import MeaningTimeline from "@/components/word/MeaningTimeline";
-import ConceptGalaxy from "@/components/word/ConceptGalaxy";
-import { NgramChart } from "@/components/word/NgramChart";
-import { CognatesSection } from "@/components/word/CognatesSection";
-import { EtymologyTree } from "@/components/word/EtymologyTree";
-import { OriginMap } from "@/components/word/OriginMap";
-import { SynonymCloud } from "@/components/word/SynonymCloud";
 import { useWordLists } from "@/components/WordListProvider";
 import WordProperties from "@/components/word/WordProperties";
 import { SITE_URL } from "@/lib/config";
 import Link from "next/link";
+
+// Dynamic imports for heavy visualization components (reduces initial bundle)
+const ConstellationGraph = dynamic(() => import("@/components/word/ConstellationGraph"), { ssr: false });
+const EtymologyRiver = dynamic(() => import("@/components/word/EtymologyRiver"), { ssr: false });
+const MeaningTimeline = dynamic(() => import("@/components/word/MeaningTimeline"), { ssr: false });
+const ConceptGalaxy = dynamic(() => import("@/components/word/ConceptGalaxy"), { ssr: false });
+const NgramChart = dynamic(() => import("@/components/word/NgramChart").then(m => ({ default: m.NgramChart })), { ssr: false });
+const CognatesSection = dynamic(() => import("@/components/word/CognatesSection").then(m => ({ default: m.CognatesSection })), { ssr: false });
+const EtymologyTree = dynamic(() => import("@/components/word/EtymologyTree").then(m => ({ default: m.EtymologyTree })), { ssr: false });
+const OriginMap = dynamic(() => import("@/components/word/OriginMap").then(m => ({ default: m.OriginMap })), { ssr: false });
+const SynonymCloud = dynamic(() => import("@/components/word/SynonymCloud").then(m => ({ default: m.SynonymCloud })), { ssr: false });
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },

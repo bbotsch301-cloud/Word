@@ -43,6 +43,7 @@ const ARPABET_TO_READABLE: Record<string, string> = {
 };
 
 export function arpabetToReadable(phonemes: string): string {
+  if (!phonemes) return "";
   const parts = phonemes.split(/\s+/);
   const readable: string[] = [];
 

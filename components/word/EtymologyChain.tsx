@@ -65,7 +65,7 @@ export default function EtymologyChain({ strata }: EtymologyChainProps) {
 
         return (
           <motion.div
-            key={index}
+            key={`${stratum.language}-${stratum.form}-${index}`}
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-20px' }}
