@@ -37,16 +37,17 @@ mkdir -p /opt/lexica
 chown lexica:lexica /opt/lexica
 
 # --- 4. Clone or pull the repo ---
-echo "[4/8] Fetching code..."
+BRANCH="${DEPLOY_BRANCH:-main}"
+echo "[4/8] Fetching code (branch: $BRANCH)..."
 if [ -d /opt/lexica/.git ]; then
     cd /opt/lexica
     sudo -u lexica git fetch origin
-    sudo -u lexica git checkout main
-    sudo -u lexica git pull origin main
+    sudo -u lexica git checkout "$BRANCH"
+    sudo -u lexica git pull origin "$BRANCH"
 else
     sudo -u lexica git clone https://github.com/bbotsch301-cloud/Word.git /opt/lexica
     cd /opt/lexica
-    sudo -u lexica git checkout main
+    sudo -u lexica git checkout "$BRANCH"
 fi
 
 # --- 5. Install dependencies and build ---
@@ -65,27 +66,24 @@ if [ ! -f /opt/lexica/.env.local ]; then
 NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
 NEXTAUTH_URL=http://5.78.180.9
 NODE_ENV=production
+TURSO_DATABASE_URL=
+TURSO_AUTH_TOKEN=
 ENVEOF
     chown lexica:lexica /opt/lexica/.env.local
     chmod 600 /opt/lexica/.env.local
     echo "  Created .env.local with generated NEXTAUTH_SECRET"
+    echo "  WARNING: You must set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in /opt/lexica/.env.local"
 else
-    echo "  .env.local already exists, skipping"
+    echo "  .env.local already exists, preserving database connection"
 fi
 
-# --- 7. Check if database exists ---
-echo "[7/8] Checking database..."
-if [ ! -f /opt/lexica/data/lexica.db ]; then
-    echo "  WARNING: lexica.db not found!"
-    echo "  You need to build it. Run:"
-    echo "    cd /opt/lexica && sudo -u lexica npm run db:rebuild"
-    echo "  This downloads sources and builds the database (~30 min)"
-    echo ""
-    echo "  OR copy an existing lexica.db to /opt/lexica/data/lexica.db"
-    mkdir -p /opt/lexica/data
-    chown lexica:lexica /opt/lexica/data
+# --- 7. Verify Turso database connection ---
+echo "[7/8] Checking database configuration..."
+if grep -q "TURSO_DATABASE_URL=." /opt/lexica/.env.local 2>/dev/null; then
+    echo "  Turso database URL configured"
 else
-    echo "  lexica.db found ($(du -h /opt/lexica/data/lexica.db | cut -f1))"
+    echo "  WARNING: TURSO_DATABASE_URL is not set in .env.local"
+    echo "  Edit /opt/lexica/.env.local and add your Turso credentials"
 fi
 
 # --- 8. PM2 setup ---
@@ -145,18 +143,11 @@ echo "  LEXICA deployed!"
 echo "  http://5.78.180.9"
 echo "============================================"
 echo ""
-if [ ! -f /opt/lexica/data/lexica.db ]; then
-    echo "NEXT STEP: Build the database:"
-    echo "  ssh root@5.78.180.9"
-    echo "  cd /opt/lexica && sudo -u lexica npm run db:rebuild"
-    echo "  sudo -u lexica pm2 restart lexica"
-    echo ""
-fi
 echo "To add a domain + SSL later:"
 echo "  1. Point your domain DNS A record to 5.78.180.9"
 echo "  2. Edit /etc/nginx/sites-available/lexica — change server_name"
 echo "  3. Run: certbot --nginx -d yourdomain.com"
 echo ""
 echo "To update the app:"
-echo "  cd /opt/lexica && git pull origin main && npm ci && npm run build && pm2 restart lexica"
+echo "  cd /opt/lexica && git pull origin $BRANCH && npm ci && npm run build && pm2 restart lexica"
 echo ""
