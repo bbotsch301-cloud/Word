@@ -1,0 +1,7 @@
+Changes to client/src/App.tsx:
+
+1. Add lazy import after AdminCourseEditor:
+   const AdminCourseWizard = lazy(() => import("@/pages/admin-course-wizard"));
+
+2. Add route BEFORE /admin/courses (order matters for matching):
+   <Route path="/admin/courses/new">{() => <RequireAdmin><SectionErrorBoundary><AdminCourseWizard /></SectionErrorBoundary></RequireAdmin>}</Route>
