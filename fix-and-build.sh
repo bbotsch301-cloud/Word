@@ -3,9 +3,16 @@ set -euo pipefail
 
 APP_DIR=/opt/ecclesia/app
 
-echo "==> Fixing unterminated string literal in storage.ts..."
+echo "==> Fixing all unterminated string literals in storage.ts..."
 cd "$APP_DIR"
-perl -0777 -i -pe 's/his reward\."\n/his reward." /g' server/storage.ts
+
+# Re-clone fresh to undo partial fixes
+git checkout -- server/storage.ts
+
+# Fix ALL cases: any line ending with ." followed by continuation text on next line
+# These are Bible verses in single-quoted strings that span multiple lines
+perl -0777 -i -pe 's/\."\n(\s*[^\s\}\]\,])/.\" $1/g' server/storage.ts
+
 echo "==> Fixed"
 
 echo "==> Building and starting app..."
