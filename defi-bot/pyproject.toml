@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "defi-bot"
+version = "0.1.0"
+description = "Multi-chain DeFi staking bot with auto-compounding, yield optimization, and YouTube-driven strategy learning"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "youtube-transcript-api>=0.6.2",
+]
+
+[project.optional-dependencies]
+core = [
+    "solana>=0.34",
+    "anchorpy>=0.20",
+    "web3>=6.15",
+    "ccxt>=4.2",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "apscheduler>=3.10",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.3",
+]
+
+[project.scripts]
+bot = "src.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
