@@ -11,6 +11,7 @@ from .learning.playlist_parser import (
     is_playlist_url,
     parse_video_ids,
 )
+from .learning.local_ingest import IngestError, ingest, ingest_playlist
 from .learning.screenshot_store import ScreenshotError, list_screenshots, store_screenshot
 from .learning.strategy_spec import list_specs
 from .learning.transcript_fetcher import (
@@ -82,23 +83,102 @@ def fetch(url_or_id: str, language: tuple[str, ...], force: bool) -> None:
     click.echo(f"Done. ok={ok} skipped={skipped} failed={failed}")
 
 
+@learn.command("ingest")
+@click.argument("url")
+@click.option(
+    "--scene-threshold",
+    type=float,
+    default=0.4,
+    help="ffmpeg scene-detection threshold (lower = more keyframes). Default 0.4.",
+)
+@click.option(
+    "--max-keyframes",
+    type=int,
+    default=60,
+    help="Hard cap on keyframes per video. Default 60.",
+)
+@click.option(
+    "--interval",
+    type=float,
+    default=None,
+    help="If set, sample one frame every N seconds INSTEAD of scene detection. "
+         "Use this for screen-recordings where scenes don't change visibly.",
+)
+def ingest_cmd(url: str, scene_threshold: float, max_keyframes: int, interval: float | None) -> None:
+    """Local-machine ingestion: download subtitles + thumbnail + keyframes via yt-dlp + ffmpeg.
+
+    Run this on YOUR machine (the sandbox can't reach YouTube). Commit the resulting
+    files in data/transcripts/<video-id>/ and Claude will read them.
+    """
+    try:
+        if is_playlist_url(url):
+            results = ingest_playlist(
+                url,
+                TRANSCRIPTS_DIR,
+                scene_threshold=scene_threshold,
+                max_keyframes=max_keyframes,
+                keyframe_interval=interval,
+            )
+            click.echo(f"\nIngested {len(results)} videos to {TRANSCRIPTS_DIR}")
+        else:
+            result = ingest(
+                url,
+                TRANSCRIPTS_DIR,
+                scene_threshold=scene_threshold,
+                max_keyframes=max_keyframes,
+                keyframe_interval=interval,
+            )
+            click.echo(f"\nVideo: {result.video_id}")
+            click.echo(f"  caption source: {result.caption_source}")
+            click.echo(f"  keyframes: {len(result.keyframes)}")
+            click.echo(f"  output: {result.output_dir}")
+    except IngestError as e:
+        raise click.ClickException(str(e))
+
+
 @learn.command("list")
 def list_cmd() -> None:
-    """List ingested videos."""
-    docs = list_transcripts(TRANSCRIPTS_DIR)
-    if not docs:
-        click.echo("No transcripts yet. Run: bot learn fetch <url>")
-        return
+    """List ingested videos (both legacy fetch and new ingest formats)."""
+    rows: list[tuple[str, str, str, str]] = []  # (video_id, source_label, duration, title)
 
-    click.echo(f"{len(docs)} transcript(s) in {TRANSCRIPTS_DIR}")
-    click.echo("")
-    for doc in docs:
+    # Legacy: data/transcripts/<id>.json files from `bot learn fetch`
+    for doc in list_transcripts(TRANSCRIPTS_DIR):
         src = {"manual": "MANUAL", "auto": "AUTO  ", "translated": "TRANS "}[doc.caption_source]
         duration_min = 0
         if doc.segments:
             last = doc.segments[-1]
             duration_min = int((last.start + last.duration) // 60)
-        click.echo(f"  {doc.video_id}  [{src}]  {duration_min:3d}min  {doc.title}")
+        rows.append((doc.video_id, src, f"{duration_min:3d}min", doc.title))
+
+    # New: data/transcripts/<id>/metadata.json from `bot learn ingest`
+    if TRANSCRIPTS_DIR.exists():
+        import json as _json
+        for sub in sorted(TRANSCRIPTS_DIR.iterdir()):
+            if not sub.is_dir():
+                continue
+            meta_path = sub / "metadata.json"
+            if not meta_path.exists():
+                continue
+            meta = _json.loads(meta_path.read_text())
+            duration = meta.get("duration") or 0
+            duration_min = int(duration // 60)
+            kf_dir = sub / "keyframes"
+            kf_count = len(list(kf_dir.glob("*.jpg"))) if kf_dir.exists() else 0
+            transcript_vtt = sub / "transcript.vtt"
+            src = "VIDEO" if transcript_vtt.exists() else "VIDEO?"
+            label = f"{meta.get('title', '(unknown)')[:60]}  [{kf_count} keyframes]"
+            rows.append((meta["id"], src, f"{duration_min:3d}min", label))
+
+    if not rows:
+        click.echo("No transcripts yet. Run one of:")
+        click.echo("  bot learn fetch  <url>   # API-only, sandbox-friendly (if not blocked)")
+        click.echo("  bot learn ingest <url>   # full local: subtitles + keyframes via yt-dlp+ffmpeg")
+        return
+
+    click.echo(f"{len(rows)} transcript(s) in {TRANSCRIPTS_DIR}")
+    click.echo("")
+    for video_id, src, duration, title in rows:
+        click.echo(f"  {video_id}  [{src}]  {duration}  {title}")
 
 
 @learn.command("show")

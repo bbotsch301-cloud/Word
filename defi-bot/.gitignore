@@ -13,10 +13,17 @@ env/
 *.key
 wallet*.json
 
+# Legacy single-file fetch format (personal artifacts, don't commit)
 data/transcripts/*.json
 data/transcripts/*.md
-data/specs/
-data/screenshots/
+
+# Never commit raw video files from `bot learn ingest` (they're huge and we keep keyframes instead)
+data/transcripts/*/video.*
+data/transcripts/*/*.mp4
+data/transcripts/*/*.webm
+data/transcripts/*/*.mkv
+
+# Bot runtime state (databases) — keep local
 data/*.db
 data/*.sqlite
 

@@ -16,30 +16,63 @@ pip install -e .
 
 ## Phase 0: Learning pipeline
 
-Pull transcripts from a YouTube playlist or video, extract trading strategies, and review them before coding.
+Two ingestion modes:
+
+### `ingest` (recommended) — full local capture
+Runs on YOUR machine. Downloads subtitles, the thumbnail, and scene-change keyframes
+via `yt-dlp` + `ffmpeg`. Produces small artifacts you commit so Claude can read both
+the spoken content and the visual chart moments.
 
 ```bash
-# Fetch transcripts from a playlist or single video
-bot learn fetch "https://www.youtube.com/playlist?list=PLxxxxx"
-bot learn fetch "https://www.youtube.com/watch?v=VIDEO_ID"
+# Single video
+bot learn ingest "https://www.youtube.com/watch?v=zJaBU8uUoS8"
 
-# List ingested videos
-bot learn list
+# Whole playlist
+bot learn ingest "https://www.youtube.com/playlist?list=PLxxxxx"
 
-# Print a transcript for review
-bot learn show VIDEO_ID
-
-# Register a screenshot for a specific moment
-bot learn screenshot VIDEO_ID 05:23 ~/Downloads/chart.png
-
-# Mark a transcript as ready for strategy extraction (Claude reads it next)
-bot learn extract VIDEO_ID
-
-# List extracted strategy specs
-bot learn specs
+# Tune visual capture
+bot learn ingest URL --scene-threshold 0.3 --max-keyframes 80
+bot learn ingest URL --interval 10        # one frame every 10 seconds (good for screen recordings)
 ```
 
-Transcripts prefer manual captions, falling back to auto-generated. The caption source is flagged in the metadata so low-confidence segments can be reviewed.
+Output (per video, under `data/transcripts/<video-id>/`):
+```
+metadata.json        # title, channel, duration, chapters
+transcript.vtt       # YouTube's own subtitles (manual preferred)
+transcript.md        # human/Claude-readable, deduped + timestamped
+thumbnail.jpg
+keyframes/
+    0001.jpg ... NNNN.jpg
+    index.json       # frame -> timestamp mapping
+```
+
+The raw video file is auto-deleted after keyframes are extracted (and is in `.gitignore`
+either way).
+
+### `fetch` — captions only (no video, no keyframes)
+Lightweight API-only fallback. Uses `youtube-transcript-api`. Works only from networks
+that aren't IP-blocked by YouTube.
+
+```bash
+bot learn fetch "https://www.youtube.com/watch?v=VIDEO_ID"
+```
+
+### Common commands
+
+```bash
+bot learn list                              # list everything ingested
+bot learn show VIDEO_ID                     # print transcript for review
+bot learn screenshot VIDEO_ID 05:23 path    # add a manual screenshot
+bot learn extract VIDEO_ID                  # print extraction prompt for Claude
+bot learn specs                             # list extracted strategy specs
+```
+
+### Workflow
+1. **You:** `bot learn ingest <playlist-url>`
+2. **You:** `git add data/transcripts && git commit && git push`
+3. **Claude:** reads transcripts + keyframes, produces a strategy spec under `data/specs/`
+4. **You:** review the spec, push corrections
+5. **Claude:** implements the strategy in `src/strategies/<name>.py` and backtests it
 
 ## Phase 1+ (not yet built)
 
