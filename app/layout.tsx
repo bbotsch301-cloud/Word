@@ -3,6 +3,7 @@ import { Inter, IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { WordListProvider } from "@/components/WordListProvider";
+import { ToastProvider } from "@/components/Toast";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -75,11 +76,13 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <WordListProvider>
-              <Header />
-              <div id="main-content">
-                {children}
-              </div>
-              <Footer />
+              <ToastProvider>
+                <Header />
+                <div id="main-content">
+                  {children}
+                </div>
+                <Footer />
+              </ToastProvider>
             </WordListProvider>
           </AuthProvider>
         </ThemeProvider>

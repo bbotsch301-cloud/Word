@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -13,6 +13,15 @@ interface SearchResult {
   originLang?: string;
   firstUseYear?: number;
 }
+
+type ResultFilter = "all" | "etymology" | "root" | "similar";
+
+const RESULT_FILTERS: { id: ResultFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "etymology", label: "Etymology" },
+  { id: "root", label: "By Root" },
+  { id: "similar", label: "Similar Words" },
+];
 
 interface Filters {
   languages: { code: string; name: string; count: number }[];
@@ -34,6 +43,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters | null>(null);
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
 
   useEffect(() => {
     fetch("/api/search?action=filters")
@@ -74,8 +84,35 @@ export default function SearchPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setResultFilter("all");
     doSearch(1);
   };
+
+  // Categorize each result by match type relative to the pattern
+  const categorized = useMemo(() => {
+    const cleanPattern = pattern.replace(/[*?]/g, "").toLowerCase();
+    return results.map(r => {
+      const word = r.word.toLowerCase();
+      let matchType: ResultFilter = "similar";
+      if (cleanPattern && word.startsWith(cleanPattern)) {
+        matchType = "root";
+      } else if (cleanPattern && (word.endsWith(cleanPattern) || word.includes(cleanPattern))) {
+        matchType = "etymology";
+      }
+      return { ...r, matchType };
+    });
+  }, [results, pattern]);
+
+  const filteredResults = useMemo(() => {
+    if (resultFilter === "all") return categorized;
+    return categorized.filter(r => r.matchType === resultFilter);
+  }, [categorized, resultFilter]);
+
+  const filterCounts = useMemo(() => {
+    const counts: Record<ResultFilter, number> = { all: categorized.length, etymology: 0, root: 0, similar: 0 };
+    categorized.forEach(r => { counts[r.matchType]++; });
+    return counts;
+  }, [categorized]);
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
@@ -193,12 +230,31 @@ export default function SearchPage() {
           </div>
         </form>
 
-        {/* Results */}
+        {/* Results count */}
         {total > 0 && (
-          <p className="text-sm text-text-muted mb-4">
-            {total.toLocaleString()} result{total !== 1 ? "s" : ""} found
-            {total > 50 && ` — showing page ${page}`}
-          </p>
+          <div className="flex items-baseline justify-between mb-4">
+            <p className="text-sm text-text-secondary">
+              <span className="font-serif text-2xl font-semibold text-text-primary">{total.toLocaleString()}</span>
+              <span className="text-text-muted ml-2">result{total !== 1 ? "s" : ""}</span>
+              {total > 50 && <span className="text-text-muted ml-2">&middot; page {page} of {Math.ceil(total / 50)}</span>}
+            </p>
+          </div>
+        )}
+
+        {/* Result filter tabs */}
+        {results.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar mb-5 pb-1">
+            {RESULT_FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setResultFilter(f.id)}
+                className={`filter-pill ${resultFilter === f.id ? "filter-pill-active" : ""}`}
+              >
+                {f.label}
+                <span className="ml-1.5 opacity-60 text-[11px]">{filterCounts[f.id]}</span>
+              </button>
+            ))}
+          </div>
         )}
 
         {error && (
@@ -222,23 +278,34 @@ export default function SearchPage() {
         )}
 
         <div className="space-y-2">
-          {results.map((r, i) => (
+          {filteredResults.map((r, i) => (
             <motion.div
               key={r.word}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.02 }}
+              transition={{ delay: Math.min(i * 0.02, 0.3) }}
             >
               <Link
                 href={`/word/${encodeURIComponent(r.word)}`}
-                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent/40 transition-colors"
+                className="search-result-card group block p-4 rounded-xl border border-border bg-surface transition-all"
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-serif font-semibold text-text-primary">{r.word}</span>
+                <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
+                  <span className="font-serif text-lg font-semibold text-text-primary group-hover:text-accent transition-colors">
+                    {r.word}
+                  </span>
                   {r.pos && <Badge variant="accent">{r.pos}</Badge>}
-                  {r.firstUseYear && <Badge variant="muted">c. {r.firstUseYear}</Badge>}
+                  {r.originLang && (
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+                      from {r.originLang}
+                    </span>
+                  )}
+                  {r.firstUseYear && (
+                    <span className="text-[10px] font-mono text-text-muted ml-auto">
+                      c. {r.firstUseYear}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm text-text-muted line-clamp-1">{r.preview}</p>
+                <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">{r.preview}</p>
               </Link>
             </motion.div>
           ))}

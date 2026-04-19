@@ -12,17 +12,16 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     const stored = localStorage.getItem('lexica-theme') as Theme | null;
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initial = stored ? stored : (systemDark ? 'dark' : 'light');
+    const initial = stored || 'dark';
     setTheme(initial);
-    if (initial === 'dark') {
-      document.documentElement.classList.add('dark');
+    if (initial === 'light') {
+      document.documentElement.classList.add('light');
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('light');
     }
   }, []);
 
@@ -30,10 +29,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const next: Theme = theme === 'light' ? 'dark' : 'light';
     setTheme(next);
     localStorage.setItem('lexica-theme', next);
-    if (next === 'dark') {
-      document.documentElement.classList.add('dark');
+    if (next === 'light') {
+      document.documentElement.classList.add('light');
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('light');
     }
   };
 
