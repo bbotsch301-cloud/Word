@@ -366,6 +366,142 @@ body {
   overflow: hidden;
 }
 
+/* ============ COGNATE CARD ============ */
+.cognate-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.cognate-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+/* ============ FAMILY TREE / CONNECTIONS NODE HOVER ============ */
+.family-tree-node circle,
+.connection-node circle {
+  transition: all 0.2s ease;
+}
+
+.family-tree-node:hover circle,
+.connection-node:hover circle {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px var(--glow));
+}
+
+.family-tree-node:hover text,
+.connection-node:hover text {
+  fill: var(--accent);
+}
+
+/* ============ CONNECTIONS WEB CENTER PULSE ============ */
+.connections-pulse {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--glow)); }
+  50% { filter: drop-shadow(0 0 12px var(--accent)); }
+}
+
+/* ============ DISCOVERY CARD (surprising connections) ============ */
+.discovery-card {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.discovery-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent);
+  transition: left 0.6s ease;
+}
+
+.discovery-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 24px var(--glow);
+  transform: translateY(-2px);
+}
+
+.discovery-card:hover::before {
+  left: 100%;
+}
+
+.discovery-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-muted);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ============ SEARCH PAGE FILTER PILLS ============ */
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.filter-pill-active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+/* ============ SEARCH RESULT CARD ============ */
+.search-result-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--glow);
+}
+
+/* ============ KEYBOARD HINT ============ */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+}
+
 /* Respect user preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

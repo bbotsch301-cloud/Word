@@ -193,12 +193,15 @@ export default function SearchPage() {
           </div>
         </form>
 
-        {/* Results */}
+        {/* Results count */}
         {total > 0 && (
-          <p className="text-sm text-text-muted mb-4">
-            {total.toLocaleString()} result{total !== 1 ? "s" : ""} found
-            {total > 50 && ` — showing page ${page}`}
-          </p>
+          <div className="flex items-baseline justify-between mb-4">
+            <p className="text-sm text-text-secondary">
+              <span className="font-serif text-2xl font-semibold text-text-primary">{total.toLocaleString()}</span>
+              <span className="text-text-muted ml-2">result{total !== 1 ? "s" : ""}</span>
+              {total > 50 && <span className="text-text-muted ml-2">&middot; page {page} of {Math.ceil(total / 50)}</span>}
+            </p>
+          </div>
         )}
 
         {error && (
@@ -227,18 +230,29 @@ export default function SearchPage() {
               key={r.word}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.02 }}
+              transition={{ delay: Math.min(i * 0.02, 0.3) }}
             >
               <Link
                 href={`/word/${encodeURIComponent(r.word)}`}
-                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent/40 transition-colors"
+                className="search-result-card group block p-4 rounded-xl border border-border bg-surface transition-all"
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-serif font-semibold text-text-primary">{r.word}</span>
+                <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
+                  <span className="font-serif text-lg font-semibold text-text-primary group-hover:text-accent transition-colors">
+                    {r.word}
+                  </span>
                   {r.pos && <Badge variant="accent">{r.pos}</Badge>}
-                  {r.firstUseYear && <Badge variant="muted">c. {r.firstUseYear}</Badge>}
+                  {r.originLang && (
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+                      from {r.originLang}
+                    </span>
+                  )}
+                  {r.firstUseYear && (
+                    <span className="text-[10px] font-mono text-text-muted ml-auto">
+                      c. {r.firstUseYear}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm text-text-muted line-clamp-1">{r.preview}</p>
+                <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">{r.preview}</p>
               </Link>
             </motion.div>
           ))}

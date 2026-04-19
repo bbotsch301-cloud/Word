@@ -11,6 +11,10 @@ import Badge from "@/components/ui/Badge";
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import EtymologyTimeline from "@/components/word/EtymologyTimeline";
 import MorphemeBreakdown from "@/components/word/MorphemeBreakdown";
+import WordFamilyTree from "@/components/word/WordFamilyTree";
+import ConnectionsWeb from "@/components/word/ConnectionsWeb";
+import CognatesPanel from "@/components/word/CognatesPanel";
+import UsageOverTime from "@/components/word/UsageOverTime";
 import DefinitionTimeline from "@/components/word/DefinitionTimeline";
 import DeepDive from "@/components/word/DeepDive";
 import { useWordLists } from "@/components/WordListProvider";
@@ -92,6 +96,13 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   const allPOS = [...new Set(result.definitions.map(d => d.pos).filter(Boolean))];
   const hasEtymology = result.strata.length > 0 || result.truest_meaning;
   const hasMorphology = result.morphology && result.morphology.morphemeCount >= 2;
+  const taxCounts =
+    (result.taxonomy?.hypernyms?.length || 0) +
+    (result.taxonomy?.hyponyms?.length || 0) +
+    (result.taxonomy?.antonyms?.length || 0) +
+    (result.taxonomy?.coordinate_terms?.length || 0);
+  const hasTaxonomy = taxCounts >= 2;
+  const hasUsageData = (result.ngramHistory && result.ngramHistory.length >= 2) || !!result.firstUse?.year;
 
   const tabs: { id: Tab; label: string; show: boolean }[] = [
     { id: "all", label: "All", show: true },
@@ -255,6 +266,20 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               <MorphemeBreakdown morphology={result.morphology!} word={result.word} />
             )}
 
+            {/* Word family tree */}
+            {result.constellation && result.constellation.length >= 2 && (
+              <WordFamilyTree
+                word={result.word}
+                constellation={result.constellation}
+                rootLabel={result.morphology?.root || result.strata.find(s => s.is_root)?.form}
+              />
+            )}
+
+            {/* Cognates across languages */}
+            {result.cognates && result.cognates.cognates.length > 0 && (
+              <CognatesPanel cognates={result.cognates} word={result.word} />
+            )}
+
             {/* Root revelation */}
             {result.root_revelation && (
               <div className="mt-6 p-4 border border-accent/20 rounded-xl bg-accent-muted/30">
@@ -303,7 +328,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         </motion.section>
       )}
 
-      {/* ===== HIDDEN CONNECTIONS (DID YOU KNOW?) ===== */}
+      {/* ===== SURPRISING CONNECTIONS ===== */}
       {show(["connections", "all"]) && topConnections.length > 0 && (
         <motion.section
           initial={{ opacity: 0, y: 12 }}
@@ -312,7 +337,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
           className="mt-10"
           id="connections"
         >
-          <SectionHeader label="Hidden Connections" subtitle="Surprising links you won't expect" />
+          <SectionHeader label="Surprising Connections" subtitle="Hidden links you won't expect" />
           <div className="space-y-3">
             {topConnections.map((conn, i) => (
               <motion.div
@@ -320,24 +345,33 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.08 }}
-                className="connection-card"
+                className="discovery-card"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent">
-                    Did you know?
-                  </span>
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, s) => (
-                      <div key={s} className={`w-1 h-1 rounded-full ${s < Math.round(conn.surpriseScore * 5) ? "bg-accent" : "bg-border"}`} />
-                    ))}
+                <div className="flex items-start gap-3">
+                  <div className="discovery-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent">
+                        Did you know?
+                      </span>
+                      <div className="flex gap-0.5">
+                        {[...Array(5)].map((_, s) => (
+                          <div key={s} className={`w-1 h-1 rounded-full ${s < Math.round(conn.surpriseScore * 5) ? "bg-accent" : "bg-border"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <h4 className="font-serif text-base font-medium text-text-primary leading-snug mb-1">
+                      {conn.headline}
+                    </h4>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      {conn.description}
+                    </p>
                   </div>
                 </div>
-                <h4 className="font-serif text-base font-medium text-text-primary leading-snug mb-1">
-                  {conn.headline}
-                </h4>
-                <p className="text-sm text-text-secondary leading-relaxed">
-                  {conn.description}
-                </p>
               </motion.div>
             ))}
           </div>
@@ -349,6 +383,36 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               See all {result.hiddenConnections!.connections.length} connections &rarr;
             </button>
           )}
+        </motion.section>
+      )}
+
+      {/* ===== CONNECTIONS WEB (semantic graph) ===== */}
+      {show(["connections", "all"]) && hasTaxonomy && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-10"
+        >
+          <SectionHeader label="Semantic Web" subtitle="How this word relates" />
+          <ConnectionsWeb word={result.word} taxonomy={result.taxonomy!} />
+        </motion.section>
+      )}
+
+      {/* ===== USAGE OVER TIME ===== */}
+      {show(["usage", "all"]) && hasUsageData && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mt-10"
+        >
+          <SectionHeader label="Usage" subtitle="How often this word appears in print" />
+          <UsageOverTime
+            ngramHistory={result.ngramHistory}
+            firstUseYear={result.firstUse?.year}
+            word={result.word}
+          />
         </motion.section>
       )}
 
