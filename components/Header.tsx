@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
 import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
@@ -12,98 +11,14 @@ const NAV_LINKS = [
   { href: '/lists', label: 'My Words' },
 ];
 
-function UserMenu({ onToggle }: { onToggle?: () => void }) {
-  const { data: session, status } = useSession();
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  const close = useCallback(() => {
-    setOpen(false);
-    buttonRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' && open) {
-        close();
-      }
-    }
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [open, close]);
-
-  if (status === 'loading') {
-    return <div className="w-8 h-8 rounded-full bg-surface animate-pulse" />;
-  }
-
-  if (!session?.user) {
-    return (
-      <Link
-        href="/login"
-        className="text-sm text-text-muted hover:text-text-primary transition-colors"
-      >
-        Sign in
-      </Link>
-    );
-  }
-
-  const initial = (session.user.name?.[0] || session.user.email?.[0] || '?').toUpperCase();
-
-  const handleToggle = () => {
-    setOpen(!open);
-    onToggle?.();
-  };
-
+function UserMenu() {
   return (
-    <div ref={menuRef} className="relative">
-      <button
-        ref={buttonRef}
-        onClick={handleToggle}
-        className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-accent/20 text-accent font-medium text-sm flex items-center justify-center hover:bg-accent/30 transition-colors"
-        aria-label="User menu"
-        aria-expanded={open}
-        aria-haspopup="menu"
-      >
-        {initial}
-      </button>
-
-      {open && (
-        <div role="menu" className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg py-2 z-50">
-          <div className="px-4 py-2 border-b border-border">
-            {session.user.name && (
-              <p className="text-sm font-medium text-text-primary truncate">{session.user.name}</p>
-            )}
-            <p className="text-xs text-text-muted truncate">{session.user.email}</p>
-          </div>
-          <Link
-            href="/lists"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg transition-colors"
-          >
-            My Words
-          </Link>
-          <button
-            role="menuitem"
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-red-500 hover:bg-bg transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
-      )}
-    </div>
+    <Link
+      href="/login"
+      className="text-sm text-text-muted hover:text-text-primary transition-colors"
+    >
+      Sign in
+    </Link>
   );
 }
 
@@ -116,10 +31,6 @@ export default function Header() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
-
-  const handleUserMenuToggle = useCallback(() => {
-    setMobileOpen(false);
-  }, []);
 
   const handleRandom = async () => {
     try {
@@ -183,7 +94,7 @@ export default function Header() {
               <line x1="4" y1="4" x2="9" y2="9" />
             </svg>
           </button>
-          <UserMenu onToggle={handleUserMenuToggle} />
+          <UserMenu />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
