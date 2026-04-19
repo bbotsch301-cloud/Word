@@ -18,9 +18,25 @@ const ETYMOLOGY_FACTS = [
   { word: "whiskey", fact: "From Gaelic uisce beatha — 'water of life.' The Irish took their water seriously.", origin: "Gaelic" },
 ];
 
+interface WotdData {
+  word: string;
+  definition: string;
+  phonetic?: string;
+  pos?: string;
+  etymologySnippet?: string;
+}
+
+const FALLBACK_WOTD: WotdData = {
+  word: "serendipity",
+  definition: "The faculty of making fortunate discoveries by accident.",
+  phonetic: "/ˌsɛrənˈdɪpɪti/",
+  pos: "noun",
+  etymologySnippet: "Coined by Horace Walpole in 1754, from the Persian fairy tale 'The Three Princes of Serendip.'",
+};
+
 export default function Home() {
   const [recentWords, setRecentWords] = useState<string[]>([]);
-  const [wordOfTheDay, setWordOfTheDay] = useState<{ word: string; definition: string } | null>(null);
+  const [wordOfTheDay, setWordOfTheDay] = useState<WotdData>(FALLBACK_WOTD);
   const [currentFact, setCurrentFact] = useState(0);
   const { bookmarks } = useWordLists();
   const router = useRouter();
@@ -34,7 +50,7 @@ export default function Home() {
 
     fetch("/api/word-of-the-day")
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setWordOfTheDay(data); })
+      .then(data => { if (data?.word) setWordOfTheDay({ ...FALLBACK_WOTD, ...data }); })
       .catch(() => {});
 
     setCurrentFact(Math.floor(Math.random() * ETYMOLOGY_FACTS.length));
@@ -100,7 +116,7 @@ export default function Home() {
             transition={{ delay: 0.9, duration: 0.5 }}
             className="text-xs text-text-muted mt-4 font-mono tracking-wide"
           >
-            Try &ldquo;serendipity&rdquo; &middot; &ldquo;algorithm&rdquo; &middot; &ldquo;melancholy&rdquo;
+            Try &ldquo;love&rdquo; &middot; &ldquo;disaster&rdquo; &middot; &ldquo;serendipity&rdquo; &middot; &ldquo;melancholy&rdquo; &middot; &ldquo;ephemeral&rdquo;
           </motion.p>
 
           {/* Recent searches */}
@@ -192,40 +208,53 @@ export default function Home() {
       </section>
 
       {/* ============ WORD OF THE DAY ============ */}
-      {wordOfTheDay && (
-        <section className="border-t border-border bg-surface/30">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent-secondary mb-4">
-                Word of the Day
-              </p>
-              <Link href={`/word/${encodeURIComponent(wordOfTheDay.word)}`} className="group block wotd-card">
-                <div className="wotd-card-inner">
-                  <h2 className="font-serif text-4xl sm:text-5xl font-bold text-text-primary group-hover:text-accent transition-colors mb-3">
+      <section className="border-t border-border bg-surface/30">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-14">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-accent-secondary mb-4">
+              Word of the Day
+            </p>
+            <Link href={`/word/${encodeURIComponent(wordOfTheDay.word)}`} className="group block wotd-card">
+              <div className="wotd-card-inner">
+                <div className="flex items-baseline gap-3 flex-wrap mb-2">
+                  <h2 className="font-serif text-4xl sm:text-5xl font-bold text-text-primary group-hover:text-accent transition-colors">
                     {wordOfTheDay.word}
                   </h2>
-                  <p className="text-text-secondary leading-relaxed max-w-xl">
-                    {wordOfTheDay.definition.length > 180
-                      ? wordOfTheDay.definition.slice(0, 180) + "..."
-                      : wordOfTheDay.definition}
-                  </p>
-                  <span className="inline-flex items-center gap-1.5 mt-5 text-sm text-accent font-medium">
-                    Discover its origins
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
+                  {wordOfTheDay.pos && (
+                    <span className="text-xs italic text-text-muted font-serif">{wordOfTheDay.pos}</span>
+                  )}
                 </div>
-              </Link>
-            </motion.div>
-          </div>
-        </section>
-      )}
+                {wordOfTheDay.phonetic && (
+                  <p className="font-mono text-sm text-accent-secondary mb-3">
+                    {wordOfTheDay.phonetic}
+                  </p>
+                )}
+                <p className="text-text-secondary leading-relaxed max-w-xl">
+                  {wordOfTheDay.definition.length > 180
+                    ? wordOfTheDay.definition.slice(0, 180) + "..."
+                    : wordOfTheDay.definition}
+                </p>
+                {wordOfTheDay.etymologySnippet && (
+                  <p className="text-sm text-text-muted italic leading-relaxed mt-3 max-w-xl border-l-2 border-accent/30 pl-3">
+                    {wordOfTheDay.etymologySnippet}
+                  </p>
+                )}
+                <span className="inline-flex items-center gap-1.5 mt-5 text-sm text-accent font-medium">
+                  Discover its origins
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
+                    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ============ BOOKMARKS ============ */}
       {bookmarks.length > 0 && (

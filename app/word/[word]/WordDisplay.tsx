@@ -18,6 +18,7 @@ import UsageOverTime from "@/components/word/UsageOverTime";
 import DefinitionTimeline from "@/components/word/DefinitionTimeline";
 import DeepDive from "@/components/word/DeepDive";
 import { useWordLists } from "@/components/WordListProvider";
+import { useToast } from "@/components/Toast";
 import { SITE_URL } from "@/lib/config";
 
 const MeaningTimeline = dynamic(() => import("@/components/word/MeaningTimeline"), { ssr: false });
@@ -27,9 +28,9 @@ type Tab = "all" | "etymology" | "definitions" | "connections" | "usage";
 export default function WordDisplay({ result }: { result: LexicaResult }) {
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useWordLists();
+  const toast = useToast();
   const bookmarked = isBookmarked(result.word);
   const [shareOpen, setShareOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -39,8 +40,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(wordUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.show("Link copied!");
     } catch {
       const input = document.createElement("input");
       input.value = wordUrl;
@@ -48,10 +48,14 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      toast.show("Link copied!");
     }
     setShareOpen(false);
+  };
+
+  const handleBookmarkToggle = () => {
+    toggleBookmark(result.word);
+    toast.show(bookmarked ? "Removed from collection" : "Saved to collection", "info");
   };
 
   const handleSpeak = () => {
@@ -135,7 +139,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold text-text-primary tracking-tight">
+        <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight word-title">
           {result.word}
         </h1>
 
@@ -169,7 +173,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
         {/* Action buttons */}
         <div className="flex items-center gap-2 mt-5">
           <button
-            onClick={() => toggleBookmark(result.word)}
+            onClick={handleBookmarkToggle}
             className={`action-button ${bookmarked ? "action-button-active" : ""}`}
             title={bookmarked ? "Remove from collection" : "Add to collection"}
           >
@@ -192,7 +196,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
             {shareOpen && (
               <div className="absolute left-0 top-full mt-2 w-48 bg-surface border border-border rounded-xl shadow-lg py-1 z-50">
                 <button onClick={handleCopyLink} className="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:text-accent hover:bg-surface-hover transition-colors">
-                  {copied ? "Copied!" : "Copy link"}
+                  Copy link
                 </button>
                 <button onClick={() => { window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(wordUrl)}&text=${encodeURIComponent(shareText)}`, "_blank"); setShareOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm text-text-secondary hover:text-accent hover:bg-surface-hover transition-colors">
                   Share on X
@@ -437,6 +441,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
 function SectionHeader({ label, subtitle }: { label: string; subtitle?: string }) {
   return (
     <div className="flex items-center gap-3 mb-6">
+      <span className="section-dot" aria-hidden="true" />
       <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-accent font-semibold">
         {label}
       </span>

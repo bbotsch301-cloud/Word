@@ -2,12 +2,11 @@ import Link from "next/link";
 
 const NAV_SECTIONS = [
   {
-    title: "Explore",
+    title: "Discover",
     links: [
-      { label: "Search", href: "/search" },
       { label: "Explore", href: "/explore" },
-      { label: "Word Spells", href: "/spells" },
-      { label: "Dictionaries", href: "/dictionaries" },
+      { label: "Search", href: "/search" },
+      { label: "Sources", href: "/dictionaries" },
     ],
   },
   {
@@ -56,7 +55,7 @@ export default function Footer() {
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link
             href="/"
-            className="font-serif text-sm font-bold bg-gradient-to-r from-accent to-accent-secondary bg-clip-text text-transparent"
+            className="font-serif text-sm font-bold hero-title"
           >
             LEXICA
           </Link>

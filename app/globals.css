@@ -182,6 +182,40 @@ body {
   position: relative;
 }
 
+.hero-search-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--accent),
+    var(--accent-secondary),
+    var(--accent),
+    var(--accent-secondary)
+  );
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: hero-search-glow 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-search-wrapper:focus-within::before {
+  opacity: 1;
+}
+
+@keyframes hero-search-glow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .hero-search-wrapper input {
   height: 56px !important;
   font-size: 18px !important;
@@ -199,7 +233,7 @@ body {
   box-shadow:
     0 0 0 4px var(--glow),
     0 8px 32px rgba(0, 0, 0, 0.08) !important;
-  border-color: var(--accent) !important;
+  border-color: transparent !important;
   transform: translateY(-1px);
 }
 
@@ -483,6 +517,42 @@ body {
   background: var(--surface-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px var(--glow);
+}
+
+/* ============ WORD TITLE SHIMMER ============ */
+.word-title {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    var(--text-primary) 0%,
+    var(--text-primary) 40%,
+    var(--accent) 50%,
+    var(--text-primary) 60%,
+    var(--text-primary) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 1.2s ease;
+  cursor: default;
+}
+
+.word-title:hover {
+  background-position: -100% 0;
+}
+
+/* ============ SECTION DOT DECORATION ============ */
+.section-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
 /* ============ KEYBOARD HINT ============ */

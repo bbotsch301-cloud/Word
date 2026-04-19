@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -13,6 +13,15 @@ interface SearchResult {
   originLang?: string;
   firstUseYear?: number;
 }
+
+type ResultFilter = "all" | "etymology" | "root" | "similar";
+
+const RESULT_FILTERS: { id: ResultFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "etymology", label: "Etymology" },
+  { id: "root", label: "By Root" },
+  { id: "similar", label: "Similar Words" },
+];
 
 interface Filters {
   languages: { code: string; name: string; count: number }[];
@@ -34,6 +43,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters | null>(null);
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
 
   useEffect(() => {
     fetch("/api/search?action=filters")
@@ -74,8 +84,35 @@ export default function SearchPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setResultFilter("all");
     doSearch(1);
   };
+
+  // Categorize each result by match type relative to the pattern
+  const categorized = useMemo(() => {
+    const cleanPattern = pattern.replace(/[*?]/g, "").toLowerCase();
+    return results.map(r => {
+      const word = r.word.toLowerCase();
+      let matchType: ResultFilter = "similar";
+      if (cleanPattern && word.startsWith(cleanPattern)) {
+        matchType = "root";
+      } else if (cleanPattern && (word.endsWith(cleanPattern) || word.includes(cleanPattern))) {
+        matchType = "etymology";
+      }
+      return { ...r, matchType };
+    });
+  }, [results, pattern]);
+
+  const filteredResults = useMemo(() => {
+    if (resultFilter === "all") return categorized;
+    return categorized.filter(r => r.matchType === resultFilter);
+  }, [categorized, resultFilter]);
+
+  const filterCounts = useMemo(() => {
+    const counts: Record<ResultFilter, number> = { all: categorized.length, etymology: 0, root: 0, similar: 0 };
+    categorized.forEach(r => { counts[r.matchType]++; });
+    return counts;
+  }, [categorized]);
 
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
@@ -204,6 +241,22 @@ export default function SearchPage() {
           </div>
         )}
 
+        {/* Result filter tabs */}
+        {results.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar mb-5 pb-1">
+            {RESULT_FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setResultFilter(f.id)}
+                className={`filter-pill ${resultFilter === f.id ? "filter-pill-active" : ""}`}
+              >
+                {f.label}
+                <span className="ml-1.5 opacity-60 text-[11px]">{filterCounts[f.id]}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
             <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
@@ -225,7 +278,7 @@ export default function SearchPage() {
         )}
 
         <div className="space-y-2">
-          {results.map((r, i) => (
+          {filteredResults.map((r, i) => (
             <motion.div
               key={r.word}
               initial={{ opacity: 0, y: 8 }}
