@@ -2,40 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============ ETYMONLINE-INSPIRED THEME ============ */
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface-hover: #1c2333;
-  --text-primary: #f0f0f0;
-  --text-secondary: #b0b8c4;
-  --text-muted: #6e7a8a;
-  --border: #21262d;
-  --border-hover: #363d47;
-  --accent: #e8a838;
-  --accent-hover: #f0bd5e;
-  --accent-muted: #2a1f0d;
-  --accent-subtle: #3d2c10;
-  --accent-secondary: #3fb8af;
-  --accent-secondary-hover: #5fd4cb;
-  --glow: rgba(232, 168, 56, 0.12);
+  --bg: #1d1d1d;
+  --surface: rgb(58, 58, 58);
+  --surface-hover: rgb(68, 68, 68);
+  --text-primary: #dddddd;
+  --text-secondary: rgb(180, 180, 180);
+  --text-muted: rgb(154, 154, 154);
+  --border: rgb(70, 70, 70);
+  --border-hover: rgb(90, 90, 90);
+  --accent: rgb(231, 103, 19);
+  --accent-hover: rgb(242, 129, 35);
+  --accent-muted: rgba(231, 103, 19, 0.12);
+  --accent-subtle: rgba(231, 103, 19, 0.08);
+  --accent-secondary: rgb(231, 103, 19);
+  --accent-secondary-hover: rgb(242, 129, 35);
+  --glow: rgba(231, 103, 19, 0.06);
+  --font-body: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 .light {
-  --bg: #FDFBF7;
-  --surface: #F5F0E8;
-  --surface-hover: #EDE6D8;
-  --text-primary: #1C1917;
-  --text-secondary: #44403C;
-  --text-muted: #78716C;
-  --border: #E7E0D5;
-  --border-hover: #D6CFC3;
-  --accent: #c47a15;
-  --accent-hover: #a36510;
-  --accent-muted: #FEF3C7;
-  --accent-subtle: #FDE68A;
-  --accent-secondary: #0F766E;
-  --accent-secondary-hover: #115E59;
-  --glow: rgba(180, 83, 9, 0.08);
+  --bg: #f5f5f0;
+  --surface: #ffffff;
+  --surface-hover: #f0f0ea;
+  --text-primary: #1a1a1a;
+  --text-secondary: #444444;
+  --text-muted: #777777;
+  --border: #d4d4d0;
+  --border-hover: #bbbbbb;
+  --accent: rgb(200, 80, 10);
+  --accent-hover: rgb(180, 70, 5);
+  --accent-muted: rgba(200, 80, 10, 0.1);
+  --accent-subtle: rgba(200, 80, 10, 0.06);
+  --accent-secondary: rgb(200, 80, 10);
+  --accent-secondary-hover: rgb(180, 70, 5);
+  --glow: rgba(200, 80, 10, 0.04);
 }
 
 *,
@@ -51,17 +54,15 @@ html {
 }
 
 body {
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image:
-    radial-gradient(ellipse at 20% 50%, var(--glow) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, var(--glow) 0%, transparent 50%);
-  background-attachment: fixed;
 }
 
 ::selection {
-  background-color: var(--accent-subtle);
+  background-color: var(--accent-muted);
   color: var(--text-primary);
 }
 
@@ -83,224 +84,103 @@ body {
   background: var(--border-hover);
 }
 
-/* Global focus-visible styles for accessibility */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Remove default focus outline when not using keyboard */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
-/* ============ HERO ANIMATED BACKGROUND ============ */
-.hero-orbs {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+/* ============ LINKS ============ */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
-}
-
-.hero-orb-1 {
-  width: 600px;
-  height: 600px;
-  background: var(--accent);
-  opacity: 0.06;
-  top: -200px;
-  left: -100px;
-  animation: orb-drift-1 20s ease-in-out infinite;
-}
-
-.hero-orb-2 {
-  width: 500px;
-  height: 500px;
-  background: var(--accent-secondary);
-  opacity: 0.05;
-  bottom: -150px;
-  right: -100px;
-  animation: orb-drift-2 25s ease-in-out infinite;
-}
-
-.hero-orb-3 {
-  width: 300px;
-  height: 300px;
-  background: var(--accent);
-  opacity: 0.04;
-  top: 40%;
-  left: 60%;
-  animation: orb-drift-3 18s ease-in-out infinite;
-}
-
-@keyframes orb-drift-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(60px, 40px) scale(1.05); }
-  66% { transform: translate(-30px, 20px) scale(0.95); }
-}
-
-@keyframes orb-drift-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-40px, -30px) scale(1.08); }
-  66% { transform: translate(50px, -20px) scale(0.97); }
-}
-
-@keyframes orb-drift-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-60px, 30px) scale(1.1); }
+a:hover {
+  color: var(--accent-hover);
 }
 
 /* ============ HERO TITLE ============ */
 .hero-title {
-  background: linear-gradient(
-    135deg,
-    var(--accent) 0%,
-    var(--accent-secondary) 50%,
-    var(--accent) 100%
-  );
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-shift 8s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  color: var(--accent);
 }
 
 /* ============ HERO SEARCH ============ */
 .hero-search-wrapper {
   position: relative;
-}
-
-.hero-search-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 18px;
-  padding: 2px;
-  background: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent-secondary),
-    var(--accent),
-    var(--accent-secondary)
-  );
-  background-size: 300% 300%;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  animation: hero-search-glow 6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.hero-search-wrapper:focus-within::before {
-  opacity: 1;
-}
-
-@keyframes hero-search-glow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  display: flex;
+  gap: 0;
 }
 
 .hero-search-wrapper input {
-  height: 56px !important;
-  font-size: 18px !important;
-  border-radius: 16px !important;
-  padding-left: 48px !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  font-family: var(--font-body) !important;
+  border-radius: 9999px !important;
+  padding-left: 20px !important;
+  padding-right: 120px !important;
   background: var(--bg);
-  border: 1.5px solid var(--border);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
 }
 
 .hero-search-wrapper input:focus {
-  box-shadow:
-    0 0 0 4px var(--glow),
-    0 8px 32px rgba(0, 0, 0, 0.08) !important;
-  border-color: transparent !important;
-  transform: translateY(-1px);
+  border-color: var(--accent) !important;
+  box-shadow: none !important;
+  transform: none;
 }
 
 .hero-search-wrapper svg {
-  left: 18px !important;
-  width: 20px !important;
-  height: 20px !important;
+  display: none !important;
 }
 
 /* ============ RECENT CHIPS ============ */
 .recent-chip {
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
   font-size: 14px;
   color: var(--text-secondary);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 5px 14px;
-  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 4px 12px;
+  transition: color 0.15s ease, border-color 0.15s ease;
   text-decoration: none;
 }
 
 .recent-chip:hover {
   color: var(--accent);
   border-color: var(--accent);
-  background: var(--accent-muted);
-  transform: translateY(-1px);
-}
-
-/* ============ SCROLL INDICATOR ============ */
-.scroll-indicator {
-  animation: scroll-bounce 2s ease-in-out infinite;
-}
-
-@keyframes scroll-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.4; }
-  50% { transform: translateX(-50%) translateY(6px); opacity: 0.8; }
+  background: var(--surface);
 }
 
 /* ============ WORD OF THE DAY CARD ============ */
 .wotd-card-inner {
-  position: relative;
-  padding: 2rem;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  transition: all 0.3s ease;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: var(--surface);
+  transition: background 0.15s ease;
 }
 
 .wotd-card:hover .wotd-card-inner {
-  border-color: var(--accent);
-  box-shadow: 0 8px 32px var(--glow);
-  transform: translateY(-2px);
+  background: var(--surface-hover);
 }
 
 /* ============ SOURCE BANNER ============ */
 .source-banner {
-  padding: 1.25rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
   background: var(--surface);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .source-banner:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px var(--glow);
+  background: var(--surface-hover);
 }
 
 /* ============ ACTION BUTTONS ============ */
@@ -308,32 +188,32 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
+  padding: 6px 12px;
+  border-radius: 4px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-secondary);
+  font-family: var(--font-ui);
   font-size: 13px;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
 .action-button:hover {
   color: var(--accent);
   border-color: var(--accent);
-  background: var(--accent-muted);
 }
 
 .action-button-active {
   color: var(--accent);
   border-color: var(--accent);
-  background: var(--accent-muted);
 }
 
 /* ============ FILTER TABS ============ */
 .filter-tab {
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -341,7 +221,7 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .filter-tab:hover {
@@ -354,18 +234,23 @@ body {
   background: var(--accent-muted);
 }
 
+/* ============ ENTRY CARD ============ */
+.entry-card {
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
 /* ============ CONNECTION CARD ============ */
 .connection-card {
   padding: 1.25rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  border-radius: 8px;
   background: var(--surface);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .connection-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px var(--glow);
+  background: var(--surface-hover);
 }
 
 /* ============ ETYMOLOGY PULLQUOTE ============ */
@@ -373,13 +258,13 @@ body {
   padding: 1.25rem 1.5rem;
   border-left: 3px solid var(--accent);
   background: var(--accent-muted);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 8px 8px 0;
   margin-bottom: 1.5rem;
 }
 
 /* ============ WORD MEANING TEXT ============ */
 .word-meaning-text {
-  font-family: var(--font-serif);
+  font-family: var(--font-body);
 }
 
 /* ============ NO SCROLLBAR ============ */
@@ -403,28 +288,24 @@ body {
 /* ============ COGNATE CARD ============ */
 .cognate-card {
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  border-radius: 8px;
   background: var(--surface);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .cognate-card:hover {
-  border-color: var(--accent);
   background: var(--surface-hover);
-  transform: translateY(-1px);
 }
 
 /* ============ FAMILY TREE / CONNECTIONS NODE HOVER ============ */
 .family-tree-node circle,
 .connection-node circle {
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .family-tree-node:hover circle,
 .connection-node:hover circle {
   stroke-width: 2.5;
-  filter: drop-shadow(0 0 6px var(--glow));
 }
 
 .family-tree-node:hover text,
@@ -432,55 +313,30 @@ body {
   fill: var(--accent);
 }
 
-/* ============ CONNECTIONS WEB CENTER PULSE ============ */
+/* ============ CONNECTIONS WEB CENTER ============ */
 .connections-pulse {
-  animation: pulse-glow 3s ease-in-out infinite;
+  /* no animation — static */
 }
 
-@keyframes pulse-glow {
-  0%, 100% { filter: drop-shadow(0 0 4px var(--glow)); }
-  50% { filter: drop-shadow(0 0 12px var(--accent)); }
-}
-
-/* ============ DISCOVERY CARD (surprising connections) ============ */
+/* ============ DISCOVERY CARD ============ */
 .discovery-card {
-  position: relative;
   padding: 1.25rem 1.5rem;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
-  transition: all 0.25s ease;
-  overflow: hidden;
-}
-
-.discovery-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--glow), transparent);
-  transition: left 0.6s ease;
+  border-radius: 8px;
+  background: var(--surface);
+  transition: background 0.15s ease;
 }
 
 .discovery-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 8px 24px var(--glow);
-  transform: translateY(-2px);
-}
-
-.discovery-card:hover::before {
-  left: 100%;
+  background: var(--surface-hover);
 }
 
 .discovery-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   background: var(--accent-muted);
   color: var(--accent);
   flex-shrink: 0;
@@ -489,7 +345,8 @@ body {
 /* ============ SEARCH PAGE FILTER PILLS ============ */
 .filter-pill {
   padding: 6px 14px;
-  border-radius: 9999px;
+  border-radius: 4px;
+  font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
@@ -497,7 +354,7 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .filter-pill:hover {
@@ -512,45 +369,26 @@ body {
 }
 
 /* ============ SEARCH RESULT CARD ============ */
+.search-result-card {
+  transition: background 0.15s ease;
+}
+
 .search-result-card:hover {
-  border-color: var(--accent);
   background: var(--surface-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--glow);
 }
 
-/* ============ WORD TITLE SHIMMER ============ */
+/* ============ WORD TITLE ============ */
 .word-title {
-  position: relative;
-  background: linear-gradient(
-    90deg,
-    var(--text-primary) 0%,
-    var(--text-primary) 40%,
-    var(--accent) 50%,
-    var(--text-primary) 60%,
-    var(--text-primary) 100%
-  );
-  background-size: 200% 100%;
-  background-position: 100% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: background-position 1.2s ease;
-  cursor: default;
-}
-
-.word-title:hover {
-  background-position: -100% 0;
+  color: var(--text-primary);
 }
 
 /* ============ SECTION DOT DECORATION ============ */
 .section-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
   margin-right: 8px;
   flex-shrink: 0;
 }
@@ -572,7 +410,66 @@ body {
   border-radius: 4px;
 }
 
-/* Respect user preference for reduced motion */
+/* ============ SIDEBAR ============ */
+.sidebar-section {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.sidebar-section h3 {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-list li:last-child {
+  border-bottom: none;
+}
+
+.sidebar-list a {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sidebar-list a:hover {
+  color: var(--accent);
+}
+
+/* ============ TWO-COLUMN LAYOUT ============ */
+.word-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .word-layout {
+    grid-template-columns: 1fr 300px;
+  }
+}
+
+/* ============ REDUCED MOTION ============ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -582,7 +479,4 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  .hero-orb { display: none; }
-  .hero-title { animation: none; }
 }
