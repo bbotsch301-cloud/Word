@@ -28,7 +28,7 @@ const config: Config = {
         "accent-subtle": "var(--accent-subtle)",
         "accent-secondary": "var(--accent-secondary)",
         "accent-secondary-hover": "var(--accent-secondary-hover)",
-        glow: "var(--glow)",
+        glow: "transparent",
       },
       keyframes: {
         "fade-in": {

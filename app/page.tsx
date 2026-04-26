@@ -87,15 +87,18 @@ export default function Home() {
               onChange={e => setSearchValue(e.target.value)}
               placeholder="Search any word..."
               autoFocus
-              className="w-full h-12 px-5 pr-28 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]"
+              className="w-full h-12 px-5 pr-14 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]"
               style={{ fontFamily: "var(--font-body)", fontSize: "16px" }}
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1.5 h-9 px-6 rounded-full text-white text-sm font-medium"
-              style={{ fontFamily: "var(--font-ui)", background: "var(--accent)" }}
+              className="absolute right-1.5 top-1.5 h-9 w-9 rounded-full text-white flex items-center justify-center"
+              style={{ background: "var(--accent)" }}
+              aria-label="Search"
             >
-              Search
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
             </button>
           </form>
 

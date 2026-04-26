@@ -5,21 +5,20 @@
 /* ============ ETYMONLINE-INSPIRED THEME ============ */
 :root {
   --bg: #1d1d1d;
-  --surface: rgb(58, 58, 58);
-  --surface-hover: rgb(68, 68, 68);
+  --surface: #3a3a3a;
+  --surface-hover: #444444;
   --text-primary: #dddddd;
-  --text-secondary: rgb(180, 180, 180);
-  --text-muted: rgb(154, 154, 154);
-  --border: rgb(70, 70, 70);
-  --border-hover: rgb(90, 90, 90);
-  --accent: rgb(231, 103, 19);
-  --accent-hover: rgb(242, 129, 35);
-  --accent-muted: rgba(231, 103, 19, 0.12);
-  --accent-subtle: rgba(231, 103, 19, 0.08);
-  --accent-secondary: rgb(231, 103, 19);
-  --accent-secondary-hover: rgb(242, 129, 35);
-  --glow: rgba(231, 103, 19, 0.06);
-  --font-body: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --text-secondary: #9a9a9a;
+  --text-muted: #777777;
+  --border: #464646;
+  --border-hover: #5a5a5a;
+  --accent: #f28123;
+  --accent-hover: #ff9640;
+  --accent-muted: rgba(242, 129, 35, 0.12);
+  --accent-subtle: rgba(242, 129, 35, 0.08);
+  --accent-secondary: #f28123;
+  --accent-secondary-hover: #ff9640;
+  --font-body: Georgia, Cambria, "Times New Roman", Times, ui-serif, serif;
   --font-ui: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
@@ -28,17 +27,16 @@
   --surface: #ffffff;
   --surface-hover: #f0f0ea;
   --text-primary: #1a1a1a;
-  --text-secondary: #444444;
-  --text-muted: #777777;
+  --text-secondary: #555555;
+  --text-muted: #888888;
   --border: #d4d4d0;
   --border-hover: #bbbbbb;
-  --accent: rgb(200, 80, 10);
-  --accent-hover: rgb(180, 70, 5);
-  --accent-muted: rgba(200, 80, 10, 0.1);
-  --accent-subtle: rgba(200, 80, 10, 0.06);
-  --accent-secondary: rgb(200, 80, 10);
-  --accent-secondary-hover: rgb(180, 70, 5);
-  --glow: rgba(200, 80, 10, 0.04);
+  --accent: #d45a0a;
+  --accent-hover: #b84d08;
+  --accent-muted: rgba(212, 90, 10, 0.1);
+  --accent-subtle: rgba(212, 90, 10, 0.06);
+  --accent-secondary: #d45a0a;
+  --accent-secondary-hover: #b84d08;
 }
 
 *,

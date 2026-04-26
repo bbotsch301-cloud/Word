@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { LexicaResult } from "@/types/lexica";
-import Badge from "@/components/ui/Badge";
+
 import { SectionErrorBoundary } from "@/components/SectionErrorBoundary";
 import EtymologyTimeline from "@/components/word/EtymologyTimeline";
 import MorphemeBreakdown from "@/components/word/MorphemeBreakdown";
@@ -161,7 +161,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 </button>
               )}
               {allPOS.map(pos => (
-                <Badge key={pos} variant="accent">{pos}</Badge>
+                <span key={pos} className="text-sm italic" style={{ color: "var(--text-muted)" }}>({pos})</span>
               ))}
             </div>
 
@@ -391,7 +391,7 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
                 value={searchValue}
                 onChange={e => setSearchValue(e.target.value)}
                 placeholder="Search another word..."
-                className="w-full h-10 px-4 pr-20 rounded-full border text-sm"
+                className="w-full h-10 px-4 pr-12 rounded-full border text-sm"
                 style={{
                   borderColor: "var(--border)",
                   background: "var(--bg)",
@@ -401,10 +401,13 @@ export default function WordDisplay({ result }: { result: LexicaResult }) {
               />
               <button
                 type="submit"
-                className="absolute right-1 top-1 h-8 px-5 rounded-full text-white text-xs font-medium"
-                style={{ fontFamily: "var(--font-ui)", background: "var(--accent)" }}
+                className="absolute right-1 top-1 h-8 w-8 rounded-full text-white flex items-center justify-center"
+                style={{ background: "var(--accent)" }}
+                aria-label="Search"
               >
-                Search
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </button>
             </form>
           </section>
