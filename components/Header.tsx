@@ -7,26 +7,15 @@ import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { href: '/explore', label: 'Explore' },
+  { href: '/search', label: 'Search' },
   { href: '/dictionaries', label: 'Sources' },
   { href: '/lists', label: 'My Words' },
 ];
-
-function UserMenu() {
-  return (
-    <Link
-      href="/login"
-      className="text-sm text-text-muted hover:text-text-primary transition-colors"
-    >
-      Sign in
-    </Link>
-  );
-}
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isHome = pathname === '/';
 
   useEffect(() => {
     setMobileOpen(false);
@@ -41,25 +30,31 @@ export default function Header() {
   };
 
   return (
-    <header className={`sticky top-0 z-50 transition-all ${isHome ? 'bg-transparent' : 'bg-bg/95 backdrop-blur-sm'}`}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4 sm:gap-6">
-        <Link href="/" className="font-serif text-xl font-bold hero-title">
+    <header
+      className="sticky top-0 z-50 border-b border-[var(--border)]"
+      style={{ background: 'rgba(29,29,29,0.95)', backdropFilter: 'blur(8px)', fontFamily: 'var(--font-ui)' }}
+    >
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="text-base font-bold tracking-wide"
+          style={{ color: 'var(--accent)', fontFamily: 'var(--font-ui)' }}
+        >
           LEXICA
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-5">
+        <nav className="hidden md:flex items-center gap-5">
           {NAV_LINKS.map(link => {
             const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm transition-colors ${
-                  isActive
-                    ? 'text-accent font-medium'
-                    : 'text-text-muted hover:text-text-primary'
-                }`}
+                className="text-sm transition-colors"
+                style={{ color: isActive ? 'var(--accent)' : 'var(--text-muted)' }}
+                onMouseEnter={e => { if (!isActive) (e.target as HTMLElement).style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { if (!isActive) (e.target as HTMLElement).style.color = 'var(--text-muted)'; }}
               >
                 {link.label}
               </Link>
@@ -67,7 +62,10 @@ export default function Header() {
           })}
           <button
             onClick={handleRandom}
-            className="text-sm text-text-muted hover:text-accent transition-colors flex items-center gap-1.5"
+            className="text-sm flex items-center gap-1.5 transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             title="Random word"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,14 +76,22 @@ export default function Header() {
             Random
           </button>
           <ThemeToggle />
-          <UserMenu />
-        </div>
+          <Link
+            href="/login"
+            className="text-sm transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.target as HTMLElement).style.color = 'var(--text-primary)'}
+            onMouseLeave={e => (e.target as HTMLElement).style.color = 'var(--text-muted)'}
+          >
+            Sign in
+          </Link>
+        </nav>
 
-        {/* Mobile */}
-        <div className="flex items-center gap-2 md:hidden">
+        {/* Mobile controls */}
+        <div className="flex items-center gap-1 md:hidden">
           <button
             onClick={handleRandom}
-            className="p-2 rounded-md text-text-muted hover:text-accent transition-colors"
+            className="p-2 rounded text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
             aria-label="Random word"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -94,11 +100,10 @@ export default function Header() {
               <line x1="4" y1="4" x2="9" y2="9" />
             </svg>
           </button>
-          <UserMenu />
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface active:scale-95 transition-all"
+            className="p-2 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
           >
@@ -117,29 +122,34 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-bg/98 backdrop-blur-sm">
-          <nav className="max-w-5xl mx-auto px-6 py-4 space-y-1">
+        <div className="md:hidden border-t border-[var(--border)]" style={{ background: 'var(--bg)' }}>
+          <nav className="max-w-5xl mx-auto px-6 py-3 space-y-1">
             {NAV_LINKS.map(link => {
               const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block py-3 px-4 rounded-lg text-sm transition-colors ${
-                    isActive
-                      ? 'text-accent bg-accent/10 font-medium'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface'
-                  }`}
+                  className="block py-2.5 px-3 rounded text-sm transition-colors"
+                  style={{
+                    color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: isActive ? 'var(--accent-muted)' : 'transparent',
+                  }}
                 >
                   {link.label}
                 </Link>
               );
             })}
+            <Link
+              href="/login"
+              className="block py-2.5 px-3 rounded text-sm"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Sign in
+            </Link>
           </nav>
         </div>
       )}
-
-      {!isHome && <div className="h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />}
     </header>
   );
 }

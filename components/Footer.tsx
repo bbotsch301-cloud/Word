@@ -28,12 +28,15 @@ const NAV_SECTIONS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border mt-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-10">
+    <footer className="border-t border-[var(--border)] mt-16" style={{ background: 'var(--bg)' }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-8">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title}>
-              <h4 className="font-serif text-sm font-semibold text-text-primary mb-3">
+              <h4
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ fontFamily: 'var(--font-ui)', color: 'var(--text-muted)' }}
+              >
                 {section.title}
               </h4>
               <ul className="space-y-2">
@@ -41,7 +44,8 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-text-muted hover:text-accent transition-colors"
+                      className="text-sm transition-colors"
+                      style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}
                     >
                       {link.label}
                     </Link>
@@ -52,17 +56,18 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="border-t border-[var(--border)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <Link
             href="/"
-            className="font-serif text-sm font-bold hero-title"
+            className="text-sm font-bold"
+            style={{ color: 'var(--accent)', fontFamily: 'var(--font-ui)' }}
           >
             LEXICA
           </Link>
-          <p className="text-xs text-text-muted text-center">
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             Built with 27+ sources spanning two centuries of English.
           </p>
-          <p className="text-xs text-text-muted">
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
             &copy; 2024&ndash;{new Date().getFullYear()}
           </p>
         </div>
