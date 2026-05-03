@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { addWordToList, removeWordFromList, getUserDatabase } from "@/lib/user-db";
-
-function verifyListOwnership(listId: string, userId: string): boolean {
-  const db = getUserDatabase();
-  const list = db.prepare(
-    "SELECT id FROM user_lists WHERE id = ? AND user_id = ?"
-  ).get(listId, userId);
-  return !!list;
-}
+import { addWordToList, removeWordFromList, verifyListOwnership } from "@/lib/user-db";
 
 export async function POST(
   req: NextRequest,

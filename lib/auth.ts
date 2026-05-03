@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import { getUserByEmail, getUserByOAuth, createUser, linkOAuthAccount } from "./user-db";
 
 if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
-  throw new Error("NEXTAUTH_SECRET must be set in production");
+  console.warn("NEXTAUTH_SECRET is not set — auth will be unavailable");
 }
 
 export const authOptions: NextAuthOptions = {
