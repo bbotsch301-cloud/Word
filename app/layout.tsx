@@ -1,34 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { WordListProvider } from "@/components/WordListProvider";
+import { ToastProvider } from "@/components/Toast";
 import AuthProvider from "@/components/AuthProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { websiteJsonLd } from "@/lib/json-ld";
 import { SITE_URL } from "@/lib/config";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  variable: "--font-ibm-plex-mono",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  variable: "--font-serif",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -63,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased bg-bg text-text-primary min-h-screen">
         <script
           type="application/ld+json"
@@ -75,11 +54,13 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <WordListProvider>
-              <Header />
-              <div id="main-content">
-                {children}
-              </div>
-              <Footer />
+              <ToastProvider>
+                <Header />
+                <div id="main-content">
+                  {children}
+                </div>
+                <Footer />
+              </ToastProvider>
             </WordListProvider>
           </AuthProvider>
         </ThemeProvider>

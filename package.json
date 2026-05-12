@@ -8,7 +8,9 @@
     "start": "next start -p 5000",
     "db:download": "tsx scripts/download-sources.ts",
     "db:build": "tsx scripts/build-db.ts",
-    "db:rebuild": "npm run db:download && npm run db:build"
+    "db:rebuild": "npm run db:download && npm run db:build",
+    "db:upload": "tsx --env-file=.env.local scripts/upload-to-turso.ts",
+    "db:seed": "tsx --env-file=.env.local scripts/seed-sample-words.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",

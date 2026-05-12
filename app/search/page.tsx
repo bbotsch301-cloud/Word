@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 
@@ -13,6 +12,15 @@ interface SearchResult {
   originLang?: string;
   firstUseYear?: number;
 }
+
+type ResultFilter = "all" | "etymology" | "root" | "similar";
+
+const RESULT_FILTERS: { id: ResultFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "etymology", label: "Etymology" },
+  { id: "root", label: "By Root" },
+  { id: "similar", label: "Similar Words" },
+];
 
 interface Filters {
   languages: { code: string; name: string; count: number }[];
@@ -34,6 +42,7 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters | null>(null);
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
 
   useEffect(() => {
     fetch("/api/search?action=filters")
@@ -74,199 +83,252 @@ export default function SearchPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setResultFilter("all");
     doSearch(1);
   };
 
+  const categorized = useMemo(() => {
+    const cleanPattern = pattern.replace(/[*?]/g, "").toLowerCase();
+    return results.map(r => {
+      const word = r.word.toLowerCase();
+      let matchType: ResultFilter = "similar";
+      if (cleanPattern && word.startsWith(cleanPattern)) {
+        matchType = "root";
+      } else if (cleanPattern && (word.endsWith(cleanPattern) || word.includes(cleanPattern))) {
+        matchType = "etymology";
+      }
+      return { ...r, matchType };
+    });
+  }, [results, pattern]);
+
+  const filteredResults = useMemo(() => {
+    if (resultFilter === "all") return categorized;
+    return categorized.filter(r => r.matchType === resultFilter);
+  }, [categorized, resultFilter]);
+
+  const filterCounts = useMemo(() => {
+    const counts: Record<ResultFilter, number> = { all: categorized.length, etymology: 0, root: 0, similar: 0 };
+    categorized.forEach(r => { counts[r.matchType]++; });
+    return counts;
+  }, [categorized]);
+
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-serif text-4xl font-bold text-text-primary mb-2">Advanced Search</h1>
-        <p className="text-text-muted mb-8">Search by pattern, origin language, century, and more.</p>
+      <h1 className="text-4xl font-bold mb-2" style={{ color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>
+        Advanced Search
+      </h1>
+      <p className="mb-8" style={{ color: "var(--text-muted)" }}>Search by pattern, origin language, century, and more.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-          {/* Pattern */}
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Word Pattern
-              <span className="text-text-muted font-normal ml-2">Use * for any characters, ? for single character</span>
-            </label>
-            <input
-              type="text"
-              value={pattern}
-              onChange={e => setPattern(e.target.value)}
-              placeholder="e.g. *ology, un*able, ?at"
-              className="w-full h-10 px-3 rounded-lg border border-border bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:shadow-[0_0_0_4px_var(--glow)] transition-colors"
-            />
-          </div>
-
-          {/* Filter row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Origin language */}
-            <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Origin Language</label>
-              <select
-                value={originLang}
-                onChange={e => setOriginLang(e.target.value)}
-                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
-              >
-                <option value="">Any</option>
-                {filters?.languages.map(l => (
-                  <option key={l.code} value={l.code}>{l.name} ({l.count.toLocaleString()})</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Century */}
-            <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">First Used</label>
-              <select
-                value={century}
-                onChange={e => setCentury(e.target.value)}
-                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
-              >
-                <option value="">Any century</option>
-                {filters?.centuries.map(c => (
-                  <option key={c.century} value={c.century}>{c.century} ({c.count.toLocaleString()})</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Part of speech */}
-            <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">Part of Speech</label>
-              <select
-                value={pos}
-                onChange={e => setPos(e.target.value)}
-                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
-              >
-                <option value="">Any</option>
-                {filters?.partsOfSpeech.map(p => (
-                  <option key={p.pos} value={p.pos}>{p.pos} ({p.count.toLocaleString()})</option>
-                ))}
-              </select>
-            </div>
-
-            {/* CEFR Level */}
-            <div>
-              <label className="block text-xs font-medium text-text-secondary mb-1">CEFR Level</label>
-              <select
-                value={cefrLevel}
-                onChange={e => setCefrLevel(e.target.value)}
-                className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
-              >
-                <option value="">Any</option>
-                <option value="A1">A1 (Beginner)</option>
-                <option value="A2">A2 (Elementary)</option>
-                <option value="B1">B1 (Intermediate)</option>
-                <option value="B2">B2 (Upper Inter.)</option>
-                <option value="C1">C1 (Advanced)</option>
-                <option value="C2">C2 (Mastery)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className="h-10 px-6 rounded-lg bg-gradient-to-r from-accent to-accent-hover text-white font-medium text-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Searching..." : "Search"}
-            </button>
-            <select
-              value={sort}
-              onChange={e => setSort(e.target.value)}
-              className="h-10 px-3 rounded-lg border border-border bg-surface text-text-primary text-sm focus:outline-none focus:border-accent"
-              aria-label="Sort results by"
-            >
-              <option value="alpha">A-Z</option>
-              <option value="length">Shortest first</option>
-              <option value="frequency">Most common</option>
-            </select>
-            <button
-              type="button"
-              onClick={() => { setPattern(""); setOriginLang(""); setCentury(""); setPos(""); setCefrLevel(""); setSort("alpha"); setResults([]); setTotal(0); }}
-              className="h-10 px-4 rounded-lg border border-border text-text-muted text-sm hover:text-text-primary transition-colors"
-            >
-              Clear
-            </button>
-          </div>
-        </form>
-
-        {/* Results */}
-        {total > 0 && (
-          <p className="text-sm text-text-muted mb-4">
-            {total.toLocaleString()} result{total !== 1 ? "s" : ""} found
-            {total > 50 && ` — showing page ${page}`}
-          </p>
-        )}
-
-        {error && (
-          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
-            <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
-          <div className="bg-surface border border-border rounded-xl p-10 text-center">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-text-muted/40 mb-3">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <p className="text-text-muted mb-2">No results found.</p>
-            <p className="text-sm text-text-muted">
-              Try a different pattern. Use <code className="font-mono bg-bg px-1 rounded">*</code> for any characters
-              and <code className="font-mono bg-bg px-1 rounded">?</code> for a single character.
-              For example: <code className="font-mono bg-bg px-1 rounded">*ology</code>, <code className="font-mono bg-bg px-1 rounded">un*able</code>.
-            </p>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {results.map((r, i) => (
-            <motion.div
-              key={r.word}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.02 }}
-            >
-              <Link
-                href={`/word/${encodeURIComponent(r.word)}`}
-                className="block p-3 rounded-lg border border-border bg-surface hover:border-accent/40 transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-serif font-semibold text-text-primary">{r.word}</span>
-                  {r.pos && <Badge variant="accent">{r.pos}</Badge>}
-                  {r.firstUseYear && <Badge variant="muted">c. {r.firstUseYear}</Badge>}
-                </div>
-                <p className="text-sm text-text-muted line-clamp-1">{r.preview}</p>
-              </Link>
-            </motion.div>
-          ))}
+      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+            Word Pattern
+            <span className="font-normal ml-2" style={{ color: "var(--text-muted)" }}>Use * for any characters, ? for single character</span>
+          </label>
+          <input
+            type="text"
+            value={pattern}
+            onChange={e => setPattern(e.target.value)}
+            placeholder="e.g. *ology, un*able, ?at"
+            className="w-full h-10 px-3 rounded-lg border text-sm"
+            style={{
+              borderColor: "var(--border)",
+              background: "var(--surface)",
+              color: "var(--text-primary)",
+              fontFamily: "var(--font-body)",
+            }}
+          />
         </div>
 
-        {/* Pagination */}
-        {total > 50 && (
-          <div className="flex items-center justify-center gap-3 mt-6">
-            <button
-              onClick={() => doSearch(page - 1)}
-              disabled={page <= 1}
-              className="h-8 px-3 rounded border border-border text-sm text-text-muted hover:text-text-primary disabled:opacity-30 transition-colors"
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Origin Language</label>
+            <select
+              value={originLang}
+              onChange={e => setOriginLang(e.target.value)}
+              className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border text-sm"
+              style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--text-primary)" }}
             >
-              Previous
-            </button>
-            <span className="text-sm text-text-muted">
-              Page {page} of {Math.ceil(total / 50)}
-            </span>
-            <button
-              onClick={() => doSearch(page + 1)}
-              disabled={page >= Math.ceil(total / 50)}
-              className="h-8 px-3 rounded border border-border text-sm text-text-muted hover:text-text-primary disabled:opacity-30 transition-colors"
-            >
-              Next
-            </button>
+              <option value="">Any</option>
+              {filters?.languages.map(l => (
+                <option key={l.code} value={l.code}>{l.name} ({l.count.toLocaleString()})</option>
+              ))}
+            </select>
           </div>
-        )}
-      </motion.div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>First Used</label>
+            <select
+              value={century}
+              onChange={e => setCentury(e.target.value)}
+              className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border text-sm"
+              style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--text-primary)" }}
+            >
+              <option value="">Any century</option>
+              {filters?.centuries.map(c => (
+                <option key={c.century} value={c.century}>{c.century} ({c.count.toLocaleString()})</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Part of Speech</label>
+            <select
+              value={pos}
+              onChange={e => setPos(e.target.value)}
+              className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border text-sm"
+              style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--text-primary)" }}
+            >
+              <option value="">Any</option>
+              {filters?.partsOfSpeech.map(p => (
+                <option key={p.pos} value={p.pos}>{p.pos} ({p.count.toLocaleString()})</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>CEFR Level</label>
+            <select
+              value={cefrLevel}
+              onChange={e => setCefrLevel(e.target.value)}
+              className="w-full h-11 sm:h-9 px-3 sm:px-2 rounded-lg border text-sm"
+              style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--text-primary)" }}
+            >
+              <option value="">Any</option>
+              <option value="A1">A1 (Beginner)</option>
+              <option value="A2">A2 (Elementary)</option>
+              <option value="B1">B1 (Intermediate)</option>
+              <option value="B2">B2 (Upper Inter.)</option>
+              <option value="C1">C1 (Advanced)</option>
+              <option value="C2">C2 (Mastery)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={loading}
+            className="h-10 px-6 rounded-lg text-white font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: "var(--accent)", fontFamily: "var(--font-ui)" }}
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value)}
+            className="h-10 px-3 rounded-lg border text-sm"
+            style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--text-primary)" }}
+            aria-label="Sort results by"
+          >
+            <option value="alpha">A-Z</option>
+            <option value="length">Shortest first</option>
+            <option value="frequency">Most common</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => { setPattern(""); setOriginLang(""); setCentury(""); setPos(""); setCefrLevel(""); setSort("alpha"); setResults([]); setTotal(0); }}
+            className="h-10 px-4 rounded-lg border text-sm transition-colors"
+            style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+          >
+            Clear
+          </button>
+        </div>
+      </form>
+
+      {total > 0 && (
+        <div className="flex items-baseline justify-between mb-4">
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-2xl font-semibold" style={{ color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>{total.toLocaleString()}</span>
+            <span className="ml-2" style={{ color: "var(--text-muted)" }}>result{total !== 1 ? "s" : ""}</span>
+            {total > 50 && <span className="ml-2" style={{ color: "var(--text-muted)" }}>&middot; page {page} of {Math.ceil(total / 50)}</span>}
+          </p>
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-5 pb-1">
+          {RESULT_FILTERS.map(f => (
+            <button
+              key={f.id}
+              onClick={() => setResultFilter(f.id)}
+              className={`filter-pill ${resultFilter === f.id ? "filter-pill-active" : ""}`}
+            >
+              {f.label}
+              <span className="ml-1.5 opacity-60 text-[11px]">{filterCounts[f.id]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-lg p-6 text-center border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <p className="text-sm" style={{ color: "var(--accent)" }}>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && total === 0 && (pattern || originLang || century || pos || cefrLevel) && (
+        <div className="rounded-lg p-10 text-center border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3" style={{ color: "var(--text-muted)" }}>
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <p className="mb-2" style={{ color: "var(--text-muted)" }}>No results found.</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Try a different pattern. Use <code className="px-1 rounded" style={{ fontFamily: "ui-monospace, monospace", background: "var(--bg)" }}>*</code> for any characters
+            and <code className="px-1 rounded" style={{ fontFamily: "ui-monospace, monospace", background: "var(--bg)" }}>?</code> for a single character.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {filteredResults.map(r => (
+          <Link
+            key={r.word}
+            href={`/word/${encodeURIComponent(r.word)}`}
+            className="search-result-card group block p-4 rounded-lg border"
+            style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          >
+            <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
+              <span className="text-lg font-semibold group-hover:text-[var(--accent)] transition-colors" style={{ color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>
+                {r.word}
+              </span>
+              {r.pos && <Badge variant="accent">{r.pos}</Badge>}
+              {r.originLang && (
+                <span className="text-[10px] uppercase tracking-wider" style={{ fontFamily: "ui-monospace, monospace", color: "var(--text-muted)" }}>
+                  from {r.originLang}
+                </span>
+              )}
+              {r.firstUseYear && (
+                <span className="text-[10px] ml-auto" style={{ fontFamily: "ui-monospace, monospace", color: "var(--text-muted)" }}>
+                  c. {r.firstUseYear}
+                </span>
+              )}
+            </div>
+            <p className="text-sm line-clamp-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>{r.preview}</p>
+          </Link>
+        ))}
+      </div>
+
+      {total > 50 && (
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <button
+            onClick={() => doSearch(page - 1)}
+            disabled={page <= 1}
+            className="h-8 px-3 rounded border text-sm disabled:opacity-30 transition-colors"
+            style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+          >
+            Previous
+          </button>
+          <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Page {page} of {Math.ceil(total / 50)}
+          </span>
+          <button
+            onClick={() => doSearch(page + 1)}
+            disabled={page >= Math.ceil(total / 50)}
+            className="h-8 px-3 rounded border text-sm disabled:opacity-30 transition-colors"
+            style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </main>
   );
 }

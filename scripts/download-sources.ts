@@ -36,27 +36,32 @@ const SOURCES: Source[] = [
     name: "Hobson-Jobson (Anglo-Indian Etymology)",
     url: "https://www.gutenberg.org/files/58529/58529-0.txt",
     filename: "hobson-jobson.txt",
+    optional: true,
   },
   {
     name: "1811 Dictionary of the Vulgar Tongue",
     url: "https://www.gutenberg.org/files/5402/5402-0.txt",
     filename: "vulgar-tongue.txt",
+    optional: true,
   },
   {
     name: "Word Frequency (wordfreq-en)",
     url: "https://raw.githubusercontent.com/aparrish/wordfreq-en-25000/master/wordfreq_en.json",
     filename: "wordfreq.json",
+    optional: true,
   },
   {
     name: "Black's Law Dictionary 2nd Ed (JSONL)",
     url: "https://gist.github.com/medelman17/55bf480caafbfcc6e9f9d22c273cf2c4/raw",
     filename: "blacks-law-2nd.jsonl",
+    optional: true,
   },
   // Phase 1: Thesaurus sources
   {
     name: "Moby Thesaurus (Grady Ward)",
     url: "https://www.gutenberg.org/files/3202/files/mthesaur.txt",
     filename: "moby-thesaurus.txt",
+    optional: true,
   },
   {
     name: "WordNet 3.1 Database Files",
@@ -70,6 +75,7 @@ const SOURCES: Source[] = [
     name: "Roget's Thesaurus (1911 via Gutenberg)",
     url: "https://www.gutenberg.org/files/22/22-0.txt",
     filename: "rogets-thesaurus.txt",
+    optional: true,
   },
   // Phase 2: Pronunciation
   {
@@ -486,8 +492,15 @@ async function main() {
         continue;
       }
     } else if (existsSync(dest)) {
-      console.log(`[skip] ${source.name} already downloaded`);
-      continue;
+      const { statSync } = await import("fs");
+      const size = statSync(dest).size;
+      if (size > 0) {
+        console.log(`[skip] ${source.name} already downloaded (${(size / 1024 / 1024).toFixed(1)} MB)`);
+        continue;
+      }
+      // Remove 0-byte file left by a previous failed download
+      const { unlinkSync } = await import("fs");
+      unlinkSync(dest);
     }
 
     console.log(`[download] ${source.name}...`);
