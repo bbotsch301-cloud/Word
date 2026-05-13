@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Users, ArrowRight, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckCircle, Crown, Users, ArrowRight, Loader2, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { apiRequest } from "@/lib/queryClient";
@@ -30,18 +31,26 @@ const pmaFeatures = [
   "Priority community support",
 ];
 
-export default function Pricing() {
-  usePageTitle("Pricing", "Begin free with the Covenant Walk, or enter as a full Grantor-Beneficiary through Covenantal Membership.");
-  const { isAuthenticated, isPremium } = useAuth();
-  const [isLoading, setIsLoading] = useState<"one_time" | "installment" | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const suggestedAmounts = [10, 25, 50, 100];
 
-  async function handleCheckout(mode: "one_time" | "installment") {
-    setIsLoading(mode);
+export default function Pricing() {
+  usePageTitle("Membership", "Begin free with the Covenant Walk, or support the assembly with a monthly donation.");
+  const { isAuthenticated, isPremium } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(25);
+  const [customAmount, setCustomAmount] = useState("");
+
+  const donationAmount = customAmount ? parseFloat(customAmount) : selectedAmount;
+  const isValidAmount = donationAmount !== null && donationAmount > 0 && Number.isFinite(donationAmount);
+
+  async function handleDonate() {
+    if (!isValidAmount || !donationAmount) return;
+    setIsLoading(true);
     setError(null);
     try {
       const res = await apiRequest("POST", "/api/square/create-checkout", {
-        paymentMode: mode,
+        amountCents: Math.round(donationAmount * 100),
       });
       const data = await res.json();
       if (data.url) {
@@ -51,7 +60,7 @@ export default function Pricing() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to start checkout. Please try again.");
-      setIsLoading(null);
+      setIsLoading(false);
     }
   }
 
@@ -111,7 +120,7 @@ export default function Pricing() {
             </CardContent>
           </Card>
 
-          {/* PMA Beneficiary */}
+          {/* PMA Beneficiary — Donation Based */}
           <Card className="border-2 border-royal-gold relative overflow-hidden shadow-xl">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-royal-gold via-yellow-400 to-royal-gold" />
             <CardContent className="p-8 md:p-10">
@@ -121,13 +130,49 @@ export default function Pricing() {
                 </Badge>
                 <h2 className="font-cinzel-decorative text-2xl font-bold text-royal-navy mb-2">Covenantal Membership</h2>
                 <p className="text-xs text-royal-navy/60 mb-2">PMA Beneficial Interest</p>
-                <p className="text-4xl font-bold text-royal-navy">$500</p>
-                <p className="text-sm text-gray-500 mt-2">One-time covenant contribution &bull; or $50 &times; 10 months</p>
-                <p className="text-xs text-royal-gold/80 mt-1">50% of your contribution funds the Treasury Trust</p>
+                <p className="text-2xl font-bold text-royal-navy mt-2">Donation-Based</p>
+                <p className="text-sm text-gray-500 mt-2">Give any amount monthly to support the assembly</p>
+                <p className="text-xs text-royal-gold/80 mt-1">50% of your donation funds the Treasury Trust</p>
                 <p className="text-xs text-gray-400 mt-2 italic font-georgia">
-                  "And all that believed were together, and had all things common" — Acts 2:44 (KJV)
+                  "Every man according as he purposeth in his heart, so let him give; not grudgingly, or of necessity: for God loveth a cheerful giver." — 2 Corinthians 9:7 (KJV)
                 </p>
               </div>
+
+              {/* Donation amount selector */}
+              {!isPremium && isAuthenticated && (
+                <div className="mb-6">
+                  <p className="text-sm font-cinzel font-semibold text-royal-navy mb-3 text-center">Choose your monthly donation</p>
+                  <div className="grid grid-cols-4 gap-2 mb-3">
+                    {suggestedAmounts.map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => { setSelectedAmount(amt); setCustomAmount(""); }}
+                        className={`py-2 px-3 rounded-lg text-sm font-bold transition-all ${
+                          selectedAmount === amt && !customAmount
+                            ? "bg-royal-gold text-royal-navy ring-2 ring-royal-gold/50"
+                            : "bg-gray-100 text-gray-700 hover:bg-royal-gold/10"
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      step="1"
+                      placeholder="Custom amount"
+                      value={customAmount}
+                      onChange={(e) => { setCustomAmount(e.target.value); setSelectedAmount(null); }}
+                      className="pl-7 text-center font-bold"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 text-center">per month · cancel anytime</p>
+                </div>
+              )}
+
               <ul className="space-y-3 mb-8">
                 {pmaFeatures.map((feature, i) => (
                   <li key={i} className={`flex items-start gap-3 text-sm ${i === 0 ? "text-royal-gold font-semibold font-cinzel" : "text-gray-700"}`}>
@@ -155,25 +200,13 @@ export default function Pricing() {
                 <div className="space-y-3">
                   <Button
                     className="w-full bg-royal-gold hover:bg-royal-gold/90 text-royal-navy font-cinzel font-bold"
-                    onClick={() => handleCheckout("one_time")}
-                    disabled={isLoading !== null}
+                    onClick={handleDonate}
+                    disabled={isLoading || !isValidAmount}
                   >
-                    {isLoading === "one_time" ? (
+                    {isLoading ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
                     ) : (
-                      <><Crown className="w-4 h-4 mr-2" /> Enter the Covenant ($500)</>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full font-cinzel border-royal-gold/30 text-royal-navy"
-                    onClick={() => handleCheckout("installment")}
-                    disabled={isLoading !== null}
-                  >
-                    {isLoading === "installment" ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
-                    ) : (
-                      <>Covenant Contribution: $50 × 10 Months</>
+                      <><Heart className="w-4 h-4 mr-2" /> Donate {isValidAmount ? `$${donationAmount}/mo` : ""} & Join</>
                     )}
                   </Button>
                   {error && (
@@ -203,15 +236,15 @@ export default function Pricing() {
             },
             {
               q: "What is Covenantal Membership?",
-              a: "By making a covenant contribution of $500 (or $50x10), you enter as a full Grantor-Beneficiary in the Ecclesia Basilikos Trust through our Private Membership Association. This grants you a Beneficial Unit certificate representing your equal share of the trust corpus, plus full access to all content and community features.",
+              a: "By making a recurring monthly donation of any amount, you enter as a full Grantor-Beneficiary in the Ecclesia Basilikos Trust through our Private Membership Association. This grants you a Beneficial Unit certificate representing your equal share of the trust corpus, plus full access to all content and community features.",
             },
             {
-              q: "Is the $500 a subscription?",
-              a: "No. It's a one-time covenant contribution that permanently establishes your beneficial interest. You can also choose the $50x10 installment plan. There are no recurring charges after your contribution is complete.",
+              q: "How does the donation work?",
+              a: "You choose a monthly donation amount that works for you — any amount unlocks full membership. Your donation recurs monthly and you can cancel or change the amount at any time. Your membership and beneficial interest remain active as long as your donation is current.",
             },
             {
-              q: "Where does my contribution go?",
-              a: "50% of every contribution is allocated to the Treasury Trust, managed by the Financial Trustee for the long-term benefit of all PMA beneficiaries. The remaining 50% supports operations, content development, and platform maintenance.",
+              q: "Where does my donation go?",
+              a: "50% of every donation is allocated to the Treasury Trust, managed by the Financial Trustee for the long-term benefit of all PMA beneficiaries. The remaining 50% supports operations, content development, and platform maintenance.",
             },
             {
               q: "Will free content ever be locked?",

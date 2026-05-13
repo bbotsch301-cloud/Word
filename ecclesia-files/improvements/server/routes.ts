@@ -2146,9 +2146,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = req.user as User;
-      const paymentMode: "one_time" | "installment" = req.body.paymentMode === "installment" ? "installment" : "one_time";
+      const amountCents = parseInt(req.body.amountCents, 10);
+      if (!amountCents || amountCents < 100) {
+        return res.status(400).json({ error: "Minimum donation is $1.00" });
+      }
 
-      const url = await createCheckoutUrl(user.id, user.email, paymentMode);
+      const url = await createCheckoutUrl(user.id, user.email, amountCents);
       res.json({ url });
     } catch (error: any) {
       logger.error({ err: error }, "Error creating Square checkout");

@@ -427,9 +427,9 @@ export default function Home() {
                         </span>
                       </div>
                       <p className="text-gray-600 leading-relaxed mb-3">
-                        Enter as a full Grantor-Beneficiary. Make a one-time covenant contribution
-                        of $500 (or $50 x 10 months) and receive your Beneficial Unit certificate,
-                        a 1/N share of the entire trust corpus. Your interest is permanent.
+                        Enter as a full Grantor-Beneficiary. Make a monthly donation of any amount
+                        and receive your Beneficial Unit certificate, a 1/N share of the entire
+                        trust corpus. Give as the Lord leads — every amount sustains the assembly.
                       </p>
                       <Link href="/pricing" className="text-xs font-cinzel font-semibold text-royal-gold hover:text-royal-burgundy transition-colors">
                         View Covenantal Membership →
@@ -467,12 +467,12 @@ export default function Home() {
                 a: "A Beneficial Unit is your share of the trust corpus. When you acquire beneficial interest, you receive one unit. Its value is calculated as 1/N, where N is the total number of active beneficiaries. As the trust corpus grows, so does the value underlying each unit.",
               },
               {
-                q: "Is the $500 contribution a payment for services?",
-                a: "No. It is a trust contribution, not a purchase. You are contributing to the trust corpus and in return acquiring beneficial interest in that corpus. This is a trust relationship, not a commercial transaction. The distinction is fundamental to the PMA structure.",
+                q: "Is the donation a payment for services?",
+                a: "No. It is a trust donation, not a purchase. You are contributing to the trust corpus and in return acquiring beneficial interest in that corpus. This is a trust relationship, not a commercial transaction. The distinction is fundamental to the PMA structure.",
               },
               {
                 q: "Can my beneficial interest be revoked?",
-                a: "Your beneficial interest is permanent. Even if you chose the $50 × 10 installment plan and stop contributing early, your membership never downgrades. Once established, your standing within the trust is irrevocable.",
+                a: "Your beneficial interest remains active as long as your monthly donation is current. You can change the amount at any time — there is no minimum. Once you have entered the covenant, your standing within the body is recognized.",
               },
               {
                 q: "What is the three-pillar foundation?",
@@ -507,7 +507,7 @@ export default function Home() {
                 Two Tiers of Interest
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                General access is free. Full beneficial interest requires a trust contribution.
+                General access is free. Full beneficial interest is supported by monthly donations.
               </p>
             </div>
           </RevealOnScroll>
@@ -538,8 +538,8 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-cinzel text-xl font-bold text-royal-navy">Covenantal Membership</h3>
                   </div>
-                  <p className="text-3xl font-bold text-royal-navy mb-1">$500</p>
-                  <p className="text-sm text-gray-500 mb-4">one-time covenant contribution · or $50 × 10</p>
+                  <p className="text-3xl font-bold text-royal-navy mb-1">Donation</p>
+                  <p className="text-sm text-gray-500 mb-4">any amount monthly · cancel anytime</p>
                   <ul className="space-y-2 mb-6">
                     {["All courses & lessons across every pillar", "All downloads, templates & trust documents", "Forum posting & community participation", "Proof Vault: secure document storage", "Your Beneficial Unit certificate (1/N share)", "Full standing as Grantor-Beneficiary"].map((f, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
