@@ -151,7 +151,7 @@ export async function handleWebhookEvent(
               sourceUserId = user?.id;
             }
             await storage.createTreasuryTransaction({
-              type: 'installment_allocation',
+              type: 'donation_allocation',
               amountCents: treasuryAmount,
               currency: 'USD',
               description: `50% allocation from recurring donation invoice payment`,
@@ -159,10 +159,10 @@ export async function handleWebhookEvent(
               sourceSubscriptionId: invoice.subscription_id || null,
               sourceUserId: sourceUserId || null,
             });
-            logger.info({ treasuryAmount, invoiceId: invoice.id }, "Treasury installment allocation recorded");
+            logger.info({ treasuryAmount, invoiceId: invoice.id }, "Treasury donation allocation recorded");
           }
         } catch (err) {
-          logger.warn({ err, invoiceId: invoice.id }, "Failed to record treasury installment allocation");
+          logger.warn({ err, invoiceId: invoice.id }, "Failed to record treasury donation allocation");
         }
       }
       break;
