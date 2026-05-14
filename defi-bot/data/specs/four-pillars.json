@@ -1,0 +1,164 @@
+{
+  "name": "The 4 Pillars Setup (Trade With Will)",
+  "slug": "four-pillars",
+  "summary": "A 4-step intraday trading framework by Trade With Will that averages 60R/month with a 70% break-even rate. The system sequences: (1) pre-market liquidity sweep identification on 15min chart, (2) high timeframe level marking with HTF priority, (3) bias determination via PDR (Projected Defined Ranges) and ATT (Advanced Time Technique) instead of traditional daily bias, (4) internal confirmation entries using price action reading — multiple entries allowed per setup until PDR completes or fails. Trade management uses trailing stops exclusively, never static profit targets.",
+  "protocols": [],
+  "chains": [],
+  "indicators": [
+    {
+      "name": "15-Minute Relative Equal Highs/Lows",
+      "params": {"timeframe": "15min", "lookback": "pre-market"},
+      "notes": "Identify the easiest relative equal highs and relative equal lows on both sides of the market before market open"
+    },
+    {
+      "name": "HTF Levels (High Timeframe Levels)",
+      "params": {},
+      "notes": "The most important pillar. Must be marked and defined correctly. Higher timeframe level always takes priority if it overlaps a lower timeframe level. See video: 'HTF Level Picking — The Key to My Strategy'"
+    },
+    {
+      "name": "PDR (Projected Defined Ranges)",
+      "params": {},
+      "notes": "Will's unique concept for setting bias. Replaces traditional daily/session bias. When HTF level is tested, PDR onset determines bias direction (e.g. bias to top of blue box). See video: 'Introducing the PDR Concept: My Best-Kept Trading Secret'"
+    },
+    {
+      "name": "ATT (Advanced Time Technique)",
+      "params": {},
+      "notes": "Used when PDR is not present, or alongside PDRs. Aids in determining bias. See video: 'Introducing the Intraday ATT Method: The Market's Best-Kept Secret'"
+    },
+    {
+      "name": "Liquidity Sweep Confirmation",
+      "params": {"timeframe": "1min"},
+      "notes": "After market open, watch for one side (equal highs or equal lows) to be swept on the 1-minute chart"
+    }
+  ],
+  "entry_rules": [
+    {
+      "description": "Pillar 1: Identify pre-market liquidity levels",
+      "condition": "Before market open: mark easiest 15min relative equal highs AND relative equal lows on both sides",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-1",
+          "quote": "Every morning before market open, identify the easiest 15-minute relative equal highs and relative equal lows on both sides of the market.",
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "description": "Pillar 1: Wait for liquidity sweep after market open",
+      "condition": "After market open on 1min chart: wait for price to sweep one side (equal highs OR equal lows)",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-1",
+          "quote": "The first step of the 4 Pillars setup is waiting for one of these sides to be swept on a 1-minute chart after the market opens.",
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "description": "Pillar 2: Price must trade into a valid HTF level",
+      "condition": "After liquidity sweep: price must reach a marked HTF level. Higher TF level always takes priority over lower TF level if they overlap.",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-2",
+          "quote": "The high timeframe levels MUST be marked and defined correctly — without this, nothing else works. The key rule is high timeframe priority: if a higher timeframe level overlaps a lower timeframe level, always use the higher timeframe level.",
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "description": "Pillar 3: Determine bias via PDR (or ATT when no PDR)",
+      "condition": "When HTF level is tested: PDR onset determines bias direction. If no PDR present, use ATT. Play market level to level, NOT traditional daily/session bias.",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-2-3",
+          "quote": "I view bias differently than most — instead of having a daily bias or session bias, I generally have NO bias. Instead, I play the market level to level, utilizing my unique concept called PDR (Projected Defined Ranges). When a PDR is not present, my concept ATT (Advanced Time Technique) can be used to aid in bias.",
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "description": "Pillar 4: Internal confirmation entry — multiple entries per setup",
+      "condition": "Once Pillars 1-3 are set: every internal confirmation until PDR completes is a potential entry. Can take many entries within one 4 Pillars setup (up to 10 trades in a single setup).",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-3-4",
+          "quote": "Now that the stage is set, every single internal confirmation until the PDR completes is a potential entry into a 4 Pillars trade. Until the PDR completes or fails, we can take many entries within one 4 Pillars setup — you can have 10 trades in a single setup, and all of them can be valid.",
+          "screenshot": null
+        }
+      ]
+    }
+  ],
+  "exit_rules": [
+    {
+      "description": "Trailing stop only — never use static profit targets",
+      "condition": "Always trail stops. No static take-profit levels.",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-4",
+          "quote": "I do NOT believe in static profit targets — I always trail my stops.",
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "description": "Setup invalidation: PDR completes or fails",
+      "condition": "Stop taking entries when PDR completes its projected range OR PDR fails (invalidation).",
+      "confidence": "high",
+      "sources": [
+        {
+          "video_id": "4-pillars-pdf",
+          "timestamp": "page-3",
+          "quote": "Until the PDR completes or fails, we can take many entries within one 4 Pillars setup.",
+          "screenshot": null
+        }
+      ]
+    }
+  ],
+  "risk": {
+    "max_position_pct": null,
+    "stop_loss_pct": null,
+    "take_profit_pct": null,
+    "max_drawdown_pct": null,
+    "notes": "Trailing stops are the core risk management tool. No static targets. Will claims 70% break-even rate and 60R/month average. Specific trailing stop mechanics need to be extracted from: 'How Trailing Stops Made Me 10x More Profitable (Masterclass)' and 'Stop-Loss Trailing: Maximize Profits, Minimize Risk'"
+  },
+  "unresolved_questions": [
+    "How exactly are HTF levels marked and defined? Need to watch: 'HTF Level Picking — The Key to My Strategy'",
+    "What are the specific rules for PDR (Projected Defined Ranges)? Need to watch: 'Introducing the PDR Concept: My Best-Kept Trading Secret'",
+    "What are the ATT (Advanced Time Technique) rules? Need to watch: 'Introducing the Intraday ATT Method: The Market's Best-Kept Secret'",
+    "What counts as 'internal confirmation' for Pillar 4 entries? Need to watch: 'My Exact Entry Techniques That Made Me Millions' and 'The 8 Types of Entries That Made Me Profitable In Trading'",
+    "How exactly does Will define 'relative equal highs' and 'relative equal lows'? Need to watch: 'Liquidity Explained'",
+    "What are the specific trailing stop rules? Need to watch: 'How Trailing Stops Made Me 10x More Profitable (Masterclass)'",
+    "What timeframes constitute 'high timeframe' for HTF level picking?",
+    "What instrument(s) does this apply to? PDF shows NQ (NASDAQ 100 E-mini Futures) — is it applicable to other instruments?",
+    "What is the specific entry technique (market order, limit order, etc.) for Pillar 4 confirmations?"
+  ],
+  "source_videos": [
+    "4-pillars-pdf (The 4 Pillars Setup Guide PDF from Google Drive)",
+    "Referenced: Liquidity Explained",
+    "Referenced: HTF Level Picking — The Key to My Strategy",
+    "Referenced: Daily Bias is Stupid... Here's Why",
+    "Referenced: Introducing the Intraday ATT Method: The Market's Best-Kept Secret",
+    "Referenced: Introducing the PDR Concept: My Best-Kept Trading Secret",
+    "Referenced: THE ART OF READING PRICE ACTION",
+    "Referenced: the art of reading price action (REALTIME)",
+    "Referenced: My Exact Entry Techniques That Made Me Millions",
+    "Referenced: The 8 Types of Entries That Made Me Profitable In Trading",
+    "Referenced: How Trailing Stops Made Me 10x More Profitable (Masterclass)",
+    "Referenced: Stop-Loss Trailing: Maximize Profits, Minimize Risk",
+    "Referenced: They Say You Can't Have High Win Rate & High R:R... Well, They Lied"
+  ],
+  "created_at": "2026-05-14T00:00:00+00:00",
+  "reviewed": false
+}
