@@ -114,6 +114,21 @@ import {
   type InsertFlaggedContent,
   type UserWarning,
   type InsertUserWarning,
+  basTokenConfig,
+  basAllocations,
+  basRoadmapMilestones,
+  basCouncilMembers,
+  basFaqEntries,
+  type BasTokenConfig,
+  type InsertBasTokenConfig,
+  type BasAllocation,
+  type InsertBasAllocation,
+  type BasRoadmapMilestone,
+  type InsertBasRoadmapMilestone,
+  type BasCouncilMember,
+  type InsertBasCouncilMember,
+  type BasFaqEntry,
+  type InsertBasFaqEntry,
 } from "@shared/schema";
 import { eq, and, desc, sql, or, inArray, ilike } from "drizzle-orm";
 import { db } from "./db";
@@ -427,6 +442,39 @@ export interface IStorage {
   getUserWarnings(userId: string): Promise<UserWarning[]>;
   banUser(userId: string, reason: string): Promise<User>;
   unbanUser(userId: string): Promise<User>;
+
+  // BAS Token
+  getBasTokenConfig(): Promise<BasTokenConfig[]>;
+  getBasTokenConfigByKey(key: string): Promise<BasTokenConfig | undefined>;
+  upsertBasTokenConfig(key: string, value: string, description: string | undefined, updatedById: string): Promise<BasTokenConfig>;
+  updateBasTokenConfigVisibility(id: string, isVisible: boolean): Promise<BasTokenConfig>;
+  deleteBasTokenConfig(id: string): Promise<void>;
+
+  getBasAllocations(): Promise<BasAllocation[]>;
+  getVisibleBasAllocations(): Promise<BasAllocation[]>;
+  createBasAllocation(data: InsertBasAllocation): Promise<BasAllocation>;
+  updateBasAllocation(id: string, data: Partial<InsertBasAllocation>): Promise<BasAllocation>;
+  deleteBasAllocation(id: string): Promise<void>;
+
+  getBasRoadmapMilestones(): Promise<BasRoadmapMilestone[]>;
+  getVisibleBasRoadmapMilestones(): Promise<BasRoadmapMilestone[]>;
+  createBasRoadmapMilestone(data: InsertBasRoadmapMilestone): Promise<BasRoadmapMilestone>;
+  updateBasRoadmapMilestone(id: string, data: Partial<InsertBasRoadmapMilestone>): Promise<BasRoadmapMilestone>;
+  deleteBasRoadmapMilestone(id: string): Promise<void>;
+
+  getBasCouncilMembers(): Promise<BasCouncilMember[]>;
+  getActiveBasCouncilMembers(): Promise<BasCouncilMember[]>;
+  createBasCouncilMember(data: InsertBasCouncilMember): Promise<BasCouncilMember>;
+  updateBasCouncilMember(id: string, data: Partial<InsertBasCouncilMember>): Promise<BasCouncilMember>;
+  deleteBasCouncilMember(id: string): Promise<void>;
+
+  getBasFaqEntries(): Promise<BasFaqEntry[]>;
+  getVisibleBasFaqEntries(): Promise<BasFaqEntry[]>;
+  createBasFaqEntry(data: InsertBasFaqEntry): Promise<BasFaqEntry>;
+  updateBasFaqEntry(id: string, data: Partial<InsertBasFaqEntry>): Promise<BasFaqEntry>;
+  deleteBasFaqEntry(id: string): Promise<void>;
+
+  seedBasTokenDefaults(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3757,6 +3805,225 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return updated;
+  }
+
+  // ================================
+  // BAS TOKEN
+  // ================================
+
+  async getBasTokenConfig(): Promise<BasTokenConfig[]> {
+    return db.select().from(basTokenConfig).orderBy(basTokenConfig.configKey);
+  }
+
+  async getBasTokenConfigByKey(key: string): Promise<BasTokenConfig | undefined> {
+    const [config] = await db.select().from(basTokenConfig)
+      .where(eq(basTokenConfig.configKey, key));
+    return config;
+  }
+
+  async upsertBasTokenConfig(key: string, value: string, description: string | undefined, updatedById: string): Promise<BasTokenConfig> {
+    const existing = await this.getBasTokenConfigByKey(key);
+    if (existing) {
+      const [updated] = await db.update(basTokenConfig)
+        .set({ configValue: value, description, updatedById, updatedAt: new Date() })
+        .where(eq(basTokenConfig.configKey, key))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(basTokenConfig)
+      .values({ configKey: key, configValue: value, description, updatedById })
+      .returning();
+    return created;
+  }
+
+  async updateBasTokenConfigVisibility(id: string, isVisible: boolean): Promise<BasTokenConfig> {
+    const [updated] = await db.update(basTokenConfig)
+      .set({ isVisible, updatedAt: new Date() })
+      .where(eq(basTokenConfig.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBasTokenConfig(id: string): Promise<void> {
+    await db.delete(basTokenConfig).where(eq(basTokenConfig.id, id));
+  }
+
+  async getBasAllocations(): Promise<BasAllocation[]> {
+    return db.select().from(basAllocations).orderBy(basAllocations.sortOrder);
+  }
+
+  async getVisibleBasAllocations(): Promise<BasAllocation[]> {
+    return db.select().from(basAllocations)
+      .where(eq(basAllocations.isVisible, true))
+      .orderBy(basAllocations.sortOrder);
+  }
+
+  async createBasAllocation(data: InsertBasAllocation): Promise<BasAllocation> {
+    const [created] = await db.insert(basAllocations).values(data).returning();
+    return created;
+  }
+
+  async updateBasAllocation(id: string, data: Partial<InsertBasAllocation>): Promise<BasAllocation> {
+    const [updated] = await db.update(basAllocations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(basAllocations.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBasAllocation(id: string): Promise<void> {
+    await db.delete(basAllocations).where(eq(basAllocations.id, id));
+  }
+
+  async getBasRoadmapMilestones(): Promise<BasRoadmapMilestone[]> {
+    return db.select().from(basRoadmapMilestones).orderBy(basRoadmapMilestones.sortOrder);
+  }
+
+  async getVisibleBasRoadmapMilestones(): Promise<BasRoadmapMilestone[]> {
+    return db.select().from(basRoadmapMilestones)
+      .where(eq(basRoadmapMilestones.isVisible, true))
+      .orderBy(basRoadmapMilestones.sortOrder);
+  }
+
+  async createBasRoadmapMilestone(data: InsertBasRoadmapMilestone): Promise<BasRoadmapMilestone> {
+    const [created] = await db.insert(basRoadmapMilestones).values(data).returning();
+    return created;
+  }
+
+  async updateBasRoadmapMilestone(id: string, data: Partial<InsertBasRoadmapMilestone>): Promise<BasRoadmapMilestone> {
+    const [updated] = await db.update(basRoadmapMilestones)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(basRoadmapMilestones.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBasRoadmapMilestone(id: string): Promise<void> {
+    await db.delete(basRoadmapMilestones).where(eq(basRoadmapMilestones.id, id));
+  }
+
+  async getBasCouncilMembers(): Promise<BasCouncilMember[]> {
+    return db.select().from(basCouncilMembers).orderBy(basCouncilMembers.sortOrder);
+  }
+
+  async getActiveBasCouncilMembers(): Promise<BasCouncilMember[]> {
+    return db.select().from(basCouncilMembers)
+      .where(eq(basCouncilMembers.isActive, true))
+      .orderBy(basCouncilMembers.sortOrder);
+  }
+
+  async createBasCouncilMember(data: InsertBasCouncilMember): Promise<BasCouncilMember> {
+    const [created] = await db.insert(basCouncilMembers).values(data).returning();
+    return created;
+  }
+
+  async updateBasCouncilMember(id: string, data: Partial<InsertBasCouncilMember>): Promise<BasCouncilMember> {
+    const [updated] = await db.update(basCouncilMembers)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(basCouncilMembers.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBasCouncilMember(id: string): Promise<void> {
+    await db.delete(basCouncilMembers).where(eq(basCouncilMembers.id, id));
+  }
+
+  async getBasFaqEntries(): Promise<BasFaqEntry[]> {
+    return db.select().from(basFaqEntries).orderBy(basFaqEntries.sortOrder);
+  }
+
+  async getVisibleBasFaqEntries(): Promise<BasFaqEntry[]> {
+    return db.select().from(basFaqEntries)
+      .where(eq(basFaqEntries.isVisible, true))
+      .orderBy(basFaqEntries.sortOrder);
+  }
+
+  async createBasFaqEntry(data: InsertBasFaqEntry): Promise<BasFaqEntry> {
+    const [created] = await db.insert(basFaqEntries).values(data).returning();
+    return created;
+  }
+
+  async updateBasFaqEntry(id: string, data: Partial<InsertBasFaqEntry>): Promise<BasFaqEntry> {
+    const [updated] = await db.update(basFaqEntries)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(basFaqEntries.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBasFaqEntry(id: string): Promise<void> {
+    await db.delete(basFaqEntries).where(eq(basFaqEntries.id, id));
+  }
+
+  async seedBasTokenDefaults(): Promise<void> {
+    const existing = await this.getBasTokenConfig();
+    if (existing.length > 0) return;
+
+    const configDefaults: Array<{ configKey: string; configValue: string; description: string }> = [
+      { configKey: "token_name", configValue: "Ecclesia Basilikos", description: "Token display name" },
+      { configKey: "ticker", configValue: "BAS", description: "Token ticker symbol" },
+      { configKey: "chain", configValue: "Solana (SPL Token)", description: "Blockchain network" },
+      { configKey: "total_supply", configValue: "144,000,000", description: "Total fixed supply" },
+      { configKey: "inflation", configValue: "None — Fixed Supply", description: "Inflation policy" },
+      { configKey: "hero_title", configValue: "BAS Token", description: "Hero section title" },
+      { configKey: "hero_subtitle", configValue: "Stewardship. Governance. Treasury Participation.", description: "Hero section subtitle" },
+      {
+        configKey: "purpose_statement",
+        configValue: "BAS is the governance and stewardship token of the Ecclesia Basilikos assembly. It represents a member’s voice in communal decision-making, treasury oversight, and the stewardship of shared resources. BAS is not an investment vehicle or security—it is a tool for faithful, transparent self-governance within the Body.",
+        description: "Purpose statement displayed on the public page",
+      },
+      {
+        configKey: "governance_model",
+        configValue: "1 token = 1 vote. The Stewardship Council proposes resolutions on treasury allocations, community initiatives, and policy changes. All BAS holders may vote on proposals during designated voting periods. The council is appointed by the founder and serves at the pleasure of the assembly.",
+        description: "Governance model description",
+      },
+      {
+        configKey: "biblical_basis",
+        configValue: "The total supply of 144,000,000 BAS tokens is drawn from Revelation 7 and Revelation 14, representing the fullness of the covenant community sealed by God. This number signifies completeness and divine order—not scarcity for profit, but wholeness for stewardship. “And I heard the number of them which were sealed: and there were sealed an hundred and forty and four thousand of all the tribes of the children of Israel.” (Revelation 7:4, KJV)",
+        description: "Biblical and theological grounding",
+      },
+      {
+        configKey: "legal_disclaimer",
+        configValue: "BAS is a governance and stewardship token. It is not a security, investment contract, or financial instrument. BAS does not represent equity, debt, or any claim to profits or assets. Holding BAS confers governance voting rights within the Ecclesia Basilikos assembly only. BAS has no guaranteed monetary value and should not be purchased with any expectation of financial return. Distribution occurs through the assembly’s treasury via decentralized exchange (DEX) listings for accessibility, not speculation.",
+        description: "Legal disclaimer text",
+      },
+    ];
+
+    for (const config of configDefaults) {
+      await db.insert(basTokenConfig).values(config);
+    }
+
+    await db.insert(basAllocations).values({
+      category: "Treasury",
+      percentage: 100,
+      description: "100% of BAS tokens are held and distributed by the assembly treasury under stewardship council oversight.",
+      color: "#D4AF37",
+      sortOrder: 0,
+    });
+
+    const roadmapDefaults = [
+      { title: "Whitepaper Publication", description: "Public release of the BAS token whitepaper and governance framework documentation.", targetDate: "Q3 2026", status: "in_progress" as const, sortOrder: 0 },
+      { title: "SPL Token Mint", description: "Mint the BAS SPL token on Solana mainnet with 144,000,000 fixed supply.", targetDate: "Q4 2026", status: "upcoming" as const, sortOrder: 1 },
+      { title: "DEX Listing", description: "List BAS on Solana DEX platforms for community accessibility.", targetDate: "Q4 2026", status: "upcoming" as const, sortOrder: 2 },
+      { title: "Governance Portal Launch", description: "Launch the on-chain governance portal for proposal submission and voting.", targetDate: "Q1 2027", status: "upcoming" as const, sortOrder: 3 },
+      { title: "First Community Vote", description: "Conduct the first assembly-wide governance vote on a treasury allocation proposal.", targetDate: "Q1 2027", status: "upcoming" as const, sortOrder: 4 },
+    ];
+    for (const milestone of roadmapDefaults) {
+      await db.insert(basRoadmapMilestones).values(milestone);
+    }
+
+    const faqDefaults = [
+      { question: "What is BAS?", answer: "BAS (Ecclesia Basilikos) is a Solana SPL governance token that represents your voice in the assembly’s decision-making process. It is used for voting on proposals, treasury oversight, and community stewardship.", category: "General", sortOrder: 0 },
+      { question: "Is BAS an investment?", answer: "No. BAS is strictly a governance and stewardship token. It does not represent equity, debt, or any expectation of profit. It is a tool for self-governance within the Ecclesia Basilikos assembly.", category: "General", sortOrder: 1 },
+      { question: "Why is the total supply 144,000,000?", answer: "The number 144,000 appears in Revelation 7:4 and Revelation 14:1, representing the fullness of God’s sealed covenant community. The supply of 144,000,000 (144,000 × 1,000) symbolizes completeness and divine order for stewardship purposes.", category: "General", sortOrder: 2 },
+      { question: "How does voting work?", answer: "Each BAS token represents one vote. The Stewardship Council proposes resolutions, and all BAS holders can vote during designated voting periods. Proposals cover treasury allocations, community initiatives, and policy changes.", category: "Governance", sortOrder: 3 },
+      { question: "Who controls the treasury?", answer: "The treasury is overseen by the Stewardship Council, which is appointed by the founder. All treasury actions are transparent and subject to governance votes by BAS holders. No single individual can unilaterally move treasury funds.", category: "Governance", sortOrder: 4 },
+      { question: "How can I obtain BAS tokens?", answer: "BAS tokens will be available through DEX (decentralized exchange) listings on Solana. The treasury distributes tokens according to governance-approved allocation plans.", category: "Technical", sortOrder: 5 },
+    ];
+    for (const faq of faqDefaults) {
+      await db.insert(basFaqEntries).values(faq);
+    }
   }
 }
 

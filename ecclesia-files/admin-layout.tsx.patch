@@ -1,9 +1,12 @@
 Changes to client/src/components/layout/admin-layout.tsx:
 
-1. Add Wand2 to lucide-react imports
+1. Add Wand2, Coins to lucide-react imports
 
 2. Add to Content & Media items after Course Editor:
    { name: "Course Wizard", href: "/admin/courses/new", icon: Wand2 },
 
 3. Update isActive function to handle /admin/courses vs /admin/courses/new:
    if (href === "/admin/courses") return location === "/admin/courses" || (location.startsWith("/admin/courses/") && !location.startsWith("/admin/courses/new"));
+
+4. Add to Treasury & Finance section (after Treasury):
+   { name: "BAS Token", href: "/admin/bas-token", icon: Coins },

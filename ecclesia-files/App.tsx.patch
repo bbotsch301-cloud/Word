@@ -5,3 +5,13 @@ Changes to client/src/App.tsx:
 
 2. Add route BEFORE /admin/courses (order matters for matching):
    <Route path="/admin/courses/new">{() => <RequireAdmin><SectionErrorBoundary><AdminCourseWizard /></SectionErrorBoundary></RequireAdmin>}</Route>
+
+3. Add lazy imports for BAS token pages:
+   const BasTokenPage = lazy(() => import("@/pages/bas-token"));
+   const AdminBasToken = lazy(() => import("@/pages/admin-bas-token"));
+
+4. Add public route (near other public routes):
+   <Route path="/bas">{() => <SectionErrorBoundary><BasTokenPage /></SectionErrorBoundary>}</Route>
+
+5. Add admin route (in the admin routes section):
+   <Route path="/admin/bas-token">{() => <RequireAdmin><SectionErrorBoundary><AdminBasToken /></SectionErrorBoundary></RequireAdmin>}</Route>

@@ -2020,6 +2020,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ================================
+  // BAS TOKEN PUBLIC ENDPOINTS
+  // ================================
+
+  app.get("/api/bas/config", async (_req, res) => {
+    try {
+      const config = await storage.getBasTokenConfig();
+      res.json(config.filter(c => c.isVisible));
+    } catch (error) {
+      logger.error({ err: error }, "Error fetching BAS config");
+      res.status(500).json({ error: "Failed to fetch BAS config" });
+    }
+  });
+
+  app.get("/api/bas/allocations", async (_req, res) => {
+    try {
+      const allocations = await storage.getVisibleBasAllocations();
+      res.json(allocations);
+    } catch (error) {
+      logger.error({ err: error }, "Error fetching BAS allocations");
+      res.status(500).json({ error: "Failed to fetch BAS allocations" });
+    }
+  });
+
+  app.get("/api/bas/roadmap", async (_req, res) => {
+    try {
+      const milestones = await storage.getVisibleBasRoadmapMilestones();
+      res.json(milestones);
+    } catch (error) {
+      logger.error({ err: error }, "Error fetching BAS roadmap");
+      res.status(500).json({ error: "Failed to fetch BAS roadmap" });
+    }
+  });
+
+  app.get("/api/bas/council", async (_req, res) => {
+    try {
+      const members = await storage.getActiveBasCouncilMembers();
+      res.json(members);
+    } catch (error) {
+      logger.error({ err: error }, "Error fetching BAS council");
+      res.status(500).json({ error: "Failed to fetch BAS council" });
+    }
+  });
+
+  app.get("/api/bas/faq", async (_req, res) => {
+    try {
+      const entries = await storage.getVisibleBasFaqEntries();
+      res.json(entries);
+    } catch (error) {
+      logger.error({ err: error }, "Error fetching BAS FAQ");
+      res.status(500).json({ error: "Failed to fetch BAS FAQ" });
+    }
+  });
+
   // Subscription status endpoint
   app.get("/api/subscription/status", requireAuth, async (req, res) => {
     try {

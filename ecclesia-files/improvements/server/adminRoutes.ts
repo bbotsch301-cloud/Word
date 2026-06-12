@@ -16,6 +16,11 @@ import {
   insertDownloadSchema,
   insertTrustEntitySchema,
   insertTrustRelationshipSchema,
+  insertBasTokenConfigSchema,
+  insertBasAllocationSchema,
+  insertBasRoadmapMilestoneSchema,
+  insertBasCouncilMemberSchema,
+  insertBasFaqEntrySchema,
 } from '@shared/schema';
 import { resolveEntity, resolveVariables } from './trustDocumentUtils';
 
@@ -2074,6 +2079,252 @@ router.put('/treasury/settings/:key', requireAdmin, async (req, res) => {
   } catch (error) {
     logger.error({ err: error }, 'Error updating treasury setting');
     res.status(500).json({ error: 'Failed to update treasury setting' });
+  }
+});
+
+// ================================
+// BAS TOKEN MANAGEMENT (ADMIN ONLY)
+// ================================
+
+// Config
+router.get('/bas/config', requireAdmin, async (req, res) => {
+  try {
+    const config = await storage.getBasTokenConfig();
+    res.json(config);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching BAS config');
+    res.status(500).json({ error: 'Failed to fetch BAS config' });
+  }
+});
+
+router.put('/bas/config/:key', requireAdmin, async (req, res) => {
+  try {
+    const { value, description } = z.object({ value: z.string(), description: z.string().optional() }).parse(req.body);
+    const config = await storage.upsertBasTokenConfig(req.params.key, value, description, req.user!.id);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_TOKEN_CONFIG', config.id, null, { key: req.params.key, value }, req.ip, req.get('User-Agent'));
+    res.json(config);
+  } catch (error) {
+    logger.error({ err: error }, 'Error updating BAS config');
+    res.status(500).json({ error: 'Failed to update BAS config' });
+  }
+});
+
+router.patch('/bas/config/:id/visibility', requireAdmin, async (req, res) => {
+  try {
+    const { isVisible } = z.object({ isVisible: z.boolean() }).parse(req.body);
+    const config = await storage.updateBasTokenConfigVisibility(req.params.id, isVisible);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_TOKEN_CONFIG', req.params.id, null, { isVisible }, req.ip, req.get('User-Agent'));
+    res.json(config);
+  } catch (error) {
+    logger.error({ err: error }, 'Error toggling BAS config visibility');
+    res.status(500).json({ error: 'Failed to toggle BAS config visibility' });
+  }
+});
+
+router.delete('/bas/config/:id', requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteBasTokenConfig(req.params.id);
+    await auditLog(req.user!.id, 'DELETE', 'BAS_TOKEN_CONFIG', req.params.id, null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting BAS config');
+    res.status(500).json({ error: 'Failed to delete BAS config' });
+  }
+});
+
+// Allocations
+router.get('/bas/allocations', requireAdmin, async (req, res) => {
+  try {
+    const allocations = await storage.getBasAllocations();
+    res.json(allocations);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching BAS allocations');
+    res.status(500).json({ error: 'Failed to fetch BAS allocations' });
+  }
+});
+
+router.post('/bas/allocations', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasAllocationSchema.parse(req.body);
+    const allocation = await storage.createBasAllocation(data);
+    await auditLog(req.user!.id, 'CREATE', 'BAS_ALLOCATION', allocation.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(allocation);
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating BAS allocation');
+    res.status(500).json({ error: 'Failed to create BAS allocation' });
+  }
+});
+
+router.patch('/bas/allocations/:id', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasAllocationSchema.partial().parse(req.body);
+    const allocation = await storage.updateBasAllocation(req.params.id, data);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_ALLOCATION', req.params.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(allocation);
+  } catch (error) {
+    logger.error({ err: error }, 'Error updating BAS allocation');
+    res.status(500).json({ error: 'Failed to update BAS allocation' });
+  }
+});
+
+router.delete('/bas/allocations/:id', requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteBasAllocation(req.params.id);
+    await auditLog(req.user!.id, 'DELETE', 'BAS_ALLOCATION', req.params.id, null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting BAS allocation');
+    res.status(500).json({ error: 'Failed to delete BAS allocation' });
+  }
+});
+
+// Roadmap
+router.get('/bas/roadmap', requireAdmin, async (req, res) => {
+  try {
+    const milestones = await storage.getBasRoadmapMilestones();
+    res.json(milestones);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching BAS roadmap');
+    res.status(500).json({ error: 'Failed to fetch BAS roadmap' });
+  }
+});
+
+router.post('/bas/roadmap', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasRoadmapMilestoneSchema.parse(req.body);
+    const milestone = await storage.createBasRoadmapMilestone(data);
+    await auditLog(req.user!.id, 'CREATE', 'BAS_ROADMAP', milestone.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(milestone);
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating BAS roadmap milestone');
+    res.status(500).json({ error: 'Failed to create BAS roadmap milestone' });
+  }
+});
+
+router.patch('/bas/roadmap/:id', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasRoadmapMilestoneSchema.partial().parse(req.body);
+    const milestone = await storage.updateBasRoadmapMilestone(req.params.id, data);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_ROADMAP', req.params.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(milestone);
+  } catch (error) {
+    logger.error({ err: error }, 'Error updating BAS roadmap milestone');
+    res.status(500).json({ error: 'Failed to update BAS roadmap milestone' });
+  }
+});
+
+router.delete('/bas/roadmap/:id', requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteBasRoadmapMilestone(req.params.id);
+    await auditLog(req.user!.id, 'DELETE', 'BAS_ROADMAP', req.params.id, null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting BAS roadmap milestone');
+    res.status(500).json({ error: 'Failed to delete BAS roadmap milestone' });
+  }
+});
+
+// Council
+router.get('/bas/council', requireAdmin, async (req, res) => {
+  try {
+    const members = await storage.getBasCouncilMembers();
+    res.json(members);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching BAS council');
+    res.status(500).json({ error: 'Failed to fetch BAS council' });
+  }
+});
+
+router.post('/bas/council', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasCouncilMemberSchema.parse(req.body);
+    const member = await storage.createBasCouncilMember(data);
+    await auditLog(req.user!.id, 'CREATE', 'BAS_COUNCIL', member.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(member);
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating BAS council member');
+    res.status(500).json({ error: 'Failed to create BAS council member' });
+  }
+});
+
+router.patch('/bas/council/:id', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasCouncilMemberSchema.partial().parse(req.body);
+    const member = await storage.updateBasCouncilMember(req.params.id, data);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_COUNCIL', req.params.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(member);
+  } catch (error) {
+    logger.error({ err: error }, 'Error updating BAS council member');
+    res.status(500).json({ error: 'Failed to update BAS council member' });
+  }
+});
+
+router.delete('/bas/council/:id', requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteBasCouncilMember(req.params.id);
+    await auditLog(req.user!.id, 'DELETE', 'BAS_COUNCIL', req.params.id, null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting BAS council member');
+    res.status(500).json({ error: 'Failed to delete BAS council member' });
+  }
+});
+
+// FAQ
+router.get('/bas/faq', requireAdmin, async (req, res) => {
+  try {
+    const entries = await storage.getBasFaqEntries();
+    res.json(entries);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching BAS FAQ');
+    res.status(500).json({ error: 'Failed to fetch BAS FAQ' });
+  }
+});
+
+router.post('/bas/faq', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasFaqEntrySchema.parse(req.body);
+    const entry = await storage.createBasFaqEntry(data);
+    await auditLog(req.user!.id, 'CREATE', 'BAS_FAQ', entry.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(entry);
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating BAS FAQ entry');
+    res.status(500).json({ error: 'Failed to create BAS FAQ entry' });
+  }
+});
+
+router.patch('/bas/faq/:id', requireAdmin, async (req, res) => {
+  try {
+    const data = insertBasFaqEntrySchema.partial().parse(req.body);
+    const entry = await storage.updateBasFaqEntry(req.params.id, data);
+    await auditLog(req.user!.id, 'UPDATE', 'BAS_FAQ', req.params.id, null, data, req.ip, req.get('User-Agent'));
+    res.json(entry);
+  } catch (error) {
+    logger.error({ err: error }, 'Error updating BAS FAQ entry');
+    res.status(500).json({ error: 'Failed to update BAS FAQ entry' });
+  }
+});
+
+router.delete('/bas/faq/:id', requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteBasFaqEntry(req.params.id);
+    await auditLog(req.user!.id, 'DELETE', 'BAS_FAQ', req.params.id, null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true });
+  } catch (error) {
+    logger.error({ err: error }, 'Error deleting BAS FAQ entry');
+    res.status(500).json({ error: 'Failed to delete BAS FAQ entry' });
+  }
+});
+
+// Seed defaults
+router.post('/bas/seed', requireAdmin, async (req, res) => {
+  try {
+    await storage.seedBasTokenDefaults();
+    await auditLog(req.user!.id, 'CREATE', 'BAS_SEED', 'defaults', null, null, req.ip, req.get('User-Agent'));
+    res.json({ success: true, message: 'BAS token defaults seeded' });
+  } catch (error) {
+    logger.error({ err: error }, 'Error seeding BAS defaults');
+    res.status(500).json({ error: 'Failed to seed BAS defaults' });
   }
 });
 

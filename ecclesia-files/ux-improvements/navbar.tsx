@@ -19,6 +19,7 @@ const navigation: Array<
   { separator: true },
   { name: "Lawful Money", href: "/lawful-money" },
   { name: "Trust & Assets", href: "/trust-assets" },
+  { name: "BAS Token", href: "/bas" },
   { name: "State Passport", href: "/state-passport" },
   { separator: true },
   { name: "The Mandate", href: "/mandate" },

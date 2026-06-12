@@ -1340,6 +1340,115 @@ export type InsertTreasuryTransaction = z.infer<typeof insertTreasuryTransaction
 export type TreasurySetting = typeof treasurySettings.$inferSelect;
 export type InsertTreasurySetting = z.infer<typeof insertTreasurySettingSchema>;
 
+// ================================
+// BAS TOKEN TABLES
+// ================================
+
+export const basRoadmapStatusEnum = pgEnum('bas_roadmap_status', ['upcoming', 'in_progress', 'completed']);
+
+export const basTokenConfig = pgTable("bas_token_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  configKey: text("config_key").notNull().unique(),
+  configValue: text("config_value").notNull(),
+  description: text("description"),
+  isVisible: boolean("is_visible").default(true),
+  updatedById: varchar("updated_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const basAllocations = pgTable("bas_allocations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  category: text("category").notNull(),
+  percentage: integer("percentage").notNull(),
+  description: text("description"),
+  color: text("color"),
+  sortOrder: integer("sort_order").default(0),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const basRoadmapMilestones = pgTable("bas_roadmap_milestones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  targetDate: text("target_date"),
+  status: basRoadmapStatusEnum("status").default('upcoming'),
+  sortOrder: integer("sort_order").default(0),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const basCouncilMembers = pgTable("bas_council_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  bio: text("bio"),
+  walletAddress: text("wallet_address"),
+  imageUrl: text("image_url"),
+  appointedAt: timestamp("appointed_at").defaultNow(),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const basFaqEntries = pgTable("bas_faq_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  category: text("category"),
+  sortOrder: integer("sort_order").default(0),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// BAS Token insert schemas
+export const insertBasTokenConfigSchema = createInsertSchema(basTokenConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBasAllocationSchema = createInsertSchema(basAllocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBasRoadmapMilestoneSchema = createInsertSchema(basRoadmapMilestones).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBasCouncilMemberSchema = createInsertSchema(basCouncilMembers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBasFaqEntrySchema = createInsertSchema(basFaqEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// BAS Token types
+export type BasTokenConfig = typeof basTokenConfig.$inferSelect;
+export type InsertBasTokenConfig = z.infer<typeof insertBasTokenConfigSchema>;
+export type BasAllocation = typeof basAllocations.$inferSelect;
+export type InsertBasAllocation = z.infer<typeof insertBasAllocationSchema>;
+export type BasRoadmapMilestone = typeof basRoadmapMilestones.$inferSelect;
+export type InsertBasRoadmapMilestone = z.infer<typeof insertBasRoadmapMilestoneSchema>;
+export type BasCouncilMember = typeof basCouncilMembers.$inferSelect;
+export type InsertBasCouncilMember = z.infer<typeof insertBasCouncilMemberSchema>;
+export type BasFaqEntry = typeof basFaqEntries.$inferSelect;
+export type InsertBasFaqEntry = z.infer<typeof insertBasFaqEntrySchema>;
+
 // Flagged content schemas and types
 export const insertFlaggedContentSchema = createInsertSchema(flaggedContent).omit({
   id: true,
